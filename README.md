@@ -1,2 +1,2 @@
 # blockie
-JavaScript game.
+An epic JavaScript game.

@@ -1,1 +1,0 @@
-{"version":3,"sources":["../src/example.js"],"names":["Hello","console","log","world"],"mappings":";;;;;;AAAA;IACMA,K;;;;;;;gCACa;AACXC,oBAAQC,GAAR,CAAY,eAAZ;AACH;;;;;;AAELF,MAAMG,KAAN","file":"example.js","sourcesContent":["// src/example.js\r\nclass Hello {\r\n    static world() {\r\n        console.log('Hello, World!');\r\n    }\r\n}\r\nHello.world();"]}

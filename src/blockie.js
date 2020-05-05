@@ -16,6 +16,10 @@ class Player {
 
 const blockie = new Player();
 
+function calculateAngleRadians(x, y) {
+    return Math.atan2(y, x);
+}
+
 function loop() {
     //Clears the canvas so that it can later be redrawn with updated locations.
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -34,21 +38,35 @@ function loop() {
     blockie.dx = 0;
     blockie.dy = 0;
 
-    //Checks if each key is being pressed from they KeysPressed object and changes dx and dy accordingly.
+    //xInput and yInput are both used to determine the angle that Blockie is moving in.
+    let xInput = 0;
+    let yInput = 0;
+
+    //Each key changes the angle of Blockie's movement.
     if (KeysPressed['d']) {
-        blockie.dx += blockieSpeed;
+        xInput += 1;
     }
 
     if (KeysPressed['a']) {
-        blockie.dx -= blockieSpeed;
+        xInput -= 1;
     }
 
     if (KeysPressed['s']) {
-        blockie.dy += blockieSpeed;
+        yInput += 1;
     }
 
     if (KeysPressed['w']) {
-        blockie.dy -= blockieSpeed;
+        yInput -= 1;
+    }
+
+    //Finds the angle that Blockie is moving based on the inputs.
+    let angleBlockieMoving = calculateAngleRadians(xInput, yInput);
+
+    //Moves Blockie in the direction of the input, and the trigonometry prevents faster diagonal movement by making 
+    //the desired speed the hypotenuse and finding the x and y components from that.
+    if (xInput !== 0 || yInput !== 0) {
+        blockie.dx = Math.cos(angleBlockieMoving) * blockieSpeed;
+        blockie.dy = Math.sin(angleBlockieMoving) * blockieSpeed;
     }
 
     //Updates Blockie's location by adding directional changes to his current location.

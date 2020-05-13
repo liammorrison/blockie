@@ -1,18 +1,66 @@
+/*Imports a downloaded pixelated font.*/
+
+@font-face {
+    src: url(fonts/Symtext.ttf);
+    font-family: symtext;
+}
+
 html,
 body {
     height: 100%;
-    margin: 0;
+    width: 100%;
+    background: hsl(0, 100%, 0%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: symtext;
+    color: hsl(0, 100%, 100%);
+    /*Disables selecting (highlighting) the text.*/
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer */
+    -khtml-user-select: none;
+    /* KHTML browsers (e.g. Konqueror) */
+    -webkit-user-select: none;
+    /* Chrome, Safari, and Opera */
+    -webkit-touch-callout: none;
+    /* Disable Android and iOS callouts*/
 }
 
-body {
-    align-items: center;
-    background: black;
-    display: flex;
-    justify-content: center;
+#title {
+    height: 50px;
+    font-size: xx-large;
 }
 
 #game {
-    border: 3px solid white;
-    height: 512px;
-    width: 512px;
+    border: 5px solid hsl(0, 100%, 100%);
+}
+
+#gameInfo {
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    font-size: x-large;
+}
+
+#currentTime {
+    height: 50px;
+    width: 256px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#currentLevel {
+    height: 50px;
+    width: 256px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }

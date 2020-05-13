@@ -5,12 +5,14 @@ body {
 }
 
 body {
+    align-items: center;
     background: black;
     display: flex;
-    align-items: center;
     justify-content: center;
 }
 
-canvas {
-    border: 1px solid white;
+#game {
+    border: 3px solid white;
+    height: 512px;
+    width: 512px;
 }

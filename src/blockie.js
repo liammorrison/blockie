@@ -1,12 +1,21 @@
+//Game Setup
+
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
 context.fillStyle = 'white';
 
 //Variables
+
 let KeysPressed = {};
 let xInput = 0;
 let yInput = 0;
 let colliding = false;
+
+//Arrays
+
+let horizontalLasers = [];
+
+//Classes
 
 class Player {
     constructor() {
@@ -32,7 +41,45 @@ class Player {
     };
 };
 
-const blockie = new Player();
+class horizontalLaser {
+    constructor() {
+        this.x = 0;
+        this.y = 100;
+        this.height = 32;
+        this.width = canvas.width;
+    }
+}
+
+//Functions
+
+async function levelOne() {
+    let laserOne = await fireHorizontalLaser(100, 10);
+};
+
+function fireHorizontalLaser(y, height) {
+    horizontalLasers.push(new horizontalLaser());
+    let newInstanceLocation = horizontalLasers.length - 1;
+    horizontalLasers[newInstanceLocation].y = y;
+    horizontalLasers[newInstanceLocation].height = height;
+    return new Promise(resolve => {
+        setTimeout(() => {
+            horizontalLasers.splice(newInstanceLocation);
+            console.log('resolved');
+            resolve('resolved');
+        }, 5000);
+    });
+};
+
+function drawHorizontalLasers() {
+    for (let i = 0; i < horizontalLasers.length; i++) {
+        let currentInstance = horizontalLasers[i];
+        console.log(currentInstance.x);
+        console.log(currentInstance.y);
+        console.log(currentInstance.width);
+        console.log(currentInstance.height);
+        context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+    }
+}
 
 //Determines if two objects are "colliding".
 function checkSpritesColliding(xOne, yOne, widthOne, heightOne, xTwo, yTwo, widthTwo, heightTwo) {
@@ -55,6 +102,8 @@ function convertRadiansToDegrees(radians) {
     return radians * 180 / Math.PI;
 };
 
+//Game loop
+
 //Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
 //that capital letters can't cause unwanted movements.
 document.addEventListener('keydown', e => {
@@ -65,6 +114,8 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
     delete KeysPressed[e.keyCode];
 });
+
+const blockie = new Player();
 
 function loop() {
     //Clears the canvas so that it can later be redrawn with updated locations and instances.
@@ -148,9 +199,13 @@ function loop() {
 
     context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.sideLength, blockie.sideLength);
 
+    drawHorizontalLasers();
+
     //Recalls the loop for the next frame.
     window.requestAnimationFrame(loop);
 };
+
+levelOne();
 
 //Starts the game.
 window.requestAnimationFrame(loop);

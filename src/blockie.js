@@ -52,31 +52,33 @@ class horizontalLaser {
 
 //Functions
 
+//Levels are a series of obstacles and objectives that appear in specific orders and time periods.
 async function levelOne() {
-    let laserOne = await fireHorizontalLaser(100, 10);
+    await Promise.all([
+        fireHorizontalLaser(100, 10, 10),
+        fireHorizontalLaser(200, 20, 20)
+    ]);
 };
 
-function fireHorizontalLaser(y, height) {
+//Creates an instance of a laser and adds it to an array so that it can be drawn and used in collision checking more easily.
+//When the timer ends, the instance is deleted.
+function fireHorizontalLaser(y, height, seconds) {
     horizontalLasers.push(new horizontalLaser());
-    let newInstanceLocation = horizontalLasers.length - 1;
-    horizontalLasers[newInstanceLocation].y = y;
-    horizontalLasers[newInstanceLocation].height = height;
-    return new Promise(resolve => {
+    let newInstanceIndex = horizontalLasers.length - 1;
+    horizontalLasers[newInstanceIndex].y = y;
+    horizontalLasers[newInstanceIndex].height = height;
+    return new Promise((resolve) => {
         setTimeout(() => {
-            horizontalLasers.splice(newInstanceLocation);
+            horizontalLasers.splice(newInstanceIndex);
             console.log('resolved');
             resolve('resolved');
-        }, 5000);
+        }, seconds * 1000);
     });
 };
 
 function drawHorizontalLasers() {
     for (let i = 0; i < horizontalLasers.length; i++) {
         let currentInstance = horizontalLasers[i];
-        console.log(currentInstance.x);
-        console.log(currentInstance.y);
-        console.log(currentInstance.width);
-        console.log(currentInstance.height);
         context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
     }
 }
@@ -120,6 +122,8 @@ const blockie = new Player();
 function loop() {
     //Clears the canvas so that it can later be redrawn with updated locations and instances.
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    //Blockie's Movement
 
     //xInput and yInput are both used to determine the angle that Blockie is moving in.
     xInput = 0;
@@ -192,6 +196,12 @@ function loop() {
     } else if ((blockie.testYLocation + blockie.sideLength) >= canvas.height) {
         blockie.y = canvas.height - blockie.sideLength;
     };
+
+    //Blockie's Interactions
+
+
+
+    //Drawing
 
     //sx is the location on the blockie.png sprite map and it determines the sprite's direction facing. 
     //It starts at the idle image, then goes to the top-left, and then continues in a clockwise direction.

@@ -1,10 +1,12 @@
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
+context.fillStyle = 'white';
 
 //Variables
 let KeysPressed = {};
 let xInput = 0;
 let yInput = 0;
+let colliding = false;
 
 class Player {
     constructor() {
@@ -23,7 +25,6 @@ class Player {
         this.testXLocation = this.x;
         this.testYLocation = this.y;
 
-
         //Loads Blockie's sprite map. It is one large sprite map to avoid loading many individual 
         //sprite files.
         this.sprite = document.createElement('img');
@@ -33,9 +34,22 @@ class Player {
 
 const blockie = new Player();
 
+//Determines if two objects are "colliding".
+function checkSpritesColliding(xOne, yOne, widthOne, heightOne, xTwo, yTwo, widthTwo, heightTwo) {
+    if ((xTwo < xOne) && (xOne < xTwo + widthTwo)) {
+        colliding = true;
+    } else if ((xOne < xTwo) && (xTwo < xOne + widthOne)) {
+        colliding = true;
+    } else if ((yTwo < yOne) && (yOne < yTwo + heightTwo)) {
+        colliding = true;
+    } else if ((yOne < yTwo) && (yTwo < yOne + heightOne)) {
+        colliding = true;
+    }
+}
+
 function calculateAngleRadians(x, y) {
     return Math.atan2(y, x);
-}
+};
 
 function convertRadiansToDegrees(radians) {
     return radians * 180 / Math.PI;

@@ -19,10 +19,11 @@ let horizontalLasers = [];
 
 class Player {
     constructor() {
-        this.sideLength = 32;
+        this.width = 32;
+        this.height = 32;
         this.spriteSideLength = 16;
-        this.x = canvas.width / 2 - this.sideLength / 2;
-        this.y = canvas.height / 2 - this.sideLength / 2;
+        this.x = canvas.width / 2 - this.width / 2;
+        this.y = canvas.height / 2 - this.height / 2;
         this.sx = 0;
         this.speed = 2;
         this.angleMovingDegrees = 0;
@@ -45,32 +46,39 @@ class horizontalLaser {
     constructor() {
         this.x = 0;
         this.y = 100;
-        this.height = 32;
         this.width = canvas.width;
+        this.height = 32;
     }
 }
 
 //Functions
 
-//Levels are a series of obstacles and objectives that appear in specific orders and time periods.
+//Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
+    initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
+
     await Promise.all([
-        fireHorizontalLaser(100, 10, 10),
-        fireHorizontalLaser(200, 20, 20)
+        fireHorizontalLaser(300, 16, 4),
+        fireHorizontalLaser(100, 16, 3)
     ]);
 };
 
 //Creates an instance of a laser and adds it to an array so that it can be drawn and used in collision checking more easily.
 //When the timer ends, the instance is deleted.
 function fireHorizontalLaser(y, height, seconds) {
-    horizontalLasers.push(new horizontalLaser());
-    let newInstanceIndex = horizontalLasers.length - 1;
-    horizontalLasers[newInstanceIndex].y = y;
-    horizontalLasers[newInstanceIndex].height = height;
+    //Creates an instance of an object, adds it to the end of its object's array, and assigns its key-value pairs.
+    let instance = new horizontalLaser();
+    horizontalLasers.push(instance);
+    let instanceIndex = horizontalLasers.indexOf(instance);
+    horizontalLasers[instanceIndex].y = y;
+    horizontalLasers[instanceIndex].height = height;
+
+    //Creates a timer that resolves promises in the levelController and deletes the instance from its array (so that it isn't drawn
+    //or collided with anymore).
     return new Promise((resolve) => {
         setTimeout(() => {
-            horizontalLasers.splice(newInstanceIndex);
-            console.log('resolved');
+            instanceIndex = horizontalLasers.indexOf(instance);
+            horizontalLasers.splice(instanceIndex, 1);
             resolve('resolved');
         }, seconds * 1000);
     });
@@ -84,16 +92,35 @@ function drawHorizontalLasers() {
 }
 
 //Determines if two objects are "colliding".
-function checkSpritesColliding(xOne, yOne, widthOne, heightOne, xTwo, yTwo, widthTwo, heightTwo) {
-    if ((xTwo < xOne) && (xOne < xTwo + widthTwo)) {
-        colliding = true;
-    } else if ((xOne < xTwo) && (xTwo < xOne + widthOne)) {
-        colliding = true;
-    } else if ((yTwo < yOne) && (yOne < yTwo + heightTwo)) {
-        colliding = true;
-    } else if ((yOne < yTwo) && (yTwo < yOne + heightOne)) {
+function checkSpritesColliding(instanceOne, instanceTwo) {
+    let xColliding = false;
+    let yColliding = false;
+
+    if ((instanceTwo.x <= instanceOne.x) && (instanceOne.x <= instanceTwo.x + instanceTwo.width)) {
+        xColliding = true;
+    } else if ((instanceOne.x <= instanceTwo.x) && (instanceTwo.x <= instanceOne.x + instanceOne.width)) {
+        xColliding = true;
+    }
+
+    if ((instanceTwo.y <= instanceOne.y) && (instanceOne.y <= instanceTwo.y + instanceTwo.height)) {
+        yColliding = true;
+    } else if ((instanceOne.y <= instanceTwo.y) && (instanceTwo.y <= instanceOne.y + instanceOne.height)) {
+        yColliding = true;
+    }
+
+    //The instances must have an overlapping area (x and y components) for there to be a collision.
+    if (xColliding && yColliding) {
         colliding = true;
     }
+}
+
+function initializeLevel(blockieX, blockieY) {
+    blockie.x = blockieX;
+    blockie.y = blockieY;
+}
+
+function restartLevel() {
+    levelOne();
 }
 
 function calculateAngleRadians(x, y) {
@@ -181,25 +208,34 @@ function loop() {
 
     //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
     //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
-    if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.sideLength) >= canvas.width)) {
+    if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
         blockie.x = blockie.testXLocation;
     } else if (blockie.testXLocation <= 0) {
         blockie.x = 0;
-    } else if ((blockie.testXLocation + blockie.sideLength) >= canvas.width) {
-        blockie.x = canvas.width - blockie.sideLength;
+    } else if ((blockie.testXLocation + blockie.width) >= canvas.width) {
+        blockie.x = canvas.width - blockie.width;
     };
 
-    if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.sideLength) >= canvas.height)) {
+    if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.height) >= canvas.height)) {
         blockie.y = blockie.testYLocation;
     } else if (blockie.testYLocation <= 0) {
         blockie.y = 0;
-    } else if ((blockie.testYLocation + blockie.sideLength) >= canvas.height) {
-        blockie.y = canvas.height - blockie.sideLength;
+    } else if ((blockie.testYLocation + blockie.height) >= canvas.height) {
+        blockie.y = canvas.height - blockie.height;
     };
 
     //Blockie's Interactions
 
+    //Resets the collision flag to recheck every frame.
+    colliding = false;
 
+    for (let i = 0; i < horizontalLasers.length; i++) {
+        checkSpritesColliding(blockie, horizontalLasers[i]);
+        if (colliding) {
+            restartLevel();
+            break;
+        }
+    }
 
     //Drawing
 
@@ -207,7 +243,7 @@ function loop() {
     //It starts at the idle image, then goes to the top-left, and then continues in a clockwise direction.
     blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
 
-    context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.sideLength, blockie.sideLength);
+    context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
 
     drawHorizontalLasers();
 

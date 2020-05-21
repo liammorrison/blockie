@@ -1,8 +1,8 @@
 //Game Setup
 
-const canvas = document.getElementById('game');
-const context = canvas.getContext('2d');
-context.fillStyle = 'white';
+const canvas = document.getElementById("game");
+const context = canvas.getContext("2d");
+context.fillStyle = "white";
 
 //Variables
 
@@ -10,9 +10,11 @@ let KeysPressed = {};
 let xInput = 0;
 let yInput = 0;
 let colliding = false;
+let gameState = "playing";
 
 //Arrays
 
+let currentTimers = [];
 let horizontalLasers = [];
 
 //Classes
@@ -35,10 +37,10 @@ class Player {
         this.testXLocation = this.x;
         this.testYLocation = this.y;
 
-        //Loads Blockie's sprite map. It is one large sprite map to avoid loading many individual 
+        //Loads Blockie"s sprite map. It is one large sprite map to avoid loading many individual 
         //sprite files.
-        this.sprite = document.createElement('img');
-        this.sprite.src = '../images/blockie.png';
+        this.sprite = document.createElement("img");
+        this.sprite.src = "../images/blockie.png";
     };
 };
 
@@ -53,19 +55,79 @@ class horizontalLaser {
 
 //Functions
 
+//Level-Handling Functions
+
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
+    let promiseOne = fireHorizontalLaser(300, 16, 4);
+    let promiseTwo = fireHorizontalLaser(100, 16, 3);
+
     await Promise.all([
-        fireHorizontalLaser(300, 16, 4),
-        fireHorizontalLaser(100, 16, 3)
+        promiseOne,
+        promiseTwo
     ]);
+
+    console.log("Done racing");
 };
+
+//Resets the initial values for the beginning of every level.
+function initializeLevel(blockieX, blockieY) {
+    window.requestAnimationFrame(gameLoop);
+    blockie.x = blockieX;
+    blockie.y = blockieY;
+}
+
+//Clears all arrays, clears the canvas, displays the game over message, and waits to then restart the current level.
+function restartLevel() {
+    horizontalLasers.splice(0);
+    gameState = "restartingLevel";
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById("messageDisplayer").innerHTML = "You Are Dead.";
+    setTimeout(() => {
+        levelOne();
+        document.getElementById("messageDisplayer").innerHTML = "";
+        gameState = "playing";
+        window.requestAnimationFrame(stopPromisesIfNotPlaying);
+    }, 1000);
+};
+
+//Level-Handling Helper Functions
+
+//When the game is restarting, all currently-running timers are stopped and their code is ran. This prevents unwanted timers from 
+//triggering after restarting (for example, lasers could be destroyed before they're supposed to).
+function stopPromisesIfNotPlaying() {
+    if (gameState === "restartingLevel") {
+        console.log("restarting level.");
+    } else {
+        window.requestAnimationFrame(stopPromisesIfNotPlaying);
+    };
+};
+
+//Adds a currently-running timer to an array so that it can be easily deactivated when the game restarts.
+function addCurrentTimer(timer) {
+    currentTimers.push(timer);
+};
+
+//Runs the inside function of a timer so that it is completed and can be deleted, which prevents the function from running later.
+function runTimersInsideFunction(timer) {
+    timer.timerInsideFunction();
+}
+
+//Removes a timer from the array of currently-running arrays (preferably after it's inside code has been ran).
+function removeCurrentTimer(timer) {
+    let currentTimerIndex = currentTimers.indexOf(timer);
+    currentTimers.splice(currentTimerIndex, 1);
+};
+
+//Instance Functions
 
 //Creates an instance of a laser and adds it to an array so that it can be drawn and used in collision checking more easily.
 //When the timer ends, the instance is deleted.
-function fireHorizontalLaser(y, height, seconds) {
+async function fireHorizontalLaser(y, height, seconds) {
+    let promiseTimer;
+
     //Creates an instance of an object, adds it to the end of its object's array, and assigns its key-value pairs.
     let instance = new horizontalLaser();
     horizontalLasers.push(instance);
@@ -76,13 +138,21 @@ function fireHorizontalLaser(y, height, seconds) {
     //Creates a timer that resolves promises in the levelController and deletes the instance from its array (so that it isn't drawn
     //or collided with anymore).
     return new Promise((resolve) => {
-        setTimeout(() => {
-            instanceIndex = horizontalLasers.indexOf(instance);
-            horizontalLasers.splice(instanceIndex, 1);
-            resolve('resolved');
-        }, seconds * 1000);
+        promiseTimer = setTimeout(timerInsideFunction, seconds * 1000);
+        addCurrentTimer(promiseTimer);
     });
+
+    function timerInsideFunction() {
+        removeCurrentTimer(promiseTimer);
+        instanceIndex = horizontalLasers.indexOf(instance);
+        horizontalLasers.splice(instanceIndex, 1);
+        return new Promise((resolve) => {
+            resolve("resolved");
+        });
+    };
 };
+
+//Drawing Functions
 
 function drawHorizontalLasers() {
     for (let i = 0; i < horizontalLasers.length; i++) {
@@ -90,6 +160,8 @@ function drawHorizontalLasers() {
         context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
     }
 }
+
+//Micellaneous Functions
 
 //Determines if two objects are "colliding".
 function checkSpritesColliding(instanceOne, instanceTwo) {
@@ -114,15 +186,6 @@ function checkSpritesColliding(instanceOne, instanceTwo) {
     }
 }
 
-function initializeLevel(blockieX, blockieY) {
-    blockie.x = blockieX;
-    blockie.y = blockieY;
-}
-
-function restartLevel() {
-    levelOne();
-}
-
 function calculateAngleRadians(x, y) {
     return Math.atan2(y, x);
 };
@@ -131,22 +194,22 @@ function convertRadiansToDegrees(radians) {
     return radians * 180 / Math.PI;
 };
 
+const blockie = new Player();
+
 //Game loop
 
 //Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
 //that capital letters can't cause unwanted movements.
-document.addEventListener('keydown', e => {
+document.addEventListener("keydown", e => {
     KeysPressed[e.keyCode] = true;
 });
 
 //Deletes all currently unpressed keys from the KeysPressed object.
-document.addEventListener('keyup', e => {
+document.addEventListener("keyup", e => {
     delete KeysPressed[e.keyCode];
 });
 
-const blockie = new Player();
-
-function loop() {
+function gameLoop() {
     //Clears the canvas so that it can later be redrawn with updated locations and instances.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -204,7 +267,11 @@ function loop() {
         //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
         blockie.testXLocation = blockie.x + blockie.dx;
         blockie.testYLocation = blockie.y + blockie.dy;
-    };
+    } else {
+        //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
+        blockie.testXLocation = blockie.x;
+        blockie.testYLocation = blockie.y;
+    }
 
     //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
     //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
@@ -224,19 +291,6 @@ function loop() {
         blockie.y = canvas.height - blockie.height;
     };
 
-    //Blockie's Interactions
-
-    //Resets the collision flag to recheck every frame.
-    colliding = false;
-
-    for (let i = 0; i < horizontalLasers.length; i++) {
-        checkSpritesColliding(blockie, horizontalLasers[i]);
-        if (colliding) {
-            restartLevel();
-            break;
-        }
-    }
-
     //Drawing
 
     //sx is the location on the blockie.png sprite map and it determines the sprite's direction facing. 
@@ -247,11 +301,25 @@ function loop() {
 
     drawHorizontalLasers();
 
-    //Recalls the loop for the next frame.
-    window.requestAnimationFrame(loop);
+    //Fail state.
+
+    //Resets the collision flag to recheck every frame.
+    colliding = false;
+
+    for (let i = 0; i < horizontalLasers.length; i++) {
+        checkSpritesColliding(blockie, horizontalLasers[i]);
+        if (colliding) {
+            restartLevel();
+            break;
+        };
+    };
+
+    //Recalls the gameLoop for the next frame.
+    if (gameState === "playing") {
+        window.requestAnimationFrame(gameLoop);
+    };
 };
 
 levelOne();
 
-//Starts the game.
-window.requestAnimationFrame(loop);
+window.requestAnimationFrame(stopPromisesIfNotPlaying);

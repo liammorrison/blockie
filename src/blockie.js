@@ -14,6 +14,7 @@ let gameState = "playing";
 
 //Arrays
 
+let currentPromiseRejectFunctions = [];
 let currentTimers = [];
 let horizontalLasers = [];
 
@@ -59,18 +60,22 @@ class horizontalLaser {
 
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
-    initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
+    try {
+        initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-    await Promise.all([
-        fireHorizontalLaser(300, 16, 4),
-        fireHorizontalLaser(100, 16, 3)
-    ]);
+        await Promise.all([
+            fireHorizontalLaser(300, 16, 4),
+            fireHorizontalLaser(100, 16, 3)
+        ]);
 
-    await fireHorizontalLaser(100, 16, 3);
+        await fireHorizontalLaser(100, 16, 3);
 
-    console.log("level is done");
+        console.log("Level completed.");
+    } catch (error) {
+        console.log("Level restarted.");
+    }
+
 };
-
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
@@ -86,15 +91,22 @@ function restartLevel() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     document.getElementById("messageDisplayer").innerHTML = "You Are Dead.";
 
-    //Stops all timers (prevents promises from continuing).
+    //Stops all currently-running timers so that they stop hurting performance.
     for (let i = 0; i < currentTimers.length; i++) {
         clearTimeout(currentTimers[i]);
     }
 
-    //Destroys every instance.
+    //Calls the reject function on every currently-running promise so that they stop hurting performance.
+    for (let i = 0; i < currentPromiseRejectFunctions.length; i++) {
+        currentPromiseRejectFunctions[i]();
+    }
+
+    //Removes all references to instances from arrays.
+    currentPromiseRejectFunctions.splice(0);
     currentTimers.splice(0);
     horizontalLasers.splice(0);
 
+    //Restarts the game after the timer ends.
     setTimeout(() => {
         levelOne();
         document.getElementById("messageDisplayer").innerHTML = "";
@@ -109,10 +121,15 @@ function restartLevel() {
 //triggering after restarting (for example, lasers could be destroyed before they're supposed to).
 function controlRestartingLevel() {
     if (gameState === "restartingLevel") {
-        console.log("restarting level.");
+        console.log("Restarting level.");
     } else {
         window.requestAnimationFrame(controlRestartingLevel);
     };
+};
+
+//Adds a currently-running promise to an array so that it can be easily rejected when the game restarts.
+function addCurrentPromiseRejectFunction(promise) {
+    currentPromiseRejectFunctions.push(promise);
 };
 
 //Adds a currently-running timer to an array so that it can be easily deactivated when the game restarts.
@@ -120,7 +137,13 @@ function addCurrentTimer(timer) {
     currentTimers.push(timer);
 };
 
-//Removes a timer from the array of currently-running arrays (preferably after it's inside code has been ran).
+//Removes a promise from the array of currently-running promises (it's inside code is ran in the restartLevel function).
+function removeCurrentPromiseRejectFunction(promise) {
+    let currentPromiseRejectFunctionIndex = currentPromiseRejectFunctions.indexOf(promise);
+    currentPromiseRejectFunctions.splice(currentPromiseRejectFunctionIndex, 1);
+};
+
+//Removes a timer from the array of currently-running timers (it's inside code is ran in the restartLevel function).
 function removeCurrentTimer(timer) {
     let currentTimerIndex = currentTimers.indexOf(timer);
     currentTimers.splice(currentTimerIndex, 1);
@@ -130,7 +153,7 @@ function removeCurrentTimer(timer) {
 
 //Creates an instance of a laser and adds it to an array so that it can be drawn and used in collision checking more easily.
 //When the timer ends, the instance is deleted.
-async function fireHorizontalLaser(y, height, seconds) {
+function fireHorizontalLaser(y, height, seconds) {
     let promiseTimer;
 
     //Creates an instance of an object, adds it to the end of its object's array, and assigns its key-value pairs.
@@ -142,14 +165,20 @@ async function fireHorizontalLaser(y, height, seconds) {
 
     //Creates a timer that resolves promises in the levelController and deletes the instance from its array (so that it isn't drawn
     //or collided with anymore).
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         promiseTimer = setTimeout(() => {
-            removeCurrentTimer(promiseTimer);
+            //Removes the instance from all related arrays because it is now "destroyed".
             instanceIndex = horizontalLasers.indexOf(instance);
             horizontalLasers.splice(instanceIndex, 1);
-            console.log("resolved");
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(promiseTimer);
+
+            console.log("Promise resolved.");
             resolve("resolved");
         }, seconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
         addCurrentTimer(promiseTimer);
     });
 };

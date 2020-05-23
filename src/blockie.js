@@ -61,16 +61,16 @@ class horizontalLaser {
 async function levelOne() {
     initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-    let promiseOne = fireHorizontalLaser(300, 16, 4);
-    let promiseTwo = fireHorizontalLaser(100, 16, 3);
-
     await Promise.all([
-        promiseOne,
-        promiseTwo
+        fireHorizontalLaser(300, 16, 4),
+        fireHorizontalLaser(100, 16, 3)
     ]);
 
-    console.log("Done racing");
+    await fireHorizontalLaser(100, 16, 3);
+
+    console.log("level is done");
 };
+
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
@@ -79,17 +79,27 @@ function initializeLevel(blockieX, blockieY) {
     blockie.y = blockieY;
 }
 
-//Clears all arrays, clears the canvas, displays the game over message, and waits to then restart the current level.
+//Clears all arrays, clears the canvas, displays the game over screen, and waits to then restart the current level.
 function restartLevel() {
-    horizontalLasers.splice(0);
+    //Draws only the game over screen.
     gameState = "restartingLevel";
     context.clearRect(0, 0, canvas.width, canvas.height);
     document.getElementById("messageDisplayer").innerHTML = "You Are Dead.";
+
+    //Stops all timers (prevents promises from continuing).
+    for (let i = 0; i < currentTimers.length; i++) {
+        clearTimeout(currentTimers[i]);
+    }
+
+    //Destroys every instance.
+    currentTimers.splice(0);
+    horizontalLasers.splice(0);
+
     setTimeout(() => {
         levelOne();
         document.getElementById("messageDisplayer").innerHTML = "";
         gameState = "playing";
-        window.requestAnimationFrame(stopPromisesIfNotPlaying);
+        window.requestAnimationFrame(controlRestartingLevel);
     }, 1000);
 };
 
@@ -97,11 +107,11 @@ function restartLevel() {
 
 //When the game is restarting, all currently-running timers are stopped and their code is ran. This prevents unwanted timers from 
 //triggering after restarting (for example, lasers could be destroyed before they're supposed to).
-function stopPromisesIfNotPlaying() {
+function controlRestartingLevel() {
     if (gameState === "restartingLevel") {
         console.log("restarting level.");
     } else {
-        window.requestAnimationFrame(stopPromisesIfNotPlaying);
+        window.requestAnimationFrame(controlRestartingLevel);
     };
 };
 
@@ -109,11 +119,6 @@ function stopPromisesIfNotPlaying() {
 function addCurrentTimer(timer) {
     currentTimers.push(timer);
 };
-
-//Runs the inside function of a timer so that it is completed and can be deleted, which prevents the function from running later.
-function runTimersInsideFunction(timer) {
-    timer.timerInsideFunction();
-}
 
 //Removes a timer from the array of currently-running arrays (preferably after it's inside code has been ran).
 function removeCurrentTimer(timer) {
@@ -138,18 +143,15 @@ async function fireHorizontalLaser(y, height, seconds) {
     //Creates a timer that resolves promises in the levelController and deletes the instance from its array (so that it isn't drawn
     //or collided with anymore).
     return new Promise((resolve) => {
-        promiseTimer = setTimeout(timerInsideFunction, seconds * 1000);
+        promiseTimer = setTimeout(() => {
+            removeCurrentTimer(promiseTimer);
+            instanceIndex = horizontalLasers.indexOf(instance);
+            horizontalLasers.splice(instanceIndex, 1);
+            console.log("resolved");
+            resolve("resolved");
+        }, seconds * 1000);
         addCurrentTimer(promiseTimer);
     });
-
-    function timerInsideFunction() {
-        removeCurrentTimer(promiseTimer);
-        instanceIndex = horizontalLasers.indexOf(instance);
-        horizontalLasers.splice(instanceIndex, 1);
-        return new Promise((resolve) => {
-            resolve("resolved");
-        });
-    };
 };
 
 //Drawing Functions
@@ -322,4 +324,4 @@ function gameLoop() {
 
 levelOne();
 
-window.requestAnimationFrame(stopPromisesIfNotPlaying);
+window.requestAnimationFrame(controlRestartingLevel);

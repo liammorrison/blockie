@@ -11,6 +11,14 @@ let xInput = 0;
 let yInput = 0;
 let colliding = false;
 let gameState = "playing";
+let diplayingGameOverScreen = false;
+
+//Loads Blockie's sprite maps. They are large sprite maps to avoid loading many individual sprite files.
+let spBlockiePlaying = document.createElement("img");
+spBlockiePlaying.src = "../images/spBlockiePlaying.png";
+
+let spBlockieDestructing = document.createElement("img");
+spBlockieDestructing.src = "../images/spBlockieDestructing.png";
 
 //Arrays
 
@@ -39,11 +47,8 @@ class Player {
         this.ySubPixel = 0;
         this.testXLocation = this.x;
         this.testYLocation = this.y;
-
-        //Loads Blockie"s sprite map. It is one large sprite map to avoid loading many individual 
-        //sprite files.
-        this.sprite = document.createElement("img");
-        this.sprite.src = "../images/blockie.png";
+        this.state = "playing";
+        this.sprite = spBlockiePlaying;
     };
 };
 
@@ -98,17 +103,14 @@ async function levelOne() {
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
-    window.requestAnimationFrame(gameLoop);
     blockie.x = blockieX;
     blockie.y = blockieY;
+    window.requestAnimationFrame(gameLoop);
 };
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
-function restartLevel() {
-    //Draws only the game over screen.
+async function restartLevel() {
     gameState = "restartingLevel";
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    document.getElementById("messageDisplayer").innerHTML = "You Are Dead.";
 
     //Calls the reject function on every currently-running promise so that they stop hurting performance.
     for (let i = 0; i < currentPromiseRejectFunctions.length; i++) {
@@ -120,17 +122,34 @@ function restartLevel() {
         clearTimeout(currentTimers[i]);
     }
 
-    //Removes all references to instances from arrays.
     currentPromiseRejectFunctions.splice(0);
     currentTimers.splice(0);
+
+    blockie.state = "destructing";
+    blockie.sx = 0;
+
+    await new Promise((resolve, reject) => {
+        let drawGameOverScreen = setTimeout(() => {
+            //Draws the game over screen.
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("messageDisplayer").innerHTML = "You Are Dead.";
+            resolve("resolved");
+        }, 1.5 * 1000);
+    });
+
+    //Removes all references to instances from arrays.
     horizontalLasers.splice(0);
     verticalLasers.splice(0);
 
+    diplayingGameOverScreen = true;
+
     //Restarts the game after the timer ends.
-    setTimeout(() => {
+    let resumeGame = setTimeout(() => {
+        diplayingGameOverScreen = false;
+        gameState = "playing";
+        blockie.state = "playing";
         levelOne();
         document.getElementById("messageDisplayer").innerHTML = "";
-        gameState = "playing";
         window.requestAnimationFrame(controlRestartingLevel);
     }, 1000);
 };
@@ -294,6 +313,19 @@ function drawVerticalLasers() {
 
 //Micellaneous Functions
 
+function initializeKeyInputs() {
+    //Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
+    //that capital letters can't cause unwanted movements.
+    document.addEventListener("keydown", e => {
+        KeysPressed[e.keyCode] = true;
+    });
+
+    //Deletes all currently unpressed keys from the KeysPressed object.
+    document.addEventListener("keyup", e => {
+        delete KeysPressed[e.keyCode];
+    });
+};
+
 //Determines if two instances are "colliding". They cannot be colliding if one is in the warning state.
 function checkSpritesColliding(instanceOne, instanceTwo) {
     let xColliding = false;
@@ -325,25 +357,11 @@ function convertRadiansToDegrees(radians) {
     return radians * 180 / Math.PI;
 };
 
-const blockie = new Player();
-
 //Game loop
 
-//Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
-//that capital letters can't cause unwanted movements.
-document.addEventListener("keydown", e => {
-    KeysPressed[e.keyCode] = true;
-});
-
-//Deletes all currently unpressed keys from the KeysPressed object.
-document.addEventListener("keyup", e => {
-    delete KeysPressed[e.keyCode];
-});
+initializeKeyInputs();
 
 function gameLoop() {
-    //Clears the canvas so that it can later be redrawn with updated locations and instances.
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
     //Blockie's Movement
 
     //xInput and yInput are both used to determine the angle that Blockie is moving in.
@@ -376,7 +394,7 @@ function gameLoop() {
         //Finds the angle that Blockie is moving in radians based on the inputs.
         blockie.angleMovingRadians = calculateAngleRadians(xInput, yInput);
 
-        //Converted to make the direction of the sprite more discernible.
+        //Converted to make the direction of Blockie more discernible.
         blockie.angleMovingDegrees = convertRadiansToDegrees(blockie.angleMovingRadians);
 
         //blockie.speed is the hypotenuse for all directional velocities to allow for diagonal movement.
@@ -422,17 +440,6 @@ function gameLoop() {
         blockie.y = canvas.height - blockie.height;
     };
 
-    //Drawing
-
-    //sx is the location on the blockie.png sprite map and it determines the sprite's direction facing. 
-    //It starts at the idle image, then goes to the top-left, and then continues in a clockwise direction.
-    blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
-
-    context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
-
-    drawHorizontalLasers();
-    drawVerticalLasers();
-
     //Fail state.
 
     //Resets the collision flag to recheck every frame.
@@ -440,18 +447,14 @@ function gameLoop() {
 
     for (let i = 0; i < horizontalLasers.length; i++) {
         checkSpritesColliding(blockie, horizontalLasers[i]);
-        if (colliding) {
-            restartLevel();
-            break;
-        };
     };
 
     for (let i = 0; i < verticalLasers.length; i++) {
         checkSpritesColliding(blockie, verticalLasers[i]);
-        if (colliding) {
-            restartLevel();
-            break;
-        };
+    };
+
+    if (colliding) {
+        restartLevel();
     };
 
     //Recalls the gameLoop for the next frame.
@@ -460,6 +463,44 @@ function gameLoop() {
     };
 };
 
+//Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
+//restarting (to draw Blockie's destructing animation).
+function drawingLoop() {
+    if (!diplayingGameOverScreen) {
+        //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (blockie.state === "playing") {
+            blockie.sprite = spBlockiePlaying;
+            //sx is the location on the blockie.png sprite map. Here it determines the sprite's direction facing. It starts at the 
+            //idle image, then goes to the top-left, and then continues in a clockwise direction.
+            blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
+        } else if (blockie.state === "destructing") {
+            blockie.sprite = spBlockieDestructing;
+
+            let endAnimateBlockieDestructing = setTimeout(() => {
+                clearInterval(animateBlockieDestructing);
+            }, 1000);
+
+            let animateBlockieDestructing = setInterval(() => {
+                blockie.sx += blockie.spriteSideLength;
+            }, 0.5 * 1000);
+        }
+
+        context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
+
+        drawHorizontalLasers();
+        drawVerticalLasers();
+    }
+
+
+    window.requestAnimationFrame(drawingLoop);
+};
+
+//Game Start
+
+let blockie = new Player();
 levelOne();
 
+window.requestAnimationFrame(drawingLoop);
 window.requestAnimationFrame(controlRestartingLevel);

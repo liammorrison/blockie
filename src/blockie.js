@@ -17,6 +17,7 @@ let diplayingGameOverScreen = false;
 let shiftPressed = false;
 let recoveringFromDash = false;
 let allowDashAgain = true;
+let dashDistance = 80;
 
 //Loads Blockie's sprite maps. They are large sprite maps to avoid loading many individual sprite files.
 let spBlockiePlaying = document.createElement("img");
@@ -36,6 +37,8 @@ let currentTimers = [];
 let horizontalLasers = [];
 let verticalLasers = [];
 let bombs = [];
+let movingHorizontalLasers = [];
+let movingVerticalLasers = [];
 
 //Classes
 
@@ -100,6 +103,34 @@ class bomb {
     }
 }
 
+class movingHorizontalLaser {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.width = canvas.width;
+        this.height = 0;
+        this.speed = 0;
+
+        //When created, the instance begins its warning state to provide visual feedback.
+        this.state = "warning";
+        this.visible = true;
+    };
+};
+
+class movingVerticalLaser {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.width = 0;
+        this.height = canvas.height;
+        this.speed = 0;
+
+        //When created, the instance begins its warning state to provide visual feedback.
+        this.state = "warning";
+        this.visible = true;
+    };
+};
+
 //Functions
 
 //Level-Handling Functions
@@ -117,7 +148,9 @@ async function levelOne() {
 
         await Promise.all([
             fireHorizontalLaser(100, 16, 2),
-            fireBomb(200, 200, 64, 64, 2)
+            fireBomb(200, 200, 64, 64, 2),
+            fireMovingHorizontalLaser(350, 16, -2, 3),
+            fireMovingVerticalLaser(100, 32, 1, 4)
         ]);
 
         console.log("Level completed.");
@@ -172,6 +205,8 @@ async function restartLevel() {
     horizontalLasers.splice(0);
     verticalLasers.splice(0);
     bombs.splice(0);
+    movingHorizontalLasers.splice(0);
+    movingVerticalLasers.splice(0);
 
     diplayingGameOverScreen = true;
 
@@ -314,6 +349,238 @@ function fireBomb(x, y, width, height, totalSeconds) {
     });
 };
 
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+function fireMovingHorizontalLaser(y, height, speed, totalSeconds) {
+    //Creates an instance and sets all of its key-value pairs.
+    let instance = new movingHorizontalLaser();
+    movingHorizontalLasers.push(instance);
+    instance.y = y;
+    instance.height = height;
+    instance.speed = speed;
+
+    //Creates the "blinking" effect for warning of a collision.
+    setWarningTimers(instance);
+
+    //Creates a timer for the instance's destruction.
+    return new Promise((resolve, reject) => {
+        let endFiring = setTimeout(() => {
+            //Removes the instance from all related arrays once it is "destroyed".
+            let instanceIndex = movingHorizontalLasers.indexOf(instance);
+            movingHorizontalLasers.splice(instanceIndex, 1);
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(endFiring);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, totalSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(endFiring);
+    });
+};
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+function fireMovingVerticalLaser(x, width, speed, totalSeconds) {
+    //Creates an instance and sets all of its key-value pairs.
+    let instance = new movingVerticalLaser();
+    movingVerticalLasers.push(instance);
+    instance.x = x;
+    instance.width = width;
+    instance.speed = speed;
+
+    //Creates the "blinking" effect for warning of a collision.
+    setWarningTimers(instance);
+
+    //Creates a timer for the instance's destruction.
+    return new Promise((resolve, reject) => {
+        let endFiring = setTimeout(() => {
+            //Removes the instance from all related arrays once it is "destroyed".
+            let instanceIndex = movingVerticalLasers.indexOf(instance);
+            movingVerticalLasers.splice(instanceIndex, 1);
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(endFiring);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, totalSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(endFiring);
+    });
+};
+
+//Instance Helper Functions
+
+//Determines if two instances are "colliding". They cannot be colliding if one is in the warning state.
+function checkSpritesColliding(instanceOne, instanceTwo) {
+    let xColliding = false;
+    let yColliding = false;
+
+    if ((instanceTwo.x <= instanceOne.x) && (instanceOne.x <= instanceTwo.x + instanceTwo.width) && (instanceTwo.state !== "warning")) {
+        xColliding = true;
+    } else if ((instanceOne.x <= instanceTwo.x) && (instanceTwo.x <= instanceOne.x + instanceOne.width) && (instanceTwo.state !== "warning")) {
+        xColliding = true;
+    };
+
+    if ((instanceTwo.y <= instanceOne.y) && (instanceOne.y <= instanceTwo.y + instanceTwo.height) && (instanceTwo.state !== "warning")) {
+        yColliding = true;
+    } else if ((instanceOne.y <= instanceTwo.y) && (instanceTwo.y <= instanceOne.y + instanceOne.height) && (instanceTwo.state !== "warning")) {
+        yColliding = true;
+    };
+
+    //The instances must have an overlapping area (x and y components) for there to be a collision.
+    if (xColliding && yColliding) {
+        colliding = true;
+    };
+};
+
+function moveMovingHorizontalLasers() {
+    for (let i = 0; i < movingHorizontalLasers.length; i++) {
+        if (movingHorizontalLasers[i].state !== "warning") {
+            movingHorizontalLasers[i].y += movingHorizontalLasers[i].speed;
+        };
+    };
+};
+
+function moveMovingVerticalLasers() {
+    for (let i = 0; i < movingVerticalLasers.length; i++) {
+        if (movingVerticalLasers[i].state !== "warning") {
+            movingVerticalLasers[i].x += movingVerticalLasers[i].speed;
+        };
+    };
+};
+
+//Drawing Functions
+
+function drawHorizontalLasers() {
+    for (let i = 0; i < horizontalLasers.length; i++) {
+        let currentInstance = horizontalLasers[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeRect(currentInstance.x + 8, currentInstance.y, 16, currentInstance.height);
+                context.strokeRect(currentInstance.width - 24, currentInstance.y, 16, currentInstance.height);
+            } else if (currentInstance.state == "firing") {
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+function drawVerticalLasers() {
+    for (let i = 0; i < verticalLasers.length; i++) {
+        let currentInstance = verticalLasers[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeRect(currentInstance.x, currentInstance.y + 8, currentInstance.width, 16);
+                context.strokeRect(currentInstance.x, currentInstance.height - 24, currentInstance.width, 16);
+            } else if (currentInstance.state == "firing") {
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+function drawBombs() {
+    for (let i = 0; i < bombs.length; i++) {
+        let currentInstance = bombs[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            } else if (currentInstance.state == "firing") {
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+function drawMovingHorizontalLasers() {
+    for (let i = 0; i < movingHorizontalLasers.length; i++) {
+        let currentInstance = movingHorizontalLasers[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                //Left warning triangle.
+                context.beginPath();
+                context.moveTo(currentInstance.x + 8, currentInstance.y);
+                context.lineTo(currentInstance.x + 16, currentInstance.y + currentInstance.height * Math.sign(currentInstance.speed));
+                context.lineTo(currentInstance.x + 24, currentInstance.y);
+                context.fill();
+
+                //Right warning triangle.
+                context.beginPath();
+                context.moveTo(currentInstance.width - 24, currentInstance.y);
+                context.lineTo(currentInstance.width - 16, currentInstance.y + currentInstance.height * Math.sign(currentInstance.speed));
+                context.lineTo(currentInstance.width - 8, currentInstance.y);
+                context.fill();
+            } else if (currentInstance.state == "firing") {
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+function drawMovingVerticalLasers() {
+    for (let i = 0; i < movingVerticalLasers.length; i++) {
+        let currentInstance = movingVerticalLasers[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                //Top warning triangle.
+                context.beginPath();
+                context.moveTo(currentInstance.x, currentInstance.y + 8);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.sign(currentInstance.speed), currentInstance.y + 16);
+                context.lineTo(currentInstance.x, currentInstance.y + 24);
+                context.fill();
+
+                //Bottom warning triangle.
+                context.beginPath();
+                context.moveTo(currentInstance.x, currentInstance.height - 24);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.sign(currentInstance.speed), currentInstance.height - 16);
+                context.lineTo(currentInstance.x, currentInstance.height - 8);
+                context.fill();
+            } else if (currentInstance.state == "firing") {
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+//Collision Functions
+
+function checkCollisionsWithClass(classArray) {
+    for (let i = 0; i < classArray.length; i++) {
+        checkSpritesColliding(blockie, classArray[i]);
+    };
+};
+
+//Micellaneous Functions
+
+function initializeKeyInputs() {
+    //Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
+    //that capital letters can't cause unwanted movements.
+    document.addEventListener("keydown", e => {
+        KeysPressed[e.keyCode] = true;
+    });
+
+    //Deletes all currently unpressed keys from the KeysPressed object.
+    document.addEventListener("keyup", e => {
+        delete KeysPressed[e.keyCode];
+    });
+};
+
+function calculateAngleRadians(x, y) {
+    return Math.atan2(y, x);
+};
+
+function convertRadiansToDegrees(radians) {
+    return radians * 180 / Math.PI;
+};
+
 //Sets the timers that cause the collision instance to "blink" 3 times before firing. Class keys are named the same among objects to 
 //allow this function to work on all objects. All warning timers are set at the same length to allow the player to predict collisions.
 function setWarningTimers(instance) {
@@ -341,98 +608,6 @@ function setWarningTimers(instance) {
         removeCurrentTimer(fire);
     }, 1000);
     addCurrentTimer(fire);
-}
-
-//Drawing Functions
-
-function drawHorizontalLasers() {
-    for (let i = 0; i < horizontalLasers.length; i++) {
-        let currentInstance = horizontalLasers[i];
-        if (currentInstance.visible) {
-            //Changes the sprite depending on the state of the instance.
-            if (currentInstance.state == "warning") {
-                context.strokeRect(currentInstance.x + 8, currentInstance.y, 16, currentInstance.height);
-                context.strokeRect(currentInstance.width - 24, currentInstance.y, 16, currentInstance.height);
-            } else if (currentInstance.state == "firing") {
-                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            }
-        }
-    }
-}
-
-function drawVerticalLasers() {
-    for (let i = 0; i < verticalLasers.length; i++) {
-        let currentInstance = verticalLasers[i];
-        if (currentInstance.visible) {
-            //Changes the sprite depending on the state of the instance.
-            if (currentInstance.state == "warning") {
-                context.strokeRect(currentInstance.x, currentInstance.y + 8, currentInstance.width, 16);
-                context.strokeRect(currentInstance.x, currentInstance.height - 24, currentInstance.width, 16);
-            } else if (currentInstance.state == "firing") {
-                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            }
-        }
-    }
-}
-
-function drawBombs() {
-    for (let i = 0; i < bombs.length; i++) {
-        let currentInstance = bombs[i];
-        if (currentInstance.visible) {
-            //Changes the sprite depending on the state of the instance.
-            if (currentInstance.state == "warning") {
-                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            } else if (currentInstance.state == "firing") {
-                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            }
-        }
-    }
-}
-
-//Micellaneous Functions
-
-function initializeKeyInputs() {
-    //Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
-    //that capital letters can't cause unwanted movements.
-    document.addEventListener("keydown", e => {
-        KeysPressed[e.keyCode] = true;
-    });
-
-    //Deletes all currently unpressed keys from the KeysPressed object.
-    document.addEventListener("keyup", e => {
-        delete KeysPressed[e.keyCode];
-    });
-};
-
-//Determines if two instances are "colliding". They cannot be colliding if one is in the warning state.
-function checkSpritesColliding(instanceOne, instanceTwo) {
-    let xColliding = false;
-    let yColliding = false;
-
-    if ((instanceTwo.x <= instanceOne.x) && (instanceOne.x <= instanceTwo.x + instanceTwo.width) && (instanceTwo.state !== "warning")) {
-        xColliding = true;
-    } else if ((instanceOne.x <= instanceTwo.x) && (instanceTwo.x <= instanceOne.x + instanceOne.width) && (instanceTwo.state !== "warning")) {
-        xColliding = true;
-    }
-
-    if ((instanceTwo.y <= instanceOne.y) && (instanceOne.y <= instanceTwo.y + instanceTwo.height) && (instanceTwo.state !== "warning")) {
-        yColliding = true;
-    } else if ((instanceOne.y <= instanceTwo.y) && (instanceTwo.y <= instanceOne.y + instanceOne.height) && (instanceTwo.state !== "warning")) {
-        yColliding = true;
-    }
-
-    //The instances must have an overlapping area (x and y components) for there to be a collision.
-    if (xColliding && yColliding) {
-        colliding = true;
-    }
-}
-
-function calculateAngleRadians(x, y) {
-    return Math.atan2(y, x);
-};
-
-function convertRadiansToDegrees(radians) {
-    return radians * 180 / Math.PI;
 };
 
 //Game loop
@@ -470,7 +645,7 @@ function gameLoop() {
             delete KeysPressed[16];
 
             blockie.state = "recoveringFromDash";
-            blockie.speed = 64;
+            blockie.speed = dashDistance;
             recoveringFromDash = true;
 
             let endDashRecoveryTime = 0.3;
@@ -548,23 +723,25 @@ function gameLoop() {
         };
     };
 
+    //Other Instances' Movements
+
+    moveMovingHorizontalLasers();
+    moveMovingVerticalLasers();
 
     //Fail state.
 
     //Resets the collision flag to recheck every frame.
     colliding = false;
 
-    for (let i = 0; i < horizontalLasers.length; i++) {
-        checkSpritesColliding(blockie, horizontalLasers[i]);
-    };
+    checkCollisionsWithClass(horizontalLasers);
 
-    for (let i = 0; i < verticalLasers.length; i++) {
-        checkSpritesColliding(blockie, verticalLasers[i]);
-    };
+    checkCollisionsWithClass(verticalLasers);
 
-    for (let i = 0; i < bombs.length; i++) {
-        checkSpritesColliding(blockie, bombs[i]);
-    };
+    checkCollisionsWithClass(bombs);
+
+    checkCollisionsWithClass(movingHorizontalLasers);
+
+    checkCollisionsWithClass(movingVerticalLasers);
 
     if (colliding) {
         restartLevel();
@@ -575,7 +752,6 @@ function gameLoop() {
         window.requestAnimationFrame(gameLoop);
     };
 };
-
 
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
 //restarting (to draw Blockie's destructing animation).
@@ -611,6 +787,8 @@ function drawingLoop() {
         drawHorizontalLasers();
         drawVerticalLasers();
         drawBombs();
+        drawMovingHorizontalLasers();
+        drawMovingVerticalLasers();
 
         //Blockie is drawn last to appear over other instances when being destroyed.
         context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);

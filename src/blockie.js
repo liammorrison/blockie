@@ -3,10 +3,12 @@
 const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
 context.fillStyle = "white";
+context.strokeStyle = "#FFFFFF";
+context.lineWidth = 5;
 
 //Variables
 
-let KeysPressed = {};
+let KeysPressed = [];
 let xInput = 0;
 let yInput = 0;
 let colliding = false;
@@ -19,6 +21,7 @@ spBlockiePlaying.src = "../images/spBlockiePlaying.png";
 
 let spBlockieDestructing = document.createElement("img");
 spBlockieDestructing.src = "../images/spBlockieDestructing.png";
+spBlockieDestructing.style.zIndex = "1000000000";
 
 //Arrays
 
@@ -27,6 +30,7 @@ let currentTimers = [];
 
 let horizontalLasers = [];
 let verticalLasers = [];
+let bombs = [];
 
 //Classes
 
@@ -78,6 +82,19 @@ class verticalLaser {
     };
 };
 
+class bomb {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.width = 0;
+        this.height = 0;
+
+        //When created, the instance begins its warning state to provide visual feedback.
+        this.state = "warning";
+        this.visible = true;
+    }
+}
+
 //Functions
 
 //Level-Handling Functions
@@ -93,7 +110,10 @@ async function levelOne() {
             fireVerticalLaser(100, 16, 2)
         ]);
 
-        await fireHorizontalLaser(100, 16, 2);
+        await Promise.all([
+            fireHorizontalLaser(100, 16, 2),
+            fireBomb(200, 200, 64, 64, 2)
+        ]);
 
         console.log("Level completed.");
     } catch (error) {
@@ -140,6 +160,7 @@ async function restartLevel() {
     //Removes all references to instances from arrays.
     horizontalLasers.splice(0);
     verticalLasers.splice(0);
+    bombs.splice(0);
 
     diplayingGameOverScreen = true;
 
@@ -192,7 +213,7 @@ function removeCurrentTimer(timer) {
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 function fireHorizontalLaser(y, height, totalSeconds) {
-    //Creates a horizontal laser instance and sets all of its key-value pairs.
+    //Creates an instance and sets all of its key-value pairs.
     let instance = new horizontalLaser();
     horizontalLasers.push(instance);
     instance.y = y;
@@ -201,7 +222,7 @@ function fireHorizontalLaser(y, height, totalSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
 
-    //Creates a timer for the Horizontal laser's destruction.
+    //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
         let endFiring = setTimeout(() => {
             //Removes the instance from all related arrays once it is "destroyed".
@@ -222,7 +243,7 @@ function fireHorizontalLaser(y, height, totalSeconds) {
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 function fireVerticalLaser(x, width, totalSeconds) {
-    //Creates a horizontal laser instance and sets all of its key-value pairs.
+    //Creates an instance and sets all of its key-value pairs.
     let instance = new verticalLaser();
     verticalLasers.push(instance);
     instance.x = x;
@@ -231,12 +252,44 @@ function fireVerticalLaser(x, width, totalSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
 
-    //Creates a timer for the Horizontal laser's destruction.
+    //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
         let endFiring = setTimeout(() => {
             //Removes the instance from all related arrays once it is "destroyed".
             let instanceIndex = verticalLasers.indexOf(instance);
             verticalLasers.splice(instanceIndex, 1);
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(endFiring);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, totalSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(endFiring);
+    });
+};
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+function fireBomb(x, y, width, height, totalSeconds) {
+    //Creates an instance and sets all of its key-value pairs.
+    let instance = new bomb();
+    bombs.push(instance);
+    instance.x = x;
+    instance.y = y;
+    instance.width = width;
+    instance.height = height;
+
+    //Creates the "blinking" effect for warning of a collision.
+    setWarningTimers(instance);
+
+    //Creates a timer for the instance's destruction.
+    return new Promise((resolve, reject) => {
+        let endFiring = setTimeout(() => {
+            //Removes the instance from all related arrays once it is "destroyed".
+            let instanceIndex = bombs.indexOf(instance);
+            bombs.splice(instanceIndex, 1);
             removeCurrentPromiseRejectFunction(reject);
             removeCurrentTimer(endFiring);
 
@@ -287,8 +340,8 @@ function drawHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillRect(currentInstance.x + 8, currentInstance.y, 8, currentInstance.height);
-                context.fillRect(currentInstance.width - 16, currentInstance.y, 8, currentInstance.height);
+                context.strokeRect(currentInstance.x + 8, currentInstance.y, 16, currentInstance.height);
+                context.strokeRect(currentInstance.width - 24, currentInstance.y, 16, currentInstance.height);
             } else if (currentInstance.state == "firing") {
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             }
@@ -302,8 +355,22 @@ function drawVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillRect(currentInstance.x, currentInstance.y + 8, currentInstance.width, 8);
-                context.fillRect(currentInstance.x, currentInstance.height - 16, currentInstance.width, 8);
+                context.strokeRect(currentInstance.x, currentInstance.y + 8, currentInstance.width, 16);
+                context.strokeRect(currentInstance.x, currentInstance.height - 24, currentInstance.width, 16);
+            } else if (currentInstance.state == "firing") {
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            }
+        }
+    }
+}
+
+function drawBombs() {
+    for (let i = 0; i < bombs.length; i++) {
+        let currentInstance = bombs[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             }
@@ -453,6 +520,10 @@ function gameLoop() {
         checkSpritesColliding(blockie, verticalLasers[i]);
     };
 
+    for (let i = 0; i < bombs.length; i++) {
+        checkSpritesColliding(blockie, bombs[i]);
+    };
+
     if (colliding) {
         restartLevel();
     };
@@ -480,17 +551,19 @@ function drawingLoop() {
 
             let endAnimateBlockieDestructing = setTimeout(() => {
                 clearInterval(animateBlockieDestructing);
-            }, 1000);
+            }, 1.5 * 1000);
 
             let animateBlockieDestructing = setInterval(() => {
                 blockie.sx += blockie.spriteSideLength;
             }, 0.5 * 1000);
         }
 
-        context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
-
         drawHorizontalLasers();
         drawVerticalLasers();
+        drawBombs();
+
+        //Blockie is drawn last to appear over other instances when being destroyed.
+        context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
     }
 
 

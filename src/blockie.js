@@ -14,6 +14,9 @@ let yInput = 0;
 let colliding = false;
 let gameState = "playing";
 let diplayingGameOverScreen = false;
+let shiftPressed = false;
+let recoveringFromDash = false;
+let allowDashAgain = true;
 
 //Loads Blockie's sprite maps. They are large sprite maps to avoid loading many individual sprite files.
 let spBlockiePlaying = document.createElement("img");
@@ -21,7 +24,9 @@ spBlockiePlaying.src = "../images/spBlockiePlaying.png";
 
 let spBlockieDestructing = document.createElement("img");
 spBlockieDestructing.src = "../images/spBlockieDestructing.png";
-spBlockieDestructing.style.zIndex = "1000000000";
+
+let spBlockieRecoveringFromDash = document.createElement("img");
+spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 
 //Arrays
 
@@ -125,6 +130,12 @@ async function levelOne() {
 function initializeLevel(blockieX, blockieY) {
     blockie.x = blockieX;
     blockie.y = blockieY;
+    colliding = false;
+    gameState = "playing";
+    diplayingGameOverScreen = false;
+    shiftPressed = false;
+    recoveringFromDash = false;
+    allowDashAgain = true;
     window.requestAnimationFrame(gameLoop);
 };
 
@@ -431,81 +442,112 @@ initializeKeyInputs();
 function gameLoop() {
     //Blockie's Movement
 
-    //xInput and yInput are both used to determine the angle that Blockie is moving in.
-    xInput = 0;
-    yInput = 0;
+    if (!recoveringFromDash) {
+        //xInput and yInput are both used to determine the angle that Blockie is moving in.
+        xInput = 0;
+        yInput = 0;
 
-    //By the way atan2() works, all -y values return negative angles; therefore, the idle state image (image 0)
-    //must be set at -180 degrees and all angles must be increased by 180 degrees to rotate from the top-left in a 
-    //clockwise direction continuously.
-    blockie.angleMovingDegrees = -180;
+        //Each key changes the angle of Blockie's movement.
+        if (KeysPressed[68]) {
+            xInput += 1;
+        };
 
-    //Each key changes the angle of Blockie's movement.
-    if (KeysPressed[68]) {
-        xInput += 1;
+        if (KeysPressed[65]) {
+            xInput -= 1;
+        };
+
+        if (KeysPressed[83]) {
+            yInput += 1;
+        };
+
+        if (KeysPressed[87]) {
+            yInput -= 1;
+        };
+
+        //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timer, and playing a recovery animation.
+        if (KeysPressed[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+            //This prevents blockie from dashing more than once for each time the Shift key is pressed.
+            delete KeysPressed[16];
+
+            blockie.state = "recoveringFromDash";
+            blockie.speed = 64;
+            recoveringFromDash = true;
+
+            let endDashRecoveryTime = 0.3;
+            let endDashRecovery = setTimeout(() => {
+                recoveringFromDash = false;
+                allowDashAgain = false;
+                blockie.state = "playing";
+                removeCurrentTimer(endDashRecovery);
+            }, endDashRecoveryTime * 1000);
+            addCurrentTimer(endDashRecovery);
+
+            let resetAllowDashAgainTime = 0.9;
+            let resetAllowDashAgain = setTimeout(() => {
+                allowDashAgain = true;
+                removeCurrentTimer(resetAllowDashAgain);
+            }, resetAllowDashAgainTime * 1000);
+            addCurrentTimer(resetAllowDashAgain);
+        } else {
+            blockie.speed = 2;
+        }
+
+        //By the way atan2() works, all -y values return negative angles; therefore, the idle state image (image 0)
+        //must be set at -180 degrees and all angles must be increased by 180 degrees to rotate from the top-left in a 
+        //clockwise direction continuously.
+        blockie.angleMovingDegrees = -180;
+
+        if (xInput !== 0 || yInput !== 0) {
+            //Finds the angle that Blockie is moving in radians based on the inputs.
+            blockie.angleMovingRadians = calculateAngleRadians(xInput, yInput);
+
+            //Converted to make the direction of Blockie more discernible.
+            blockie.angleMovingDegrees = convertRadiansToDegrees(blockie.angleMovingRadians);
+
+            //blockie.speed is the hypotenuse for all directional velocities to allow for diagonal movement.
+            blockie.dx = Math.cos(blockie.angleMovingRadians) * blockie.speed;
+            blockie.dy = Math.sin(blockie.angleMovingRadians) * blockie.speed;
+
+            //The SubPixels store the directional velocity.
+            blockie.xSubPixel += blockie.dx;
+            blockie.ySubPixel += blockie.dy;
+
+            //The velocity is then floored to avoid the sprite from being on subpixel locations and being distorted.
+            blockie.dx = Math.floor(blockie.xSubPixel);
+            blockie.dy = Math.floor(blockie.ySubPixel);
+
+            //The SubPixels then store the decimal remainders so they can be added on the next step to not lose speed.
+            blockie.xSubPixel -= blockie.dx;
+            blockie.ySubPixel -= blockie.dy;
+
+            //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
+            blockie.testXLocation = blockie.x + blockie.dx;
+            blockie.testYLocation = blockie.y + blockie.dy;
+        } else {
+            //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
+            blockie.testXLocation = blockie.x;
+            blockie.testYLocation = blockie.y;
+        }
+
+        //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
+        //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
+        if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
+            blockie.x = blockie.testXLocation;
+        } else if (blockie.testXLocation <= 0) {
+            blockie.x = 0;
+        } else if ((blockie.testXLocation + blockie.width) >= canvas.width) {
+            blockie.x = canvas.width - blockie.width;
+        };
+
+        if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.height) >= canvas.height)) {
+            blockie.y = blockie.testYLocation;
+        } else if (blockie.testYLocation <= 0) {
+            blockie.y = 0;
+        } else if ((blockie.testYLocation + blockie.height) >= canvas.height) {
+            blockie.y = canvas.height - blockie.height;
+        };
     };
 
-    if (KeysPressed[65]) {
-        xInput -= 1;
-    };
-
-    if (KeysPressed[83]) {
-        yInput += 1;
-    };
-
-    if (KeysPressed[87]) {
-        yInput -= 1;
-    };
-
-    if (xInput !== 0 || yInput !== 0) {
-        //Finds the angle that Blockie is moving in radians based on the inputs.
-        blockie.angleMovingRadians = calculateAngleRadians(xInput, yInput);
-
-        //Converted to make the direction of Blockie more discernible.
-        blockie.angleMovingDegrees = convertRadiansToDegrees(blockie.angleMovingRadians);
-
-        //blockie.speed is the hypotenuse for all directional velocities to allow for diagonal movement.
-        blockie.dx = Math.cos(blockie.angleMovingRadians) * blockie.speed;
-        blockie.dy = Math.sin(blockie.angleMovingRadians) * blockie.speed;
-
-        //The SubPixels store the directional velocity.
-        blockie.xSubPixel += blockie.dx;
-        blockie.ySubPixel += blockie.dy;
-
-        //The velocity is then floored to avoid the sprite from being on subpixel locations and being distorted.
-        blockie.dx = Math.floor(blockie.xSubPixel);
-        blockie.dy = Math.floor(blockie.ySubPixel);
-
-        //The SubPixels then store the decimal remainders so they can be added on the next step to not lose speed.
-        blockie.xSubPixel -= blockie.dx;
-        blockie.ySubPixel -= blockie.dy;
-
-        //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
-        blockie.testXLocation = blockie.x + blockie.dx;
-        blockie.testYLocation = blockie.y + blockie.dy;
-    } else {
-        //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
-        blockie.testXLocation = blockie.x;
-        blockie.testYLocation = blockie.y;
-    }
-
-    //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
-    //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
-    if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
-        blockie.x = blockie.testXLocation;
-    } else if (blockie.testXLocation <= 0) {
-        blockie.x = 0;
-    } else if ((blockie.testXLocation + blockie.width) >= canvas.width) {
-        blockie.x = canvas.width - blockie.width;
-    };
-
-    if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.height) >= canvas.height)) {
-        blockie.y = blockie.testYLocation;
-    } else if (blockie.testYLocation <= 0) {
-        blockie.y = 0;
-    } else if ((blockie.testYLocation + blockie.height) >= canvas.height) {
-        blockie.y = canvas.height - blockie.height;
-    };
 
     //Fail state.
 
@@ -534,6 +576,7 @@ function gameLoop() {
     };
 };
 
+
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
 //restarting (to draw Blockie's destructing animation).
 function drawingLoop() {
@@ -546,17 +589,24 @@ function drawingLoop() {
             //sx is the location on the blockie.png sprite map. Here it determines the sprite's direction facing. It starts at the 
             //idle image, then goes to the top-left, and then continues in a clockwise direction.
             blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
+        } else if (blockie.state === "recoveringFromDash") {
+            blockie.sprite = spBlockieRecoveringFromDash;
+            blockie.sx = 0;
         } else if (blockie.state === "destructing") {
             blockie.sprite = spBlockieDestructing;
 
             let endAnimateBlockieDestructing = setTimeout(() => {
                 clearInterval(animateBlockieDestructing);
+                removeCurrentTimer(animateBlockieDestructing);
+                removeCurrentTimer(endAnimateBlockieDestructing);
             }, 1.5 * 1000);
+            addCurrentTimer(endAnimateBlockieDestructing);
 
             let animateBlockieDestructing = setInterval(() => {
                 blockie.sx += blockie.spriteSideLength;
             }, 0.5 * 1000);
-        }
+            addCurrentTimer(animateBlockieDestructing);
+        };
 
         drawHorizontalLasers();
         drawVerticalLasers();
@@ -565,7 +615,6 @@ function drawingLoop() {
         //Blockie is drawn last to appear over other instances when being destroyed.
         context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
     }
-
 
     window.requestAnimationFrame(drawingLoop);
 };

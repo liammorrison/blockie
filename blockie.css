@@ -62,7 +62,7 @@ body {
     font-size: x-large;
 }
 
-#currentTime {
+#currentPoints {
     height: 50px;
     width: 256px;
     display: flex;

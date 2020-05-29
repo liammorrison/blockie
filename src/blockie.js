@@ -8,13 +8,16 @@ context.lineWidth = 5;
 
 //Variables
 
+let gameState = "playing";
+let diplayingGameOverScreen = false;
 let KeysPressed = [];
+
+let currentLevel = 1;
+
 let xInput = 0;
 let yInput = 0;
 let colliding = false;
-let gameState = "playing";
-let diplayingGameOverScreen = false;
-let shiftPressed = false;
+
 let recoveringFromDash = false;
 let allowDashAgain = true;
 let dashDistance = 80;
@@ -140,20 +143,35 @@ async function levelOne() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
+        await fireMovingHorizontalLaser(24 * 16, 16, -1, 0.5, 4.5);
+        await fireMovingVerticalLaser(24 * 16, 16, -1, 0.5, 4.5);
         await Promise.all([
-            fireHorizontalLaser(300, 16, 2),
-            fireHorizontalLaser(100, 16, 2),
-            fireVerticalLaser(100, 16, 2)
+            fireMovingHorizontalLaser(0, 16, 1, 0, 7),
+            fireMovingVerticalLaser(0, 16, 1, 0, 7)
         ]);
-
         await Promise.all([
-            fireHorizontalLaser(100, 16, 2),
-            fireBomb(200, 200, 64, 64, 2),
-            fireMovingHorizontalLaser(350, 16, -2, 3),
-            fireMovingVerticalLaser(100, 32, 1, 4)
+            fireMovingHorizontalLaser(canvas.height - 16, 16, -1.5, 0, 4),
+            fireMovingVerticalLaser(canvas.width - 16, 16, -1.5, 1.5, 4),
+            fireMovingHorizontalLaser(0, 16, 1.5, 3, 4),
+            fireMovingVerticalLaser(0, 16, 1.5, 4.5, 4)
         ]);
 
         console.log("Level completed.");
+        changeLevel();
+    } catch (error) {
+        console.log("Level restarted.");
+    };
+};
+
+//Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
+async function levelTwo() {
+    try {
+        initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
+
+        await fireMovingHorizontalLaser(24 * 16, 16, -1, 0.5, 4.5);
+
+        console.log("Level completed.");
+        changeLevel();
     } catch (error) {
         console.log("Level restarted.");
     };
@@ -161,15 +179,15 @@ async function levelOne() {
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
+    document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
+
     blockie.x = blockieX;
     blockie.y = blockieY;
     colliding = false;
     gameState = "playing";
     diplayingGameOverScreen = false;
-    shiftPressed = false;
     recoveringFromDash = false;
     allowDashAgain = true;
-    window.requestAnimationFrame(gameLoop);
 };
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
@@ -221,6 +239,18 @@ async function restartLevel() {
     }, 1000);
 };
 
+function changeLevel() {
+    currentLevel++;
+
+    switch (currentLevel) {
+        case 2:
+            console.log(currentTimers);
+            console.log(currentPromiseRejectFunctions);
+            levelTwo();
+            break;
+    }
+}
+
 //Level-Handling Helper Functions
 
 //When the game is restarting, all currently-running timers are stopped and their code is ran. This prevents unwanted timers from 
@@ -258,7 +288,23 @@ function removeCurrentTimer(timer) {
 //Instance Functions
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-function fireHorizontalLaser(y, height, totalSeconds) {
+async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
+    //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
+    //allow for instances to spawn at different times concurrently (using Promise.all).
+    await new Promise((resolve, reject) => {
+        let stopWaiting = setTimeout(() => {
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(stopWaiting);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, waitingSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(stopWaiting);
+    });
+
     //Creates an instance and sets all of its key-value pairs.
     let instance = new horizontalLaser();
     horizontalLasers.push(instance);
@@ -279,7 +325,7 @@ function fireHorizontalLaser(y, height, totalSeconds) {
 
             console.log("Promise resolved.");
             resolve("resolved");
-        }, totalSeconds * 1000);
+        }, activeSeconds * 1000);
 
         //Adds the instance to its deactivation arrays.
         addCurrentPromiseRejectFunction(reject);
@@ -288,7 +334,23 @@ function fireHorizontalLaser(y, height, totalSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-function fireVerticalLaser(x, width, totalSeconds) {
+async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
+    //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
+    //allow for instances to spawn at different times concurrently (using Promise.all).
+    await new Promise((resolve, reject) => {
+        let stopWaiting = setTimeout(() => {
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(stopWaiting);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, waitingSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(stopWaiting);
+    });
+
     //Creates an instance and sets all of its key-value pairs.
     let instance = new verticalLaser();
     verticalLasers.push(instance);
@@ -309,7 +371,7 @@ function fireVerticalLaser(x, width, totalSeconds) {
 
             console.log("Promise resolved.");
             resolve("resolved");
-        }, totalSeconds * 1000);
+        }, activeSeconds * 1000);
 
         //Adds the instance to its deactivation arrays.
         addCurrentPromiseRejectFunction(reject);
@@ -318,7 +380,23 @@ function fireVerticalLaser(x, width, totalSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-function fireBomb(x, y, width, height, totalSeconds) {
+async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
+    //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
+    //allow for instances to spawn at different times concurrently (using Promise.all).
+    await new Promise((resolve, reject) => {
+        let stopWaiting = setTimeout(() => {
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(stopWaiting);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, waitingSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(stopWaiting);
+    });
+
     //Creates an instance and sets all of its key-value pairs.
     let instance = new bomb();
     bombs.push(instance);
@@ -341,7 +419,7 @@ function fireBomb(x, y, width, height, totalSeconds) {
 
             console.log("Promise resolved.");
             resolve("resolved");
-        }, totalSeconds * 1000);
+        }, activeSeconds * 1000);
 
         //Adds the instance to its deactivation arrays.
         addCurrentPromiseRejectFunction(reject);
@@ -350,7 +428,23 @@ function fireBomb(x, y, width, height, totalSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-function fireMovingHorizontalLaser(y, height, speed, totalSeconds) {
+async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activeSeconds) {
+    //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
+    //allow for instances to spawn at different times concurrently (using Promise.all).
+    await new Promise((resolve, reject) => {
+        let stopWaiting = setTimeout(() => {
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(stopWaiting);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, waitingSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(stopWaiting);
+    });
+
     //Creates an instance and sets all of its key-value pairs.
     let instance = new movingHorizontalLaser();
     movingHorizontalLasers.push(instance);
@@ -372,7 +466,7 @@ function fireMovingHorizontalLaser(y, height, speed, totalSeconds) {
 
             console.log("Promise resolved.");
             resolve("resolved");
-        }, totalSeconds * 1000);
+        }, activeSeconds * 1000);
 
         //Adds the instance to its deactivation arrays.
         addCurrentPromiseRejectFunction(reject);
@@ -381,7 +475,23 @@ function fireMovingHorizontalLaser(y, height, speed, totalSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-function fireMovingVerticalLaser(x, width, speed, totalSeconds) {
+async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSeconds) {
+    //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
+    //allow for instances to spawn at different times concurrently (using Promise.all).
+    await new Promise((resolve, reject) => {
+        let stopWaiting = setTimeout(() => {
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(stopWaiting);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, waitingSeconds * 1000);
+
+        //Adds the instance to its deactivation arrays.
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(stopWaiting);
+    });
+
     //Creates an instance and sets all of its key-value pairs.
     let instance = new movingVerticalLaser();
     movingVerticalLasers.push(instance);
@@ -403,7 +513,7 @@ function fireMovingVerticalLaser(x, width, speed, totalSeconds) {
 
             console.log("Promise resolved.");
             resolve("resolved");
-        }, totalSeconds * 1000);
+        }, activeSeconds * 1000);
 
         //Adds the instance to its deactivation arrays.
         addCurrentPromiseRejectFunction(reject);
@@ -802,5 +912,6 @@ function drawingLoop() {
 let blockie = new Player();
 levelOne();
 
+window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
 window.requestAnimationFrame(controlRestartingLevel);

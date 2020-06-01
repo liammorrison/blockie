@@ -2,8 +2,6 @@
 
 const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
-context.fillStyle = "white";
-context.strokeStyle = "#FFFFFF";
 context.lineWidth = 5;
 
 //Variables
@@ -13,9 +11,11 @@ let diplayingGameOverScreen = false;
 let KeysPressed = [];
 
 let currentLevel = 1;
+let currentPoints = 0;
 
 let xInput = 0;
 let yInput = 0;
+
 let colliding = false;
 
 let recoveringFromDash = false;
@@ -37,6 +37,9 @@ spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 let currentPromiseRejectFunctions = [];
 let currentTimers = [];
 
+let collidingInstances = [];
+
+let points = [];
 let horizontalLasers = [];
 let verticalLasers = [];
 let bombs = [];
@@ -66,6 +69,23 @@ class Player {
         this.sprite = spBlockiePlaying;
     };
 };
+
+class point {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.width = blockie.width;
+        this.height = blockie.height;
+
+        //When created, the instance begins its warning state to provide visual feedback.
+        this.state = "warning";
+        this.visible = true;
+
+        this.externalResolve;
+        this.externalReject;
+        this.timer;
+    }
+}
 
 class horizontalLaser {
     constructor() {
@@ -143,7 +163,10 @@ async function levelOne() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-        await fireMovingHorizontalLaser(24 * 16, 16, -1, 0.5, 4.5);
+        await Promise.all([
+            createPoint(100, 100, 0, 7),
+            fireMovingHorizontalLaser(24 * 16, 16, -1, 0, 4.5)
+        ]);
         await fireMovingVerticalLaser(24 * 16, 16, -1, 0.5, 4.5);
         await Promise.all([
             fireMovingHorizontalLaser(0, 16, 1, 0, 7),
@@ -157,7 +180,8 @@ async function levelOne() {
         ]);
 
         console.log("Level completed.");
-        changeLevel();
+        currentLevel++;
+        controlLevel();
     } catch (error) {
         console.log("Level restarted.");
     };
@@ -171,7 +195,8 @@ async function levelTwo() {
         await fireMovingHorizontalLaser(24 * 16, 16, -1, 0.5, 4.5);
 
         console.log("Level completed.");
-        changeLevel();
+        currentLevel++;
+        controlLevel();
     } catch (error) {
         console.log("Level restarted.");
     };
@@ -183,7 +208,6 @@ function initializeLevel(blockieX, blockieY) {
 
     blockie.x = blockieX;
     blockie.y = blockieY;
-    colliding = false;
     gameState = "playing";
     diplayingGameOverScreen = false;
     recoveringFromDash = false;
@@ -207,6 +231,16 @@ async function restartLevel() {
     currentPromiseRejectFunctions.splice(0);
     currentTimers.splice(0);
 
+
+
+    //Removes all references to instances from arrays.
+    points.splice(0);
+    horizontalLasers.splice(0);
+    verticalLasers.splice(0);
+    bombs.splice(0);
+    movingHorizontalLasers.splice(0);
+    movingVerticalLasers.splice(0);
+
     blockie.state = "destructing";
     blockie.sx = 0;
 
@@ -219,12 +253,7 @@ async function restartLevel() {
         }, 1.5 * 1000);
     });
 
-    //Removes all references to instances from arrays.
-    horizontalLasers.splice(0);
-    verticalLasers.splice(0);
-    bombs.splice(0);
-    movingHorizontalLasers.splice(0);
-    movingVerticalLasers.splice(0);
+    rejectInstances(points);
 
     diplayingGameOverScreen = true;
 
@@ -233,39 +262,28 @@ async function restartLevel() {
         diplayingGameOverScreen = false;
         gameState = "playing";
         blockie.state = "playing";
-        levelOne();
+        controlLevel();
         document.getElementById("messageDisplayer").innerHTML = "";
-        window.requestAnimationFrame(controlRestartingLevel);
+        window.requestAnimationFrame(gameLoop);
     }, 1000);
 };
 
-function changeLevel() {
-    currentLevel++;
-
+function controlLevel() {
     switch (currentLevel) {
+        case 1:
+            levelOne();
+            break;
         case 2:
-            console.log(currentTimers);
-            console.log(currentPromiseRejectFunctions);
             levelTwo();
             break;
-    }
-}
-
-//Level-Handling Helper Functions
-
-//When the game is restarting, all currently-running timers are stopped and their code is ran. This prevents unwanted timers from 
-//triggering after restarting (for example, lasers could be destroyed before they're supposed to).
-function controlRestartingLevel() {
-    if (gameState === "restartingLevel") {
-        console.log("Restarting level.");
-    } else {
-        window.requestAnimationFrame(controlRestartingLevel);
     };
 };
 
-//Adds a currently-running promise to an array so that it can be easily rejected when the game restarts.
-function addCurrentPromiseRejectFunction(promise) {
-    currentPromiseRejectFunctions.push(promise);
+//Level-Handling Helper Functions
+
+//Adds a currently-running promise's reject function to an array so that it can be easily rejected when the game restarts.
+function addCurrentPromiseRejectFunction(reject) {
+    currentPromiseRejectFunctions.push(reject);
 };
 
 //Adds a currently-running timer to an array so that it can be easily deactivated when the game restarts.
@@ -273,24 +291,78 @@ function addCurrentTimer(timer) {
     currentTimers.push(timer);
 };
 
-//Removes a promise from the array of currently-running promises (it's inside code is ran in the restartLevel function).
-function removeCurrentPromiseRejectFunction(promise) {
-    let currentPromiseRejectFunctionIndex = currentPromiseRejectFunctions.indexOf(promise);
+//Removes a promise's reject function from the array of currently-running promise reject functions.
+function removeCurrentPromiseRejectFunction(reject) {
+    let currentPromiseRejectFunctionIndex = currentPromiseRejectFunctions.indexOf(reject);
     currentPromiseRejectFunctions.splice(currentPromiseRejectFunctionIndex, 1);
 };
 
-//Removes a timer from the array of currently-running timers (it's inside code is ran in the restartLevel function).
+//Removes a timer from the array of currently-running timers.
 function removeCurrentTimer(timer) {
     let currentTimerIndex = currentTimers.indexOf(timer);
     currentTimers.splice(currentTimerIndex, 1);
 };
 
+function rejectInstances(objectArray) {
+    for (let i = 0; i < objectArray.length; i++) {
+        //Rejects the instances' Promises and destroys the instances.
+        let instance = objectArray[i];
+        instance.externalReject();
+        clearTimeout(instance.timer);
+        objectArray.splice(i, 1);
+    }
+}
+
 //Instance Functions
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+async function createPoint(x, y, waitingSeconds, activeSeconds) {
+    //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
+    //allow for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
+    await new Promise((resolve, reject) => {
+        let stopWaiting = setTimeout(() => {
+            removeCurrentPromiseRejectFunction(reject);
+            removeCurrentTimer(stopWaiting);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, waitingSeconds * 1000);
+
+        addCurrentPromiseRejectFunction(reject);
+        addCurrentTimer(stopWaiting);
+    });
+
+    //Creates an instance and sets all of its key-value pairs.
+    let instance = new point();
+    points.push(instance);
+    instance.x = x;
+    instance.y = y;
+
+    //Creates the "blinking" effect for warning of a collision.
+    setWarningTimers(instance);
+
+    //Creates a timer for the instance's destruction.
+    return new Promise((resolve, reject) => {
+        let destroyPoint = setTimeout(() => {
+            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            let instanceIndex = points.indexOf(instance);
+            points.splice(instanceIndex, 1);
+
+            console.log("Promise resolved.");
+            resolve("resolved");
+        }, activeSeconds * 1000);
+
+        //Links the instance's deactivation functions to itself to allow outside callings.
+        instance.externalResolve = resolve;
+        instance.externalReject = reject;
+        instance.timer = destroyPoint;
+    });
+};
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
     //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
-    //allow for instances to spawn at different times concurrently (using Promise.all).
+    //allow for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
     await new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             removeCurrentPromiseRejectFunction(reject);
@@ -336,7 +408,7 @@ async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
     //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
-    //allow for instances to spawn at different times concurrently (using Promise.all).
+    //allow for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
     await new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             removeCurrentPromiseRejectFunction(reject);
@@ -382,7 +454,7 @@ async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
     //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
-    //allow for instances to spawn at different times concurrently (using Promise.all).
+    //allow for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
     await new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             removeCurrentPromiseRejectFunction(reject);
@@ -430,7 +502,7 @@ async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activeSeconds) {
     //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
-    //allow for instances to spawn at different times concurrently (using Promise.all).
+    //allow for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
     await new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             removeCurrentPromiseRejectFunction(reject);
@@ -477,7 +549,7 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activ
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSeconds) {
     //waitingSeconds is used as a "lag time", meaning that the instance won't exist until its promise is resolved. This is meant to 
-    //allow for instances to spawn at different times concurrently (using Promise.all).
+    //allow for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
     await new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             removeCurrentPromiseRejectFunction(reject);
@@ -543,6 +615,7 @@ function checkSpritesColliding(instanceOne, instanceTwo) {
     //The instances must have an overlapping area (x and y components) for there to be a collision.
     if (xColliding && yColliding) {
         colliding = true;
+        collidingInstances.push(instanceTwo);
     };
 };
 
@@ -564,15 +637,61 @@ function moveMovingVerticalLasers() {
 
 //Drawing Functions
 
+function drawBlockie() {
+    if (blockie.state === "playing") {
+        blockie.sprite = spBlockiePlaying;
+        //sx is the location on the blockie.png sprite map. Here it determines the sprite's direction facing. It starts at the 
+        //idle image, then goes to the top-left, and then continues in a clockwise direction.
+        blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
+    } else if (blockie.state === "recoveringFromDash") {
+        blockie.sprite = spBlockieRecoveringFromDash;
+        blockie.sx = 0;
+    } else if (blockie.state === "destructing") {
+        blockie.sprite = spBlockieDestructing;
+
+        let endAnimateBlockieDestructing = setTimeout(() => {
+            clearInterval(animateBlockieDestructing);
+            removeCurrentTimer(animateBlockieDestructing);
+            removeCurrentTimer(endAnimateBlockieDestructing);
+        }, 1.5 * 1000);
+        addCurrentTimer(endAnimateBlockieDestructing);
+
+        let animateBlockieDestructing = setInterval(() => {
+            blockie.sx += blockie.spriteSideLength;
+        }, 0.5 * 1000);
+        addCurrentTimer(animateBlockieDestructing);
+    };
+
+    context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
+};
+
+function drawPoints() {
+    for (let i = 0; i < points.length; i++) {
+        let currentInstance = points[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeStyle = "Lime";
+                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            } else if (currentInstance.state == "firing") {
+                context.fillStyle = "Lime";
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
 function drawHorizontalLasers() {
     for (let i = 0; i < horizontalLasers.length; i++) {
         let currentInstance = horizontalLasers[i];
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
+                context.strokeStyle = "White";
                 context.strokeRect(currentInstance.x + 8, currentInstance.y, 16, currentInstance.height);
                 context.strokeRect(currentInstance.width - 24, currentInstance.y, 16, currentInstance.height);
             } else if (currentInstance.state == "firing") {
+                context.fillStyle = "White";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -585,9 +704,11 @@ function drawVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
+                context.strokeStyle = "White";
                 context.strokeRect(currentInstance.x, currentInstance.y + 8, currentInstance.width, 16);
                 context.strokeRect(currentInstance.x, currentInstance.height - 24, currentInstance.width, 16);
             } else if (currentInstance.state == "firing") {
+                context.fillStyle = "White";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -600,8 +721,10 @@ function drawBombs() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
+                context.strokeStyle = "White";
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
+                context.fillStyle = "White";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -614,6 +737,8 @@ function drawMovingHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
+                context.fillStyle = "White";
+
                 //Left warning triangle.
                 context.beginPath();
                 context.moveTo(currentInstance.x + 8, currentInstance.y);
@@ -628,6 +753,7 @@ function drawMovingHorizontalLasers() {
                 context.lineTo(currentInstance.width - 8, currentInstance.y);
                 context.fill();
             } else if (currentInstance.state == "firing") {
+                context.fillStyle = "White";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -640,6 +766,8 @@ function drawMovingVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
+                context.fillStyle = "White";
+
                 //Top warning triangle.
                 context.beginPath();
                 context.moveTo(currentInstance.x, currentInstance.y + 8);
@@ -654,6 +782,7 @@ function drawMovingVerticalLasers() {
                 context.lineTo(currentInstance.x, currentInstance.height - 8);
                 context.fill();
             } else if (currentInstance.state == "firing") {
+                context.fillStyle = "White";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -842,6 +971,9 @@ function gameLoop() {
 
     //Resets the collision flag to recheck every frame.
     colliding = false;
+    collidingInstances.splice(0);
+
+    checkCollisionsWithClass(points);
 
     checkCollisionsWithClass(horizontalLasers);
 
@@ -853,8 +985,21 @@ function gameLoop() {
 
     checkCollisionsWithClass(movingVerticalLasers);
 
-    if (colliding) {
-        restartLevel();
+    for (let i = 0; i < collidingInstances.length; i++) {
+        if (collidingInstances[i].constructor.name === "point" && collidingInstances[i].state === "firing") {
+            //Adds points to the total.
+            currentPoints++;
+
+            //Resolves the point's Promise and destroys the instance once it is touched.
+            let collidingPoint = collidingInstances[i];
+            collidingPoint.externalResolve();
+            clearTimeout(collidingPoint.timer);
+            let instanceIndex = points.indexOf(collidingPoint);
+            points.splice(instanceIndex, 1);
+        } else if (collidingInstances[i].state === "firing") {
+            restartLevel();
+            break;
+        };
     };
 
     //Recalls the gameLoop for the next frame.
@@ -867,42 +1012,22 @@ function gameLoop() {
 //restarting (to draw Blockie's destructing animation).
 function drawingLoop() {
     if (!diplayingGameOverScreen) {
+        //Updates the amount of points in the gameInfo div.
+        document.getElementById("currentPoints").innerHTML = "Points: " + currentPoints;
+
         //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
         context.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (blockie.state === "playing") {
-            blockie.sprite = spBlockiePlaying;
-            //sx is the location on the blockie.png sprite map. Here it determines the sprite's direction facing. It starts at the 
-            //idle image, then goes to the top-left, and then continues in a clockwise direction.
-            blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
-        } else if (blockie.state === "recoveringFromDash") {
-            blockie.sprite = spBlockieRecoveringFromDash;
-            blockie.sx = 0;
-        } else if (blockie.state === "destructing") {
-            blockie.sprite = spBlockieDestructing;
-
-            let endAnimateBlockieDestructing = setTimeout(() => {
-                clearInterval(animateBlockieDestructing);
-                removeCurrentTimer(animateBlockieDestructing);
-                removeCurrentTimer(endAnimateBlockieDestructing);
-            }, 1.5 * 1000);
-            addCurrentTimer(endAnimateBlockieDestructing);
-
-            let animateBlockieDestructing = setInterval(() => {
-                blockie.sx += blockie.spriteSideLength;
-            }, 0.5 * 1000);
-            addCurrentTimer(animateBlockieDestructing);
-        };
 
         drawHorizontalLasers();
         drawVerticalLasers();
         drawBombs();
         drawMovingHorizontalLasers();
         drawMovingVerticalLasers();
+        drawPoints();
 
         //Blockie is drawn last to appear over other instances when being destroyed.
-        context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
-    }
+        drawBlockie();
+    };
 
     window.requestAnimationFrame(drawingLoop);
 };
@@ -914,4 +1039,3 @@ levelOne();
 
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
-window.requestAnimationFrame(controlRestartingLevel);

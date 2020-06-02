@@ -70,10 +70,10 @@ class Player {
 };
 
 class waitingTimer {
-    constructor() {
+    constructor(externalReject, timer) {
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timer;
+        this.externalReject = externalReject;
+        this.timer = timer;
     };
 };
 
@@ -191,11 +191,8 @@ async function levelOne() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-        await Promise.all([
-            createPoint(100, 100, 2, 7),
-            fireMovingHorizontalLaser(24 * 16, 16, -1, 0, 4.5),
-            fireMovingVerticalLaser(24 * 16, 16, -1, 2, 4.5)
-        ]);
+        await fireBomb(400, 400, 64, 64, 0, 4);
+        await createPoint(100, 100, 2, 7);
         await Promise.all([
             fireMovingHorizontalLaser(0, 16, 1, 0, 7),
             fireMovingVerticalLaser(0, 16, 1, 0, 7),
@@ -222,7 +219,7 @@ async function levelTwo() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-        await fireMovingHorizontalLaser(24 * 16, 16, -1, 0.5, 4.5);
+        await fireBomb(100, 100, 32, 32, 1, 5);
 
         console.log("Level completed.");
         currentLevel++;
@@ -248,6 +245,13 @@ function initializeLevel(blockieX, blockieY) {
 async function restartLevel() {
     gameState = "restartingLevel";
 
+    //Stops all currently-running timers so that they stop hurting performance and don't execute after resetting.
+    for (let i = 0; i < currentTimers.length; i++) {
+        clearTimeout(currentTimers[i]);
+    };
+
+    currentTimers.splice(0);
+
     rejectInstances(waitingTimers);
     rejectInstances(points);
     rejectInstances(horizontalLasers);
@@ -265,13 +269,6 @@ async function restartLevel() {
     movingVerticalLasers.splice(0);
     bombs.splice(0);
 
-    //Stops all currently-running timers so that they stop hurting performance and don't execute after resetting.
-    for (let i = 0; i < currentTimers.length; i++) {
-        clearTimeout(currentTimers[i]);
-    };
-
-    currentTimers.splice(0);
-
     blockie.state = "destructing";
     blockie.sx = 0;
 
@@ -286,15 +283,17 @@ async function restartLevel() {
 
     diplayingGameOverScreen = true;
 
-    //Restarts the game after the timer ends.
-    let resumeGame = setTimeout(() => {
-        diplayingGameOverScreen = false;
-        gameState = "playing";
-        blockie.state = "playing";
-        controlLevel();
-        document.getElementById("messageDisplayer").innerHTML = "";
-        window.requestAnimationFrame(gameLoop);
-    }, 1000);
+    await new Promise((resolve, reject) => {
+        let resumeGame = setTimeout(() => {
+            //Restarts the game.
+            diplayingGameOverScreen = false;
+            gameState = "playing";
+            blockie.state = "playing";
+            controlLevel();
+            document.getElementById("messageDisplayer").innerHTML = "";
+            window.requestAnimationFrame(gameLoop);
+        }, 1000);
+    });
 };
 
 function controlLevel() {
@@ -336,9 +335,6 @@ function removeCurrentTimer(timer) {
 //Creates a waitingTimer instance, and awaits for its resolution to then create the root collision instance. This is meant to allow
 //for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
 function createWaitingTimer(waitingSeconds) {
-    let instance = new waitingTimer();
-    waitingTimers.push(instance);
-
     return new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             //Removes the instance from its object array once it is "destroyed".
@@ -348,8 +344,8 @@ function createWaitingTimer(waitingSeconds) {
             resolve("resolved");
         }, waitingSeconds * 1000);
 
-        instance.externalReject = reject;
-        instance.timer = stopWaiting;
+        let instance = new waitingTimer(reject, stopWaiting);
+        waitingTimers.push(instance);
     });
 };
 
@@ -410,7 +406,7 @@ async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
-        instance.timer = destroyPoint;
+        instance.timer = endFiring;
     });
 };
 
@@ -440,7 +436,7 @@ async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
-        instance.timer = destroyPoint;
+        instance.timer = endFiring;
     });
 };
 
@@ -471,7 +467,7 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activ
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
-        instance.timer = destroyPoint;
+        instance.timer = endFiring;
     });
 };
 
@@ -502,7 +498,7 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSe
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
-        instance.timer = destroyPoint;
+        instance.timer = endFiring;
     });
 };
 
@@ -534,7 +530,7 @@ async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
-        instance.timer = destroyPoint;
+        instance.timer = endFiring;
     });
 };
 

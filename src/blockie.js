@@ -11,7 +11,9 @@ let diplayingGameOverScreen = false;
 let KeysPressed = [];
 
 let currentLevel = 1;
-let currentPoints = 0;
+
+let permanentPoints = 0;
+let currentLevelPoints = 0;
 
 let xInput = 0;
 let yInput = 0;
@@ -170,26 +172,12 @@ async function levelOne() {
         await Promise.all([
             fireMovingHorizontalLaser(0, 16, 1, 0, 7),
             fireMovingVerticalLaser(0, 16, 1, 0, 7),
-            fireBomb(400, 400, 16, 16, 2, 2),
-            fireHorizontalLaser(200, 16, 1, 4)
-        ]);
-        await fireBomb(400, 400, 64, 64, 0, 4);
-        await Promise.all([
-            fireMovingHorizontalLaser(0, 16, 1, 0, 7),
-            fireMovingVerticalLaser(0, 16, 1, 0, 7),
-            fireBomb(400, 400, 16, 16, 2, 2),
-            fireHorizontalLaser(200, 16, 1, 4)
-        ]);
-        await Promise.all([
-            fireMovingHorizontalLaser(canvas.height - 16, 16, -1.5, 0, 4),
-            fireMovingVerticalLaser(canvas.width - 16, 16, -1.5, 1.5, 4),
-            fireMovingHorizontalLaser(0, 16, 1.5, 3, 4),
-            fireMovingVerticalLaser(0, 16, 1.5, 4.5, 4)
+            fireHorizontalLaser(200, 16, 1, 4),
+            createPoint(400, 400, 0, 5)
         ]);
 
         console.log("Level 1 completed.");
-        currentLevel++;
-        controlLevel();
+        increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");
     };
@@ -200,11 +188,11 @@ async function levelTwo() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-        await fireBomb(100, 100, 32, 32, 1, 5);
+        await createPoint(400, 400, 0, 5);
+        await fireBomb(400, 400, 24, 24, 1, 5);
 
         console.log("Level completed.");
         currentLevel++;
-        controlLevel();
     } catch (error) {
         console.log("Level restarted.");
     };
@@ -214,10 +202,14 @@ async function levelTwo() {
 function initializeLevel(blockieX, blockieY) {
     document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
 
-    blockie.x = blockieX;
-    blockie.y = blockieY;
     gameState = "playing";
     diplayingGameOverScreen = false;
+
+    blockie.x = blockieX;
+    blockie.y = blockieY;
+
+    currentLevelPoints = 0;
+
     recoveringFromDash = false;
     allowDashAgain = true;
 };
@@ -289,6 +281,15 @@ function controlLevel() {
 };
 
 //Level-Handling Helper Functions
+
+function increaseLevel() {
+    currentLevel++;
+
+    //Points are only made permanent once a level is completed.
+    permanentPoints += currentLevelPoints;
+
+    controlLevel();
+}
 
 function rejectInstances(objectArray) {
     for (let i = 0; i < objectArray.length; i++) {
@@ -894,8 +895,8 @@ function gameLoop() {
 
     for (let i = 0; i < collidingInstances.length; i++) {
         if (collidingInstances[i].constructor.name === "point" && collidingInstances[i].state === "firing") {
-            //Adds points to the total.
-            currentPoints++;
+            //Adds points to the current level's total.
+            currentLevelPoints++;
 
             //Resolves the point's Promise and destroys the instance once it is touched.
             let collidingPoint = collidingInstances[i];
@@ -920,7 +921,7 @@ function gameLoop() {
 function drawingLoop() {
     if (!diplayingGameOverScreen) {
         //Updates the amount of points in the gameInfo div.
-        document.getElementById("currentPoints").innerHTML = "Points: " + currentPoints;
+        document.getElementById("currentPoints").innerHTML = "Points: " + (permanentPoints + currentLevelPoints);
 
         //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
         context.clearRect(0, 0, canvas.width, canvas.height);

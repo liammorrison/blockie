@@ -70,115 +70,90 @@ class Player {
 };
 
 class waitingTimer {
-    constructor(externalReject, timer) {
+    constructor() {
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject = externalReject;
-        this.timer = timer;
+        this.externalReject;
+        this.timer;
     };
 };
 
 class point {
-    constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.width = blockie.width;
-        this.height = blockie.height;
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 24;
+        this.height = 24;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalResolve;
-        this.externalReject;
-        this.timer;
-    };
-};
+    }
+}
 
 class horizontalLaser {
-    constructor() {
+    constructor(y, height) {
         this.x = 0;
-        this.y = 0;
+        this.y = y;
         this.width = canvas.width;
-        this.height = 0;
+        this.height = height;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timer;
     };
 };
 
 class verticalLaser {
-    constructor() {
-        this.x = 0;
+    constructor(x, width) {
+        this.x = x;
         this.y = 0;
-        this.width = 0;
+        this.width = width;
         this.height = canvas.height;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timer;
     };
 };
 
 class movingHorizontalLaser {
-    constructor() {
+    constructor(y, height, speed) {
         this.x = 0;
-        this.y = 0;
+        this.y = y;
         this.width = canvas.width;
-        this.height = 0;
-        this.speed = 0;
+        this.height = height;
+        this.speed = speed;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timer;
     };
 };
 
 class movingVerticalLaser {
-    constructor() {
-        this.x = 0;
+    constructor(x, width, speed) {
+        this.x = x;
         this.y = 0;
-        this.width = 0;
+        this.width = width;
         this.height = canvas.height;
-        this.speed = 0;
+        this.speed = speed;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timer;
     };
 };
 
 class bomb {
-    constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.width = 0;
-        this.height = 0;
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timer;
     };
 };
 
@@ -191,8 +166,14 @@ async function levelOne() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
+        await createPoint(100, 100, 1, 3);
+        await Promise.all([
+            fireMovingHorizontalLaser(0, 16, 1, 0, 7),
+            fireMovingVerticalLaser(0, 16, 1, 0, 7),
+            fireBomb(400, 400, 16, 16, 2, 2),
+            fireHorizontalLaser(200, 16, 1, 4)
+        ]);
         await fireBomb(400, 400, 64, 64, 0, 4);
-        await createPoint(100, 100, 2, 7);
         await Promise.all([
             fireMovingHorizontalLaser(0, 16, 1, 0, 7),
             fireMovingVerticalLaser(0, 16, 1, 0, 7),
@@ -206,11 +187,11 @@ async function levelOne() {
             fireMovingVerticalLaser(0, 16, 1.5, 4.5, 4)
         ]);
 
-        console.log("Level completed.");
+        console.log("Level 1 completed.");
         currentLevel++;
         controlLevel();
     } catch (error) {
-        console.log("Level restarted.");
+        console.log("Level 1 restarted.");
     };
 };
 
@@ -334,7 +315,11 @@ function removeCurrentTimer(timer) {
 
 //Creates a waitingTimer instance, and awaits for its resolution to then create the root collision instance. This is meant to allow
 //for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
-function createWaitingTimer(waitingSeconds) {
+function setWaitingTimer(waitingSeconds) {
+    //Creates an instance and sets all of its initial properties.
+    let instance = new waitingTimer();
+    waitingTimers.push(instance);
+
     return new Promise((resolve, reject) => {
         let stopWaiting = setTimeout(() => {
             //Removes the instance from its object array once it is "destroyed".
@@ -344,21 +329,19 @@ function createWaitingTimer(waitingSeconds) {
             resolve("resolved");
         }, waitingSeconds * 1000);
 
-        let instance = new waitingTimer(reject, stopWaiting);
-        waitingTimers.push(instance);
+        instance.externalReject = reject;
+        instance.timer = stopWaiting;
     });
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function createPoint(x, y, waitingSeconds, activeSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
-    await createWaitingTimer(waitingSeconds);
+    await setWaitingTimer(waitingSeconds);
 
-    //Creates an instance and sets all of its key-value pairs.
-    let instance = new point();
+    //Creates an instance and sets all of its initial properties.
+    let instance = new point(x, y);
     points.push(instance);
-    instance.x = x;
-    instance.y = y;
 
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
@@ -383,13 +366,11 @@ async function createPoint(x, y, waitingSeconds, activeSeconds) {
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
-    await createWaitingTimer(waitingSeconds);
+    await setWaitingTimer(waitingSeconds);
 
-    //Creates an instance and sets all of its key-value pairs.
-    let instance = new horizontalLaser();
+    //Creates an instance and sets all of its initial properties.
+    let instance = new horizontalLaser(y, height);
     horizontalLasers.push(instance);
-    instance.y = y;
-    instance.height = height;
 
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
@@ -413,13 +394,11 @@ async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
-    await createWaitingTimer(waitingSeconds);
+    await setWaitingTimer(waitingSeconds);
 
-    //Creates an instance and sets all of its key-value pairs.
-    let instance = new verticalLaser();
+    //Creates an instance and sets all of its initial properties.
+    let instance = new verticalLaser(x, width);
     verticalLasers.push(instance);
-    instance.x = x;
-    instance.width = width;
 
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
@@ -443,14 +422,11 @@ async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activeSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
-    await createWaitingTimer(waitingSeconds);
+    await setWaitingTimer(waitingSeconds);
 
-    //Creates an instance and sets all of its key-value pairs.
-    let instance = new movingHorizontalLaser();
+    //Creates an instance and sets all of its initial properties.
+    let instance = new movingHorizontalLaser(y, height, speed);
     movingHorizontalLasers.push(instance);
-    instance.y = y;
-    instance.height = height;
-    instance.speed = speed;
 
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
@@ -474,14 +450,11 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activ
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
-    await createWaitingTimer(waitingSeconds);
+    await setWaitingTimer(waitingSeconds);
 
-    //Creates an instance and sets all of its key-value pairs.
-    let instance = new movingVerticalLaser();
+    //Creates an instance and sets all of its initial properties.
+    let instance = new movingVerticalLaser(x, width, speed);
     movingVerticalLasers.push(instance);
-    instance.x = x;
-    instance.width = width;
-    instance.speed = speed;
 
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);
@@ -505,15 +478,11 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSe
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
-    await createWaitingTimer(waitingSeconds);
+    await setWaitingTimer(waitingSeconds);
 
-    //Creates an instance and sets all of its key-value pairs.
-    let instance = new bomb();
+    //Creates an instance and sets all of its initial properties.
+    let instance = new bomb(x, y, width, height);
     bombs.push(instance);
-    instance.x = x;
-    instance.y = y;
-    instance.width = width;
-    instance.height = height;
 
     //Creates the "blinking" effect for warning of a collision.
     setWarningTimers(instance);

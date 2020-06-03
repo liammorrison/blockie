@@ -2,7 +2,7 @@
 
 const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
-context.lineWidth = 5;
+context.lineWidth = 4;
 
 //Variables
 
@@ -166,15 +166,17 @@ class bomb {
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
+        initializeLevel(canvas.width / 2 - blockie.width / 2, 22 * 16);
 
-        await createPoint(100, 100, 1, 3);
         await Promise.all([
-            fireMovingHorizontalLaser(0, 16, 1, 0, 7),
-            fireMovingVerticalLaser(0, 16, 1, 0, 7),
-            fireHorizontalLaser(200, 16, 1, 4),
-            createPoint(400, 400, 0, 5)
+            createPoint(canvas.width / 2 - 12, canvas.height / 2 - 12, 0, 7),
+            fireMovingHorizontalLaser(0, 16, 0.5, 0, 7),
+            fireMovingVerticalLaser(0, 16, 0.5, 0, 7),
+            fireMovingVerticalLaser(canvas.width - 16, 16, -0.5, 0, 7),
+            fireMovingHorizontalLaser(canvas.height - 16, 16, -0.75, 2, 5)
         ]);
+
+
 
         console.log("Level 1 completed.");
         increaseLevel();
@@ -188,8 +190,6 @@ async function levelTwo() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-        await createPoint(400, 400, 0, 5);
-        await fireBomb(400, 400, 24, 24, 1, 5);
 
         console.log("Level completed.");
         currentLevel++;
@@ -600,11 +600,11 @@ function drawHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "White";
-                context.strokeRect(currentInstance.x + 8, currentInstance.y, 16, currentInstance.height);
-                context.strokeRect(currentInstance.width - 24, currentInstance.y, 16, currentInstance.height);
+                context.strokeStyle = "#FF9C17";
+                context.strokeRect(currentInstance.x + 12, currentInstance.y, 16, currentInstance.height);
+                context.strokeRect(currentInstance.width - 28, currentInstance.y, 16, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "White";
+                context.fillStyle = "#FF9C17";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -617,27 +617,11 @@ function drawVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "White";
-                context.strokeRect(currentInstance.x, currentInstance.y + 8, currentInstance.width, 16);
-                context.strokeRect(currentInstance.x, currentInstance.height - 24, currentInstance.width, 16);
+                context.strokeStyle = "#FF9C17";
+                context.strokeRect(currentInstance.x, currentInstance.y + 12, currentInstance.width, 16);
+                context.strokeRect(currentInstance.x, currentInstance.height - 28, currentInstance.width, 16);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "White";
-                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            };
-        };
-    };
-};
-
-function drawBombs() {
-    for (let i = 0; i < bombs.length; i++) {
-        let currentInstance = bombs[i];
-        if (currentInstance.visible) {
-            //Changes the sprite depending on the state of the instance.
-            if (currentInstance.state == "warning") {
-                context.strokeStyle = "White";
-                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            } else if (currentInstance.state == "firing") {
-                context.fillStyle = "White";
+                context.fillStyle = "#FF9C17";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -650,23 +634,24 @@ function drawMovingHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "White";
+                context.fillStyle = "#FF9C17";
 
+                //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Left warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x + 8, currentInstance.y);
-                context.lineTo(currentInstance.x + 16, currentInstance.y + currentInstance.height * Math.sign(currentInstance.speed));
-                context.lineTo(currentInstance.x + 24, currentInstance.y);
+                context.moveTo(currentInstance.x + 8, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
+                context.lineTo(currentInstance.x + 16, currentInstance.y + currentInstance.height * Math.max(0, Math.sign(currentInstance.speed)));
+                context.lineTo(currentInstance.x + 24, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
                 context.fill();
 
                 //Right warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.width - 24, currentInstance.y);
-                context.lineTo(currentInstance.width - 16, currentInstance.y + currentInstance.height * Math.sign(currentInstance.speed));
-                context.lineTo(currentInstance.width - 8, currentInstance.y);
+                context.moveTo(currentInstance.width - 8, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
+                context.lineTo(currentInstance.width - 16, currentInstance.y + currentInstance.height * Math.max(0, Math.sign(currentInstance.speed)));
+                context.lineTo(currentInstance.width - 24, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "White";
+                context.fillStyle = "#FF9C17";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -679,23 +664,40 @@ function drawMovingVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "White";
+                context.fillStyle = "#FF9C17";
 
+                //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Top warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x, currentInstance.y + 8);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.sign(currentInstance.speed), currentInstance.y + 16);
-                context.lineTo(currentInstance.x, currentInstance.y + 24);
+                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.y + 8);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.max(0, Math.sign(currentInstance.speed)), currentInstance.y + 16);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.y + 24);
                 context.fill();
 
                 //Bottom warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x, currentInstance.height - 24);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.sign(currentInstance.speed), currentInstance.height - 16);
-                context.lineTo(currentInstance.x, currentInstance.height - 8);
+                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 8);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.max(0, Math.sign(currentInstance.speed)), currentInstance.height - 16);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 24);
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "White";
+                context.fillStyle = "#FF9C17";
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+function drawBombs() {
+    for (let i = 0; i < bombs.length; i++) {
+        let currentInstance = bombs[i];
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeStyle = "#FF9C17";
+                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            } else if (currentInstance.state == "firing") {
+                context.fillStyle = "##FF9C17";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };

@@ -36,6 +36,7 @@ spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 
 //Arrays
 let waitingTimers = [];
+let warningTimers = [];
 let points = [];
 let horizontalLasers = [];
 let verticalLasers = [];
@@ -79,6 +80,14 @@ class waitingTimer {
     };
 };
 
+class warningTimer {
+    constructor() {
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalReject;
+        this.timer;
+    };
+};
+
 class point {
     constructor(x, y) {
         this.x = x;
@@ -89,8 +98,13 @@ class point {
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
-    }
-}
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
+        this.externalReject;
+        this.timer;
+    };
+};
 
 class horizontalLaser {
     constructor(y, height) {
@@ -102,6 +116,10 @@ class horizontalLaser {
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalReject;
+        this.timer;
     };
 };
 
@@ -115,6 +133,10 @@ class verticalLaser {
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalReject;
+        this.timer;
     };
 };
 
@@ -129,6 +151,10 @@ class movingHorizontalLaser {
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalReject;
+        this.timer;
     };
 };
 
@@ -143,6 +169,10 @@ class movingVerticalLaser {
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalReject;
+        this.timer;
     };
 };
 
@@ -156,6 +186,10 @@ class bomb {
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
         this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalReject;
+        this.timer;
     };
 };
 
@@ -169,14 +203,9 @@ async function levelOne() {
         initializeLevel(canvas.width / 2 - blockie.width / 2, 22 * 16);
 
         await Promise.all([
-            createPoint(canvas.width / 2 - 12, canvas.height / 2 - 12, 0, 7),
-            fireMovingHorizontalLaser(0, 16, 0.5, 0, 7),
-            fireMovingVerticalLaser(0, 16, 0.5, 0, 7),
-            fireMovingVerticalLaser(canvas.width - 16, 16, -0.5, 0, 7),
-            fireMovingHorizontalLaser(canvas.height - 16, 16, -0.75, 2, 5)
+            fireMovingHorizontalLaser(canvas.height - 16, 16, -0.75, 0, 6),
+            fireMovingHorizontalLaser(0, 16, 0.5, 0, 6)
         ]);
-
-
 
         console.log("Level 1 completed.");
         increaseLevel();
@@ -190,11 +219,10 @@ async function levelTwo() {
     try {
         initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
 
-
-        console.log("Level completed.");
+        console.log("Level 2 completed.");
         currentLevel++;
     } catch (error) {
-        console.log("Level restarted.");
+        console.log("Level 2 restarted.");
     };
 };
 
@@ -226,6 +254,7 @@ async function restartLevel() {
     currentTimers.splice(0);
 
     rejectInstances(waitingTimers);
+    rejectInstances(warningTimers);
     rejectInstances(points);
     rejectInstances(horizontalLasers);
     rejectInstances(verticalLasers);
@@ -235,6 +264,7 @@ async function restartLevel() {
 
     //Removes all references to instances from arrays.
     waitingTimers.splice(0);
+    warningTimers.splice(0);
     points.splice(0);
     horizontalLasers.splice(0);
     verticalLasers.splice(0);
@@ -292,7 +322,10 @@ function increaseLevel() {
 }
 
 function rejectInstances(objectArray) {
-    for (let i = 0; i < objectArray.length; i++) {
+    //The for loop's length is determined before it starts to avoid missing the first element.
+    let initialArrayLength = objectArray.length;
+
+    for (let i = initialArrayLength - 1; i >= 0; i--) {
         //Rejects the instances' Promises and timers and destroys the instances.
         let instance = objectArray[i];
         instance.externalReject();
@@ -318,20 +351,75 @@ function removeCurrentTimer(timer) {
 //for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
 function setWaitingTimer(waitingSeconds) {
     //Creates an instance and sets all of its initial properties.
-    let instance = new waitingTimer();
-    waitingTimers.push(instance);
+    let waitingTimerInstance = new waitingTimer();
+    waitingTimers.push(waitingTimerInstance);
 
     return new Promise((resolve, reject) => {
-        let stopWaiting = setTimeout(() => {
+        waitingTimerInstance.timer = setTimeout(() => {
             //Removes the instance from its object array once it is "destroyed".
-            let instanceIndex = waitingTimers.indexOf(instance);
-            waitingTimers.splice(instanceIndex, 1);
+            let waitingTimerInstanceIndex = waitingTimers.indexOf(waitingTimerInstance);
+            waitingTimers.splice(waitingTimerInstanceIndex, 1);
 
             resolve("resolved");
         }, waitingSeconds * 1000);
 
-        instance.externalReject = reject;
-        instance.timer = stopWaiting;
+        waitingTimerInstance.externalReject = reject;
+    });
+};
+
+//Sets the timers that cause the collision instance to "blink" 3 times before firing. All warning timers are set at the same length 
+//to allow the player to predict collisions.
+async function setWarningTimers(instanceAffecting) {
+    //Creates an instance and sets all of its initial properties.
+    let warningTimerInstance = new warningTimer();
+    warningTimers.push(warningTimerInstance);
+
+    let warningSeconds = 1;
+
+    await new Promise((resolve, reject) => {
+        warningTimerInstance.timer = setTimeout(() => {
+            instanceAffecting.visible = false;
+
+            resolve("resolved");
+        }, warningSeconds * 0.25 * 1000);
+
+        warningTimerInstance.externalReject = reject;
+    });
+
+    await new Promise((resolve, reject) => {
+        warningTimerInstance.timer = setTimeout(() => {
+            instanceAffecting.visible = true;
+
+            resolve("resolved");
+        }, warningSeconds * 0.5 * 1000);
+
+        warningTimerInstance.externalReject = reject;
+    });
+
+    await new Promise((resolve, reject) => {
+        warningTimerInstance.timer = setTimeout(() => {
+            instanceAffecting.visible = false;
+
+            resolve("resolved");
+        }, warningSeconds * 0.75 * 1000);
+
+        warningTimerInstance.externalReject = reject;
+    });
+
+    //The function finally resolves once the third "blink" ends.
+    return new Promise((resolve, reject) => {
+        warningTimerInstance.timer = setTimeout(() => {
+            instanceAffecting.state = "firing";
+            instanceAffecting.visible = true;
+
+            //Removes the instance from its object array once it is "destroyed".
+            let warningTimerInstanceIndex = warningTimers.indexOf(warningTimerInstance);
+            warningTimers.splice(warningTimerInstanceIndex, 1);
+
+            resolve("resolved");
+        }, warningSeconds * 1000);
+
+        warningTimerInstance.externalReject = reject;
     });
 };
 
@@ -341,26 +429,25 @@ async function createPoint(x, y, waitingSeconds, activeSeconds) {
     await setWaitingTimer(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new point(x, y);
-    points.push(instance);
+    let pointInstance = new point(x, y);
+    points.push(pointInstance);
 
     //Creates the "blinking" effect for warning of a collision.
-    setWarningTimers(instance);
+    await setWarningTimers(pointInstance);
 
     //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
-        let destroyPoint = setTimeout(() => {
+        pointInstance.timer = setTimeout(() => {
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
-            let instanceIndex = points.indexOf(instance);
-            points.splice(instanceIndex, 1);
+            let pointInstanceIndex = points.indexOf(pointInstance);
+            points.splice(pointInstanceIndex, 1);
 
             resolve("resolved");
         }, activeSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalResolve = resolve;
-        instance.externalReject = reject;
-        instance.timer = destroyPoint;
+        pointInstance.externalResolve = resolve;
+        pointInstance.externalReject = reject;
     });
 };
 
@@ -370,25 +457,24 @@ async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
     await setWaitingTimer(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new horizontalLaser(y, height);
-    horizontalLasers.push(instance);
+    let horizontalLaserInstance = new horizontalLaser(y, height);
+    horizontalLasers.push(horizontalLaserInstance);
 
     //Creates the "blinking" effect for warning of a collision.
-    setWarningTimers(instance);
+    await setWarningTimers(horizontalLaserInstance);
 
     //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
-        let endFiring = setTimeout(() => {
+        horizontalLaserInstance.timer = setTimeout(() => {
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
-            let instanceIndex = horizontalLasers.indexOf(instance);
-            horizontalLasers.splice(instanceIndex, 1);
+            let horizontalLaserInstanceIndex = horizontalLasers.indexOf(horizontalLaserInstance);
+            horizontalLasers.splice(horizontalLaserInstanceIndex, 1);
 
             resolve("resolved");
         }, activeSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalReject = reject;
-        instance.timer = endFiring;
+        horizontalLaserInstance.externalReject = reject;
     });
 };
 
@@ -398,25 +484,24 @@ async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
     await setWaitingTimer(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new verticalLaser(x, width);
-    verticalLasers.push(instance);
+    let verticalLaserInstance = new verticalLaser(x, width);
+    verticalLasers.push(verticalLaserInstance);
 
     //Creates the "blinking" effect for warning of a collision.
-    setWarningTimers(instance);
+    await setWarningTimers(verticalLaserInstance);
 
     //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
-        let endFiring = setTimeout(() => {
+        verticalLaserInstance.timer = setTimeout(() => {
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
-            let instanceIndex = verticalLasers.indexOf(instance);
-            verticalLasers.splice(instanceIndex, 1);
+            let verticalLaserInstanceIndex = verticalLasers.indexOf(verticalLaserInstance);
+            verticalLasers.splice(verticalLaserInstanceIndex, 1);
 
             resolve("resolved");
         }, activeSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalReject = reject;
-        instance.timer = endFiring;
+        verticalLaserInstance.externalReject = reject;
     });
 };
 
@@ -426,25 +511,24 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activ
     await setWaitingTimer(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new movingHorizontalLaser(y, height, speed);
-    movingHorizontalLasers.push(instance);
+    let movingHorizontalLaserInstance = new movingHorizontalLaser(y, height, speed);
+    movingHorizontalLasers.push(movingHorizontalLaserInstance);
 
     //Creates the "blinking" effect for warning of a collision.
-    setWarningTimers(instance);
+    await setWarningTimers(movingHorizontalLaserInstance);
 
     //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
-        let endFiring = setTimeout(() => {
+        movingHorizontalLaserInstance.timer = setTimeout(() => {
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
-            let instanceIndex = movingHorizontalLasers.indexOf(instance);
-            movingHorizontalLasers.splice(instanceIndex, 1);
+            let movingHorizontalLaserInstanceIndex = movingHorizontalLasers.indexOf(movingHorizontalLaserInstance);
+            movingHorizontalLasers.splice(movingHorizontalLaserInstanceIndex, 1);
 
             resolve("resolved");
         }, activeSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalReject = reject;
-        instance.timer = endFiring;
+        movingHorizontalLaserInstance.externalReject = reject;
     });
 };
 
@@ -454,25 +538,24 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSe
     await setWaitingTimer(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new movingVerticalLaser(x, width, speed);
-    movingVerticalLasers.push(instance);
+    let movingVerticalLaserInstance = new movingVerticalLaser(x, width, speed);
+    movingVerticalLasers.push(movingVerticalLaserInstance);
 
     //Creates the "blinking" effect for warning of a collision.
-    setWarningTimers(instance);
+    await setWarningTimers(movingVerticalLaserInstance);
 
     //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
-        let endFiring = setTimeout(() => {
+        movingVerticalLaserInstance.timer = setTimeout(() => {
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
-            let instanceIndex = movingVerticalLasers.indexOf(instance);
-            movingVerticalLasers.splice(instanceIndex, 1);
+            let movingVerticalLaserInstanceIndex = movingVerticalLasers.indexOf(movingVerticalLaserInstance);
+            movingVerticalLasers.splice(movingVerticalLaserInstanceIndex, 1);
 
             resolve("resolved");
         }, activeSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalReject = reject;
-        instance.timer = endFiring;
+        movingVerticalLaserInstance.externalReject = reject;
     });
 };
 
@@ -482,53 +565,28 @@ async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
     await setWaitingTimer(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new bomb(x, y, width, height);
-    bombs.push(instance);
+    let bombInstance = new bomb(x, y, width, height);
+    bombs.push(bombInstance);
 
     //Creates the "blinking" effect for warning of a collision.
-    setWarningTimers(instance);
+    await setWarningTimers(bombInstance);
 
     //Creates a timer for the instance's destruction.
     return new Promise((resolve, reject) => {
-        let endFiring = setTimeout(() => {
+        instance.timer = setTimeout(() => {
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
-            let instanceIndex = bombs.indexOf(instance);
-            bombs.splice(instanceIndex, 1);
+            let bombInstanceIndex = bombs.indexOf(bombInstance);
+            bombs.splice(bombInstanceIndex, 1);
 
             resolve("resolved");
         }, activeSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalReject = reject;
-        instance.timer = endFiring;
+        bombInstance.externalReject = reject;
     });
 };
 
 //Instance Helper Functions
-
-//Determines if two instances are "colliding". They cannot be colliding if one is in the warning state.
-function checkSpritesColliding(instanceOne, instanceTwo) {
-    let xColliding = false;
-    let yColliding = false;
-
-    if ((instanceTwo.x <= instanceOne.x) && (instanceOne.x <= instanceTwo.x + instanceTwo.width) && (instanceTwo.state !== "warning")) {
-        xColliding = true;
-    } else if ((instanceOne.x <= instanceTwo.x) && (instanceTwo.x <= instanceOne.x + instanceOne.width) && (instanceTwo.state !== "warning")) {
-        xColliding = true;
-    };
-
-    if ((instanceTwo.y <= instanceOne.y) && (instanceOne.y <= instanceTwo.y + instanceTwo.height) && (instanceTwo.state !== "warning")) {
-        yColliding = true;
-    } else if ((instanceOne.y <= instanceTwo.y) && (instanceTwo.y <= instanceOne.y + instanceOne.height) && (instanceTwo.state !== "warning")) {
-        yColliding = true;
-    };
-
-    //The instances must have an overlapping area (x and y components) for there to be a collision.
-    if (xColliding && yColliding) {
-        colliding = true;
-        collidingInstances.push(instanceTwo);
-    };
-};
 
 //Moves lasers by adding speed to their location every step.
 function moveMovingHorizontalLasers() {
@@ -712,6 +770,30 @@ function checkCollisionsWithClass(classArray) {
     };
 };
 
+//Determines if two instances are "colliding". They cannot be colliding if one is in the warning state.
+function checkSpritesColliding(instanceOne, instanceTwo) {
+    let xColliding = false;
+    let yColliding = false;
+
+    if ((instanceTwo.x <= instanceOne.x) && (instanceOne.x <= instanceTwo.x + instanceTwo.width) && (instanceTwo.state === "firing")) {
+        xColliding = true;
+    } else if ((instanceOne.x <= instanceTwo.x) && (instanceTwo.x <= instanceOne.x + instanceOne.width) && (instanceTwo.state === "firing")) {
+        xColliding = true;
+    };
+
+    if ((instanceTwo.y <= instanceOne.y) && (instanceOne.y <= instanceTwo.y + instanceTwo.height) && (instanceTwo.state === "firing")) {
+        yColliding = true;
+    } else if ((instanceOne.y <= instanceTwo.y) && (instanceTwo.y <= instanceOne.y + instanceOne.height) && (instanceTwo.state === "firing")) {
+        yColliding = true;
+    };
+
+    //The instances must have an overlapping area (x and y components) for there to be a collision.
+    if (xColliding && yColliding) {
+        colliding = true;
+        collidingInstances.push(instanceTwo);
+    };
+};
+
 //Micellaneous Functions
 
 function initializeKeyInputs() {
@@ -733,35 +815,6 @@ function calculateAngleRadians(x, y) {
 
 function convertRadiansToDegrees(radians) {
     return radians * 180 / Math.PI;
-};
-
-//Sets the timers that cause the collision instance to "blink" 3 times before firing. Class keys are named the same among objects to 
-//allow this function to work on all objects. All warning timers are set at the same length to allow the player to predict collisions.
-function setWarningTimers(instance) {
-    let warningInvisibleOne = setTimeout(() => {
-        instance.visible = false;
-        removeCurrentTimer(warningInvisibleOne);
-    }, 0.25 * 1000);
-    addCurrentTimer(warningInvisibleOne);
-
-    let warningVisibleTwo = setTimeout(() => {
-        instance.visible = true;
-        removeCurrentTimer(warningVisibleTwo);
-    }, 0.5 * 1000);
-    addCurrentTimer(warningVisibleTwo);
-
-    let warningInvisibleTwo = setTimeout(() => {
-        instance.visible = false;
-        removeCurrentTimer(warningInvisibleTwo);
-    }, 0.75 * 1000);
-    addCurrentTimer(warningInvisibleTwo);
-
-    let fire = setTimeout(() => {
-        instance.state = "firing";
-        instance.visible = true;
-        removeCurrentTimer(fire);
-    }, 1000);
-    addCurrentTimer(fire);
 };
 
 //Game loop
@@ -896,7 +949,7 @@ function gameLoop() {
     checkCollisionsWithClass(bombs);
 
     for (let i = 0; i < collidingInstances.length; i++) {
-        if (collidingInstances[i].constructor.name === "point" && collidingInstances[i].state === "firing") {
+        if (collidingInstances[i].constructor.name === "point") {
             //Adds points to the current level's total.
             currentLevelPoints++;
 
@@ -906,7 +959,7 @@ function gameLoop() {
             clearTimeout(collidingPoint.timer);
             let instanceIndex = points.indexOf(collidingPoint);
             points.splice(instanceIndex, 1);
-        } else if (collidingInstances[i].state === "firing") {
+        } else {
             restartLevel();
             break;
         };

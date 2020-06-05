@@ -83,8 +83,8 @@ class Point {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 24;
-        this.height = 24;
+        this.width = 16;
+        this.height = 16;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
@@ -188,19 +188,56 @@ class Bomb {
 
 //Level-Handling Functions
 
+//Since these are frequently used numbers, they are variables for simplicity. The canvas' width and height are the same, so they 
+//work with both axes.
+let center = canvas.width / 2;
+let maxEdge = canvas.width;
+
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(canvas.width / 2 - blockie.width / 2, 22 * 16);
+        initializeLevel(center - blockie.width / 2, center - blockie.width / 2);
+
+        await createPoint(center - 8, 8 * 16, 0, 10);
 
         await Promise.all([
-            fireMovingHorizontalLaser(canvas.height - 16, 16, -0.75, 0, 6),
-            fireMovingHorizontalLaser(0, 16, 0.5, 2, 4),
-            fireMovingHorizontalLaser(100, 16, 0.5, 3, 3),
-            fireMovingVerticalLaser(canvas.width - 16, 16, -0.75, 0, 6),
-            fireMovingVerticalLaser(0, 16, 0.5, 2, 4),
-            fireMovingVerticalLaser(100, 16, 0.5, 3, 3)
+            createPoint(center - 8, center - 12, 0, 5),
+
+            fireMovingHorizontalLaser(maxEdge - 16, 16, -0.75, 1, 4),
+            fireMovingVerticalLaser(0, 16, 0.75, 1, 4),
+            fireMovingVerticalLaser(maxEdge - 16, 16, -0.75, 1, 4),
+
+            fireMovingHorizontalLaser(0, 16, 1.5, 3, 2)
         ]);
+
+        await Promise.all([
+            createPoint(center - 8, 6 * 16, 0, 3),
+            fireVerticalLaser(12 * 16, 16, 0, 3),
+            fireVerticalLaser(19 * 16, 16, 0, 3),
+            fireMovingHorizontalLaser(30 * 16, 32, -1.75, 0, 3)
+        ]);
+
+        await Promise.all([
+            createPoint(6 * 16, center, 0, 2.5),
+
+            fireMovingHorizontalLaser(0, 32, 1.4, 0, 3.5),
+            fireMovingVerticalLaser(19 * 16, 32, -1.4, 0, 1.75),
+
+            fireMovingVerticalLaser(0, 32, 1.4, 1.75, 3.5),
+
+            createPoint(center, 25 * 16, 2.5, 2.5),
+
+            fireMovingHorizontalLaser(maxEdge - 32, 32, -1.4, 3.5, 3.5),
+
+            createPoint(25 * 16, center, 5, 2.5),
+
+            fireMovingVerticalLaser(maxEdge - 32, 32, -1.4, 5.25, 1.75)
+        ]);
+
+        await Promise.all([
+            createPoint(center - 8, center - 8, 0, 12),
+            fireBomb(center - 32, center - 32, 64, 64, 0, 6)
+        ])
 
         console.log("Level 1 completed.");
         increaseLevel();
@@ -410,7 +447,7 @@ async function setWarningTimers(instanceAffecting, instanceAffectingObjectArray)
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function createPoint(x, y, waitingSeconds, activeSeconds) {
+async function createPoint(x, y, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimer(waitingSeconds);
 
@@ -429,7 +466,7 @@ async function createPoint(x, y, waitingSeconds, activeSeconds) {
             points.splice(instanceIndex, 1);
 
             resolve("resolved");
-        }, activeSeconds * 1000);
+        }, firingSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
@@ -438,7 +475,7 @@ async function createPoint(x, y, waitingSeconds, activeSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
+async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimer(waitingSeconds);
 
@@ -457,7 +494,7 @@ async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
             horizontalLasers.splice(instanceIndex, 1);
 
             resolve("resolved");
-        }, activeSeconds * 1000);
+        }, firingSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
@@ -465,7 +502,7 @@ async function fireHorizontalLaser(y, height, waitingSeconds, activeSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
+async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimer(waitingSeconds);
 
@@ -484,7 +521,7 @@ async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
             verticalLasers.splice(instanceIndex, 1);
 
             resolve("resolved");
-        }, activeSeconds * 1000);
+        }, firingSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
@@ -492,7 +529,7 @@ async function fireVerticalLaser(x, width, waitingSeconds, activeSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activeSeconds) {
+async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimer(waitingSeconds);
 
@@ -511,7 +548,7 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activ
             movingHorizontalLasers.splice(instanceIndex, 1);
 
             resolve("resolved");
-        }, activeSeconds * 1000);
+        }, firingSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
@@ -519,7 +556,7 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, activ
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSeconds) {
+async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimer(waitingSeconds);
 
@@ -538,7 +575,7 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSe
             movingVerticalLasers.splice(instanceIndex, 1);
 
             resolve("resolved");
-        }, activeSeconds * 1000);
+        }, firingSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
@@ -546,7 +583,7 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, activeSe
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
+async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimer(waitingSeconds);
 
@@ -565,7 +602,7 @@ async function fireBomb(x, y, width, height, waitingSeconds, activeSeconds) {
             bombs.splice(instanceIndex, 1);
 
             resolve("resolved");
-        }, activeSeconds * 1000);
+        }, firingSeconds * 1000);
 
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalReject = reject;
@@ -628,10 +665,10 @@ function drawPoints() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "Lime";
+                context.strokeStyle = "#E6FF16";
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "Lime";
+                context.fillStyle = "#E6FF16";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -644,11 +681,11 @@ function drawHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF9C17";
+                context.strokeStyle = "#9C51FF";
                 context.strokeRect(currentInstance.x + 12, currentInstance.y, 16, currentInstance.height);
                 context.strokeRect(currentInstance.width - 28, currentInstance.y, 16, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF9C17";
+                context.fillStyle = "#9C51FF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -661,11 +698,11 @@ function drawVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF9C17";
+                context.strokeStyle = "#9C51FF";
                 context.strokeRect(currentInstance.x, currentInstance.y + 12, currentInstance.width, 16);
                 context.strokeRect(currentInstance.x, currentInstance.height - 28, currentInstance.width, 16);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF9C17";
+                context.fillStyle = "#9C51FF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -678,7 +715,7 @@ function drawMovingHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "#FF9C17";
+                context.fillStyle = "#9C51FF";
 
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Left warning triangle.
@@ -695,7 +732,7 @@ function drawMovingHorizontalLasers() {
                 context.lineTo(currentInstance.width - 24, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF9C17";
+                context.fillStyle = "#9C51FF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -708,7 +745,7 @@ function drawMovingVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "#FF9C17";
+                context.fillStyle = "#9C51FF";
 
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Top warning triangle.
@@ -725,7 +762,7 @@ function drawMovingVerticalLasers() {
                 context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 24);
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF9C17";
+                context.fillStyle = "#9C51FF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -738,10 +775,10 @@ function drawBombs() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF9C17";
+                context.strokeStyle = "#9C51FF";
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "##FF9C17";
+                context.fillStyle = "#9C51FF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };

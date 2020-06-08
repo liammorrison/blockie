@@ -8,7 +8,7 @@ context.lineWidth = 4;
 
 let gameState = "playing";
 let diplayingGameOverScreen = false;
-let KeysPressed = [];
+let keysDown = [];
 
 let currentLevel = 1;
 
@@ -19,6 +19,11 @@ let xInput = 0;
 let yInput = 0;
 
 let colliding = false;
+
+let arrowLeftAlreadyPressed = false;
+let arrowUpAlreadyPressed = false;
+let arrowRightAlreadyPressed = false;
+let arrowDownAlreadyPressed = false;
 
 let recoveringFromDash = false;
 let allowDashAgain = true;
@@ -231,22 +236,24 @@ async function levelOne() {
         ]);
 
         await Promise.all([
-            createPassivePoint(5 * 16, center - 8, 0, 6),
+            createActivePoint(5 * 16, center - 8, 0, 6),
             fireBomb(2, 3 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 6),
             fireBomb(2, 19 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 6),
             fireVerticalLaser(15 * 16 + 8, 16, 0, 6)
         ]);
 
         await Promise.all([
-            createPassivePoint(26 * 16, center - 8, 0, 7),
+            createActivePoint(26 * 16, center - 8, 0, 7),
             fireBomb(2, 3 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 7),
             fireBomb(2, 19 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 7),
 
-            fireMovingVerticalLaser(20 * 16, 16, -1, 1, 6)
+            fireMovingVerticalLaser(20 * 16, 16, -1, 0, 7)
         ]);
 
         await Promise.all([
             createPassivePoint(3 * 16 + 10, center - 8, 0, 11),
+            createPassivePoint(center - 8, 3 * 16 + 10, 0, 15),
+            createActivePoint(center - 8, 28 * 16 - 10, 0, 19),
             fireBomb(3 * 16 + 2, 3 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
             fireBomb(3 * 16 + 2, 19 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
             fireBomb(19 * 16 + 2, 3 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
@@ -255,13 +262,17 @@ async function levelOne() {
 
             fireMovingVerticalLaser(0, 16, 1.5, 2, 7),
 
-            createPassivePoint(center - 8, 3 * 16 + 10, 4, 11),
+            fireMovingHorizontalLaser(0, 16, 1.5, 4, 7),
 
-            createPassivePoint(center - 8, 28 * 16 - 10, 8, 11)
+            fireMovingHorizontalLaser(0, 16, 1.5, 6, 7),
+
+            fireMovingHorizontalLaser(maxEdge - 16, 16, -1.5, 8, 7),
+
+            fireMovingHorizontalLaser(maxEdge - 16, 16, -1.5, 10, 7)
         ]);
 
         console.log("Level 1 completed.");
-        currentLevel++;
+        increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");
     };
@@ -270,7 +281,7 @@ async function levelOne() {
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelTwo() {
     try {
-        initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
+
 
         console.log("Level 2 completed.");
         currentLevel++;
@@ -759,10 +770,10 @@ function drawActivePoints() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FFBB12";
+                context.strokeStyle = "#FF9012";
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FFBB12";
+                context.fillStyle = "#FF9012";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -914,15 +925,62 @@ function checkSpritesColliding(instanceOne, instanceTwo) {
 //Micellaneous Functions
 
 function initializeKeyInputs() {
-    //Adds all currently pressed keys as a keyCode with a pair of true in the KeysPressed object. .keyCode is used instead of .key so 
+    //Adds all currently pressed keys as a keyCode with a pair of true in the keysDown object. .keyCode is used instead of .key so 
     //that capital letters can't cause unwanted movements.
     document.addEventListener("keydown", e => {
-        KeysPressed[e.keyCode] = true;
+        //Special keys can only be set as "down" during the first single frame of being held until release. This is done by preventing
+        //the key from being activated again before release and by deleting it from the array on the second frame of being pressed.
+        if (e.keyCode === 37) {
+            if (!arrowLeftAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                arrowLeftAlreadyPressed = true;
+            } else {
+                delete keysDown[e.keyCode];
+            }
+        } else if (e.keyCode === 38) {
+            if (!arrowUpAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                arrowUpAlreadyPressed = true;
+            } else {
+                delete keysDown[e.keyCode];
+            }
+        } else if (e.keyCode === 39) {
+            if (!arrowRightAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                arrowRightAlreadyPressed = true;
+            } else {
+                delete keysDown[e.keyCode];
+            }
+        } else if (e.keyCode === 40) {
+            if (!arrowDownAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                arrowDownAlreadyPressed = true;
+            } else {
+                delete keysDown[e.keyCode];
+            }
+        } else {
+            keysDown[e.keyCode] = true;
+        };
     });
 
-    //Deletes all currently unpressed keys from the KeysPressed object.
+    //Deletes all currently unpressed keys from the keysDown object.
     document.addEventListener("keyup", e => {
-        delete KeysPressed[e.keyCode];
+        //Setting the flag to false allows the key to be set as "down" again.
+        if (e.keyCode === 37) {
+            delete keysDown[e.keyCode];
+            arrowLeftAlreadyPressed = false;
+        } else if (e.keyCode === 38) {
+            delete keysDown[e.keyCode];
+            arrowUpAlreadyPressed = false;
+        } else if (e.keyCode === 39) {
+            delete keysDown[e.keyCode];
+            arrowRightAlreadyPressed = false;
+        } else if (e.keyCode === 40) {
+            delete keysDown[e.keyCode];
+            arrowDownAlreadyPressed = false;
+        } else {
+            delete keysDown[e.keyCode];
+        };
     });
 };
 
@@ -936,8 +994,6 @@ function convertRadiansToDegrees(radians) {
 
 //Game loop
 
-initializeKeyInputs();
-
 function gameLoop() {
     //Blockie's Movement
 
@@ -946,36 +1002,88 @@ function gameLoop() {
         xInput = 0;
         yInput = 0;
 
-        //Each key changes the angle of Blockie's movement.
-        if (KeysPressed[68]) {
-            xInput += 1;
+        //Each WASD key changes the angle of Blockie's movement.
+        //Right
+        if (keysDown[68]) {
+            xInput++;
         };
 
-        if (KeysPressed[65]) {
-            xInput -= 1;
+        //Left
+        if (keysDown[65]) {
+            xInput--;
         };
 
-        if (KeysPressed[83]) {
-            yInput += 1;
+        //Down
+        if (keysDown[83]) {
+            yInput++;
         };
 
-        if (KeysPressed[87]) {
-            yInput -= 1;
+        //Up
+        if (keysDown[87]) {
+            yInput--;
         };
 
-        //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timer, and playing a recovery animation.
-        if (KeysPressed[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+        if (keysDown[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+            //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timer, and playing a recovery 
+            //animation.
+
             //This prevents blockie from dashing more than once for each time the Shift key is pressed.
-            delete KeysPressed[16];
+            delete keysDown[16];
 
             blockie.state = "recoveringFromDash";
             blockie.speed = dashDistance;
             recoveringFromDash = true;
+            allowDashAgain = false;
 
             let endDashRecoveryTime = 0.3;
             let endDashRecovery = setTimeout(() => {
                 recoveringFromDash = false;
-                allowDashAgain = false;
+                blockie.state = "playing";
+                removeCurrentTimer(endDashRecovery);
+            }, endDashRecoveryTime * 1000);
+            addCurrentTimer(endDashRecovery);
+
+            let resetAllowDashAgainTime = 0.9;
+            let resetAllowDashAgain = setTimeout(() => {
+                allowDashAgain = true;
+                removeCurrentTimer(resetAllowDashAgain);
+            }, resetAllowDashAgainTime * 1000);
+            addCurrentTimer(resetAllowDashAgain);
+        } else if ((keysDown[37] || keysDown[38] || keysDown[39] || keysDown[40]) && allowDashAgain) {
+            //Pressing the Arrow keys causes Blockie to "dash" by increasing his speed, creating a cooldown timer, and playing a 
+            //recovery animation. Directional inputs are reset to allow Blockie to dash only in the direction of the arrow keys.
+
+            xInput = 0;
+            yInput = 0;
+
+            //Right
+            if (keysDown[39]) {
+                xInput++;
+            };
+
+            //Left
+            if (keysDown[37]) {
+                xInput--;
+            };
+
+            //Down
+            if (keysDown[40]) {
+                yInput++;
+            };
+
+            //Up
+            if (keysDown[38]) {
+                yInput--;
+            };
+
+            blockie.state = "recoveringFromDash";
+            blockie.speed = dashDistance;
+            recoveringFromDash = true;
+            allowDashAgain = false;
+
+            let endDashRecoveryTime = 0.3;
+            let endDashRecovery = setTimeout(() => {
+                recoveringFromDash = false;
                 blockie.state = "playing";
                 removeCurrentTimer(endDashRecovery);
             }, endDashRecoveryTime * 1000);
@@ -1075,10 +1183,16 @@ function gameLoop() {
             let instanceIndex = passivePoints.indexOf(collidingPoint);
             passivePoints.splice(instanceIndex, 1);
         } else if (collidingInstances[i].constructor.name === "ActivePoint") {
+            //Adds points to the current level's total.
+            currentLevelPoints++;
+
             updateAllObjects();
             for (let i = 0; i < allObjects.length; i++) {
                 resolveInstances(allObjects[i]);
             };
+
+            //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
+            break;
         } else {
             restartLevel();
             break;
@@ -1121,5 +1235,6 @@ function drawingLoop() {
 let blockie = new Player();
 levelOne();
 
+initializeKeyInputs();
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);

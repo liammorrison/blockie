@@ -24,6 +24,8 @@ let arrowLeftAlreadyPressed = false;
 let arrowUpAlreadyPressed = false;
 let arrowRightAlreadyPressed = false;
 let arrowDownAlreadyPressed = false;
+let shiftAlreadyPressed = false;
+let spaceAlreadyPressed = false;
 
 let recoveringFromDash = false;
 let allowDashAgain = true;
@@ -245,48 +247,44 @@ let maxEdge = canvas.width;
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(canvas.width / 2 - blockie.width / 2, canvas.height / 2 - blockie.height / 2);
+        initializeLevel(8 * 16 - blockie.width / 2, center - blockie.height / 2);
 
         await Promise.all([
-            createActivePoint(26 * 16, center - 8, 0, 3.5),
-            fireBomb(2, 3 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 3),
-            fireBomb(2, 19 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 3),
+            createPassivePoint(center - 8, center - 8, 0, 6),
+            createActivePoint(23 * 16, center - 8, 0, 6),
+            fireBomb(2, 2, maxEdge - 4, 11 * 16 - 4, 0, 6),
+            fireBomb(2, 21 * 16 + 2, maxEdge - 4, 11 * 16 - 4, 0, 6),
+
+            fireMovingVerticalLaser(0, 32, 1, 1, 5)
         ]);
 
         await Promise.all([
-            createActivePoint(5 * 16, center - 8, 0, 6),
-            fireBomb(2, 3 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 6),
-            fireBomb(2, 19 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 6),
-            fireVerticalLaser(15 * 16 + 8, 16, 0, 6)
+            createActivePoint(8 * 16, center - 8, 0, 5),
+            fireBomb(2, 2, maxEdge - 4, 11 * 16 - 4, 0, 5),
+            fireBomb(2, 21 * 16 + 2, maxEdge - 4, 11 * 16 - 4, 0, 5),
+
+            fireMovingVerticalLaser(30 * 16, 32, -1.75, 1, 4)
         ]);
 
         await Promise.all([
-            createActivePoint(26 * 16, center - 8, 0, 7),
-            fireBomb(2, 3 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 7),
-            fireBomb(2, 19 * 16 + 2, maxEdge - 4, 10 * 16 - 4, 0, 7),
+            createPassivePoint(center - 8, 23 * 16, 0, 2.5),
+            fireMovingHorizontalLaser(8 * 16 - 8, 32, 1.4, 0, 1.75),
+            fireMovingVerticalLaser(0, 32, 1.4, 0, 3.5),
 
-            fireMovingVerticalLaser(20 * 16, 16, -1, 0, 7)
+            fireMovingHorizontalLaser(maxEdge - 32, 32, -1.4, 1.75, 3.5),
+
+            createPassivePoint(23 * 16, center - 8, 2.25, 2.5),
+
+            fireMovingVerticalLaser(maxEdge - 32, 32, -1.4, 3.5, 3.5),
+
+            createPassivePoint(center - 8, 8 * 16, 4.5, 2.5),
+
+            fireMovingHorizontalLaser(0, 32, 1.4, 5.25, 1.75)
         ]);
 
         await Promise.all([
-            createPassivePoint(3 * 16 + 10, center - 8, 0, 11),
-            createPassivePoint(center - 8, 3 * 16 + 10, 0, 15),
-            createActivePoint(center - 8, 28 * 16 - 10, 0, 19),
-            fireBomb(3 * 16 + 2, 3 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
-            fireBomb(3 * 16 + 2, 19 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
-            fireBomb(19 * 16 + 2, 3 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
-            fireBomb(19 * 16 + 2, 19 * 16 + 2, 10 * 16 - 4, 10 * 16 - 4, 0, 19),
-            fireMovingVerticalLaser(0, 16, 1.5, 0, 7),
-
-            fireMovingVerticalLaser(0, 16, 1.5, 2, 7),
-
-            fireMovingHorizontalLaser(0, 16, 1.5, 4, 7),
-
-            fireMovingHorizontalLaser(0, 16, 1.5, 6, 7),
-
-            fireMovingHorizontalLaser(maxEdge - 16, 16, -1.5, 8, 7),
-
-            fireMovingHorizontalLaser(maxEdge - 16, 16, -1.5, 10, 7)
+            createActivePoint(center - 8, center - 8, 0, 6),
+            fireBomb(center - 32, center - 32, 64, 64, 0, 2)
         ]);
 
         console.log("Level 1 completed.");
@@ -361,15 +359,23 @@ async function restartLevel() {
     displayingGameOverScreen = true;
 
     await new Promise((resolve, reject) => {
-        let resumeGame = setTimeout(() => {
-            //Restarts the game.
-            displayingGameOverScreen = false;
-            gameState = "playing";
-            blockie.state = "playing";
-            controlLevel();
-            document.getElementById("messageDisplayer").innerHTML = "";
-            window.requestAnimationFrame(gameLoop);
-        }, 1000);
+        function resumePlaying() {
+            if (keysDown[16] || keysDown[32]) {
+                //Restarts the game.
+                document.removeEventListener("keydown", resumePlaying);
+                displayingGameOverScreen = false;
+                gameState = "playing";
+                blockie.state = "playing";
+                controlLevel();
+                document.getElementById("messageDisplayer").innerHTML = "";
+                window.requestAnimationFrame(gameLoop);
+                resolve("resolved");
+            } else {
+                window.requestAnimationFrame(resumePlaying);
+            };
+        };
+
+        window.requestAnimationFrame(resumePlaying);
     });
 };
 
@@ -629,11 +635,6 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
             let instanceIndex = activePoints.indexOf(instance);
             activePoints.splice(instanceIndex, 1);
 
-            updateAllObjects();
-            for (let i = 0; i < allObjects.length; i++) {
-                resolveInstances(allObjects[i]);
-            };
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
@@ -892,11 +893,11 @@ function drawHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#9C51FF";
+                context.strokeStyle = "#FF51EF";
                 context.strokeRect(currentInstance.x + 16, currentInstance.y, 16, currentInstance.height);
                 context.strokeRect(currentInstance.width - 24, currentInstance.y, 16, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#741EFF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -909,11 +910,11 @@ function drawVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#9C51FF";
+                context.strokeStyle = "#FF51EF";
                 context.strokeRect(currentInstance.x, currentInstance.y + 16, currentInstance.width, 16);
                 context.strokeRect(currentInstance.x, currentInstance.height - 24, currentInstance.width, 16);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#741EFF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -926,7 +927,7 @@ function drawMovingHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#FF51EF";
 
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Left warning triangle.
@@ -943,7 +944,7 @@ function drawMovingHorizontalLasers() {
                 context.lineTo(currentInstance.width - 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#741EFF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -956,7 +957,7 @@ function drawMovingVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#FF51EF";
 
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Top warning triangle.
@@ -973,7 +974,7 @@ function drawMovingVerticalLasers() {
                 context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 32);
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#741EFF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -986,10 +987,10 @@ function drawBombs() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#9C51FF";
+                context.strokeStyle = "#FF51EF";
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#9C51FF";
+                context.fillStyle = "#741EFF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1028,7 +1029,7 @@ function checkSpritesColliding(instanceOne, instanceTwo) {
     };
 };
 
-//Micellaneous Functions
+//Input Functions
 
 function initializeKeyInputs() {
     //Adds all currently pressed keys as a keyCode with a pair of true in the keysDown object. .keyCode is used instead of .key so 
@@ -1036,34 +1037,55 @@ function initializeKeyInputs() {
     document.addEventListener("keydown", e => {
         //Special keys can only be set as "down" during the first single frame of being held until release. This is done by preventing
         //the key from being activated again before release and by deleting it from the array on the second frame of being pressed.
-        if (e.keyCode === 37) {
+        if (shiftAlreadyPressed) {
+            delete keysDown[16];
+        };
+        if (spaceAlreadyPressed) {
+            delete keysDown[32];
+        };
+        if (arrowLeftAlreadyPressed) {
+            delete keysDown[37];
+        };
+        if (arrowUpAlreadyPressed) {
+            delete keysDown[38];
+        };
+        if (arrowRightAlreadyPressed) {
+            delete keysDown[39];
+        };
+        if (arrowDownAlreadyPressed) {
+            delete keysDown[40];
+        };
+
+        if (e.keyCode === 16) {
+            if (!shiftAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                shiftAlreadyPressed = true;
+            };
+        } else if (e.keyCode === 32) {
+            if (!spaceAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                spaceAlreadyPressed = true;
+            };
+        } else if (e.keyCode === 37) {
             if (!arrowLeftAlreadyPressed) {
                 keysDown[e.keyCode] = true;
                 arrowLeftAlreadyPressed = true;
-            } else {
-                delete keysDown[e.keyCode];
-            }
+            };
         } else if (e.keyCode === 38) {
             if (!arrowUpAlreadyPressed) {
                 keysDown[e.keyCode] = true;
                 arrowUpAlreadyPressed = true;
-            } else {
-                delete keysDown[e.keyCode];
-            }
+            };
         } else if (e.keyCode === 39) {
             if (!arrowRightAlreadyPressed) {
                 keysDown[e.keyCode] = true;
                 arrowRightAlreadyPressed = true;
-            } else {
-                delete keysDown[e.keyCode];
-            }
+            };
         } else if (e.keyCode === 40) {
             if (!arrowDownAlreadyPressed) {
                 keysDown[e.keyCode] = true;
                 arrowDownAlreadyPressed = true;
-            } else {
-                delete keysDown[e.keyCode];
-            }
+            };
         } else {
             keysDown[e.keyCode] = true;
         };
@@ -1072,7 +1094,13 @@ function initializeKeyInputs() {
     //Deletes all currently unpressed keys from the keysDown object.
     document.addEventListener("keyup", e => {
         //Setting the flag to false allows the key to be set as "down" again.
-        if (e.keyCode === 37) {
+        if (e.keyCode === 16) {
+            delete keysDown[e.keyCode];
+            shiftAlreadyPressed = false;
+        } else if (e.keyCode === 32) {
+            delete keysDown[e.keyCode];
+            spaceAlreadyPressed = false;
+        } else if (e.keyCode === 37) {
             delete keysDown[e.keyCode];
             arrowLeftAlreadyPressed = false;
         } else if (e.keyCode === 38) {
@@ -1089,6 +1117,8 @@ function initializeKeyInputs() {
         };
     });
 };
+
+//Micellaneous Functions
 
 function calculateAngleRadians(x, y) {
     return Math.atan2(y, x);
@@ -1132,15 +1162,10 @@ function gameLoop() {
         if (keysDown[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
             //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
             //animation.
-
-            //This prevents blockie from dashing more than once for each time the Shift key is pressed.
-            delete keysDown[16];
-
             initializeDash();
         } else if ((keysDown[37] || keysDown[38] || keysDown[39] || keysDown[40]) && allowDashAgain) {
             //Pressing the Arrow keys causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a 
             //recovery animation. Directional inputs are reset to allow Blockie to dash only in the direction of the arrow keys.
-
             xInput = 0;
             yInput = 0;
 

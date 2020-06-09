@@ -7,7 +7,7 @@ context.lineWidth = 4;
 //Variables
 
 let gameState = "playing";
-let diplayingGameOverScreen = false;
+let displayingGameOverScreen = false;
 let keysDown = [];
 
 let currentLevel = 1;
@@ -56,6 +56,7 @@ let bombs = [];
 let allObjects = [];
 
 let currentTimeouts = [];
+let currentIntervals = [];
 
 let collidingInstances = [];
 
@@ -85,6 +86,7 @@ class Player {
         this.sx = 0;
         this.spriteSideLength = 16;
 
+        //Used to draw the remaining seconds meter above the instance.
         this.remainingDashSeconds = 0;
     };
 };
@@ -101,7 +103,7 @@ class WaitingTimeout {
 //Blockie, while the former do not.
 
 class PassivePoint {
-    constructor(x, y) {
+    constructor(x, y, totalFiringSeconds) {
         this.x = x;
         this.y = y;
         this.width = 16;
@@ -115,11 +117,15 @@ class PassivePoint {
         this.externalResolve;
         this.externalReject;
         this.timeout;
+
+        //Used to draw the remaining seconds meter above the instance.
+        this.totalFiringSeconds = totalFiringSeconds;
+        this.remainingFiringSeconds = 0;
     };
 };
 
 class ActivePoint {
-    constructor(x, y) {
+    constructor(x, y, totalFiringSeconds) {
         this.x = x;
         this.y = y;
         this.width = 16;
@@ -133,6 +139,10 @@ class ActivePoint {
         this.externalResolve;
         this.externalReject;
         this.timeout;
+
+        //Used to draw the remaining seconds meter above the instance.
+        this.totalFiringSeconds = totalFiringSeconds;
+        this.remainingFiringSeconds = 0;
     };
 };
 
@@ -303,7 +313,6 @@ function initializeLevel(blockieX, blockieY) {
     document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
 
     gameState = "playing";
-    diplayingGameOverScreen = false;
 
     blockie.x = blockieX;
     blockie.y = blockieY;
@@ -325,6 +334,13 @@ async function restartLevel() {
 
     currentTimeouts.splice(0);
 
+    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+    for (let i = 0; i < currentIntervals.length; i++) {
+        clearInterval(currentIntervals[i]);
+    };
+
+    currentIntervals.splice(0);
+
     updateAllObjects();
     for (let i = 0; i < allObjects.length; i++) {
         rejectInstances(allObjects[i]);
@@ -342,12 +358,12 @@ async function restartLevel() {
         }, 1.5 * 1000);
     });
 
-    diplayingGameOverScreen = true;
+    displayingGameOverScreen = true;
 
     await new Promise((resolve, reject) => {
         let resumeGame = setTimeout(() => {
             //Restarts the game.
-            diplayingGameOverScreen = false;
+            displayingGameOverScreen = false;
             gameState = "playing";
             blockie.state = "playing";
             controlLevel();
@@ -418,7 +434,17 @@ function removeCurrentTimeout(timeout) {
     currentTimeouts.splice(currentTimeoutIndex, 1);
 };
 
+//Adds a currently-running interval to an array so that it can be easily deactivated when the game restarts.
+function addCurrentInterval(interval) {
+    currentIntervals.push(interval);
+};
 
+//Removes a interval from the array of currently-running intervals and clears it.
+function removeCurrentInterval(interval) {
+    clearInterval(interval);
+    let currentIntervalIndex = currentIntervals.indexOf(interval);
+    currentIntervals.splice(currentIntervalIndex, 1);
+}
 
 //Blockie Functions 
 
@@ -435,19 +461,20 @@ function initializeDash() {
     }, dashRecoverySeconds * 1000);
     addCurrentTimeout(endDashRecovery);
 
+    //Sets an interval to the length of the dash recovery which counts down the semi-accurate remaining length of the timeout.
+    //This is used in drawing the remaining seconds meter to show the player how much more recovery time that they need to wait.
     blockie.remainingDashSeconds = allowDashAgainSeconds;
-
     let remainingDashSecondsInterval = setInterval(() => {
-        blockie.remainingDashSeconds -= 0.001;
+        blockie.remainingDashSeconds -= 0.004;
     }, 1);
+    addCurrentInterval(remainingDashSecondsInterval);
 
     let resetAllowDashAgain = setTimeout(() => {
         allowDashAgain = true;
+        removeCurrentInterval(remainingDashSecondsInterval);
         removeCurrentTimeout(resetAllowDashAgain);
     }, allowDashAgainSeconds * 1000);
     addCurrentTimeout(resetAllowDashAgain);
-
-
 };
 
 //Instance Functions
@@ -537,7 +564,7 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
     await setWaitingTimeout(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new PassivePoint(x, y);
+    let instance = new PassivePoint(x, y, firingSeconds);
     passivePoints.push(instance);
 
     //Creates the "blinking" effect for warning of a collision.
@@ -549,7 +576,17 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
         instance.externalResolve = resolve;
         instance.externalReject = reject;
 
+        //Sets an interval to the length of the firingSeconds which counts down the semi-accurate remaining length of the timeout.
+        //This is used in drawing the remaining seconds meter to show the player how much longer the point will exist.
+        instance.remainingFiringSeconds = firingSeconds;
+        let remainingFiringSecondsInterval = setInterval(() => {
+            instance.remainingFiringSeconds -= 0.004;
+        }, 1);
+        addCurrentInterval(remainingFiringSecondsInterval);
+
         instance.timeout = setTimeout(() => {
+            removeCurrentInterval(remainingFiringSecondsInterval);
+
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
             let instanceIndex = passivePoints.indexOf(instance);
             passivePoints.splice(instanceIndex, 1);
@@ -565,7 +602,7 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
     await setWaitingTimeout(waitingSeconds);
 
     //Creates an instance and sets all of its initial properties.
-    let instance = new ActivePoint(x, y);
+    let instance = new ActivePoint(x, y, firingSeconds);
     activePoints.push(instance);
 
     //Creates the "blinking" effect for warning of a collision.
@@ -577,7 +614,17 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
         instance.externalResolve = resolve;
         instance.externalReject = reject;
 
+        //Sets an interval to the length of the firingSeconds which counts down the semi-accurate remaining length of the timeout.
+        //This is used in drawing the remaining seconds meter to show the player how much longer the point will exist.
+        instance.remainingFiringSeconds = firingSeconds;
+        let remainingFiringSecondsInterval = setInterval(() => {
+            instance.remainingFiringSeconds -= 0.004;
+        }, 1);
+        addCurrentInterval(remainingFiringSecondsInterval);
+
         instance.timeout = setTimeout(() => {
+            removeCurrentInterval(remainingFiringSecondsInterval);
+
             //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
             let instanceIndex = activePoints.indexOf(instance);
             activePoints.splice(instanceIndex, 1);
@@ -761,6 +808,13 @@ function moveMovingVerticalLasers() {
 //Drawing Functions
 
 function drawBlockie() {
+    //Draws the remaining seconds meter for when Blockie can dash again.
+    if (!allowDashAgain && gameState !== "restartingLevel") {
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(blockie.x, blockie.y - 8, blockie.width * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
+    };
+
+    //Draws Blockie himself.
     if (blockie.state === "playing") {
         blockie.sprite = spBlockiePlaying;
         //sx is the location on the blockie.png sprite map. Here it determines the sprite's direction facing. It starts at the 
@@ -791,6 +845,12 @@ function drawBlockie() {
 function drawPassivePoints() {
     for (let i = 0; i < passivePoints.length; i++) {
         let currentInstance = passivePoints[i];
+
+        //Draws the remaining seconds meter for when the point will disappear.
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(currentInstance.x, currentInstance.y - 8, currentInstance.width * (currentInstance.remainingFiringSeconds / currentInstance.totalFiringSeconds), 4);
+
+        //Draws the point itself.
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
@@ -807,6 +867,12 @@ function drawPassivePoints() {
 function drawActivePoints() {
     for (let i = 0; i < activePoints.length; i++) {
         let currentInstance = activePoints[i];
+
+        //Draws the remaining seconds meter for when the point will disappear.
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(currentInstance.x, currentInstance.y - 8, currentInstance.width * (currentInstance.remainingFiringSeconds / currentInstance.totalFiringSeconds), 4);
+
+        //Draws the point itself.
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
@@ -1212,7 +1278,7 @@ function gameLoop() {
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
 //restarting (to draw Blockie's destructing animation).
 function drawingLoop() {
-    if (!diplayingGameOverScreen) {
+    if (!displayingGameOverScreen) {
         //Updates the amount of points in the gameInfo div.
         document.getElementById("currentPoints").innerHTML = "Points: " + (permanentPoints + currentLevelPoints);
 

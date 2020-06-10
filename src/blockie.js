@@ -8,7 +8,6 @@ context.lineWidth = 4;
 
 let gameState = "playing";
 let displayingGameOverScreen = false;
-let keysDown = [];
 
 let currentLevel = 1;
 
@@ -33,6 +32,12 @@ let dashDistance = 88;
 let dashRecoverySeconds = 0.3;
 let allowDashAgainSeconds = 0.9;
 
+//Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
+//screen needs to stop running, yet everything cannot be rejected (because that would stop the level too). Each async function
+//that needs to be affected pushes their unique cancelAwaitChain here to be set to true. This can't be one global variable because 
+//each async function can end at any time, so it would be unclear when to set the global variable back to false.
+let cancelAwaitChain = false;
+
 //Loads Blockie's sprite maps. They are large sprite maps to avoid loading many individual sprite files.
 let spBlockiePlaying = document.createElement("img");
 spBlockiePlaying.src = "../images/spBlockiePlaying.png";
@@ -44,6 +49,8 @@ let spBlockieRecoveringFromDash = document.createElement("img");
 spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 
 //Arrays
+
+let keysDown = [];
 
 let waitingTimeouts = [];
 let passivePoints = [];
@@ -258,6 +265,8 @@ async function levelOne() {
             fireMovingVerticalLaser(0, 32, 1, 1, 5)
         ]);
 
+        cancelAwaitChain = false;
+
         await Promise.all([
             createActivePoint(8 * 16, center - 8, 0, 5),
             fireBomb(2, 2, maxEdge - 4, 11 * 16 - 4, 0, 5),
@@ -265,6 +274,8 @@ async function levelOne() {
 
             fireMovingVerticalLaser(30 * 16, 32, -1.75, 1, 4)
         ]);
+
+        cancelAwaitChain = false;
 
         await Promise.all([
             createPassivePoint(center - 8, 23 * 16, 0, 2.5),
@@ -282,10 +293,14 @@ async function levelOne() {
             fireMovingHorizontalLaser(0, 32, 1.4, 5.25, 1.75)
         ]);
 
+        cancelAwaitChain = false;
+
         await Promise.all([
             createActivePoint(center - 8, center - 8, 0, 6),
             fireBomb(center - 32, center - 32, 64, 64, 0, 2)
         ]);
+
+        cancelAwaitChain = false;
 
         console.log("Level 1 completed.");
         increaseLevel();
@@ -525,6 +540,9 @@ async function setWarningTimeouts(instanceAffecting, instanceAffectingObjectArra
         }, warningSeconds * 0.25 * 1000);
     });
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instanceAffecting.externalResolve = resolve;
@@ -536,6 +554,9 @@ async function setWarningTimeouts(instanceAffecting, instanceAffectingObjectArra
             resolve("resolved");
         }, warningSeconds * 0.25 * 1000);
     });
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
 
     await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
@@ -549,8 +570,11 @@ async function setWarningTimeouts(instanceAffecting, instanceAffectingObjectArra
         }, warningSeconds * 0.25 * 1000);
     });
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instanceAffecting.externalResolve = resolve;
         instanceAffecting.externalReject = reject;
@@ -569,6 +593,9 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new PassivePoint(x, y, firingSeconds);
     passivePoints.push(instance);
@@ -576,8 +603,11 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, passivePoints);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -598,6 +628,8 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
             passivePoints.splice(instanceIndex, 1);
 
             resolve("resolved");
+
+            console.log("passive point timer");
         }, firingSeconds * 1000);
     });
 };
@@ -607,6 +639,9 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new ActivePoint(x, y, firingSeconds);
     activePoints.push(instance);
@@ -614,8 +649,11 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, activePoints);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -636,6 +674,8 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
             activePoints.splice(instanceIndex, 1);
 
             resolve("resolved");
+
+            console.log("active point timer");
         }, firingSeconds * 1000);
     });
 };
@@ -645,6 +685,9 @@ async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new HorizontalLaser(y, height);
     horizontalLasers.push(instance);
@@ -652,8 +695,11 @@ async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, horizontalLasers);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -673,6 +719,9 @@ async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new VerticalLaser(x, width);
     verticalLasers.push(instance);
@@ -680,8 +729,11 @@ async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, verticalLasers);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -701,6 +753,9 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firin
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new MovingHorizontalLaser(y, height, speed);
     movingHorizontalLasers.push(instance);
@@ -708,8 +763,11 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firin
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, movingHorizontalLasers);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -729,6 +787,9 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new MovingVerticalLaser(x, width, speed);
     movingVerticalLasers.push(instance);
@@ -736,8 +797,16 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, movingVerticalLasers);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) {
+        console.log("supposed to exit");
+        return;
+    };
+
+    console.log("did not exit");
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -748,6 +817,8 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
             movingVerticalLasers.splice(instanceIndex, 1);
 
             resolve("resolved");
+
+            console.log("moving vertical laser timer");
         }, firingSeconds * 1000);
     });
 };
@@ -757,6 +828,9 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates an instance and sets all of its initial properties.
     let instance = new Bomb(x, y, width, height);
     bombs.push(instance);
@@ -764,8 +838,11 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance, bombs);
 
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
     //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         //Links the instance's deactivation functions to itself to allow outside callings.
         instance.externalResolve = resolve;
         instance.externalReject = reject;
@@ -776,6 +853,8 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
             bombs.splice(instanceIndex, 1);
 
             resolve("resolved");
+
+            console.log("bomb timer");
         }, firingSeconds * 1000);
     });
 };
@@ -783,8 +862,15 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
 //Instance Helper Functions
 
 function updateAllObjects() {
-    allObjects = [waitingTimeouts, passivePoints, activePoints, horizontalLasers, verticalLasers, movingHorizontalLasers,
-        movingVerticalLasers, bombs
+    allObjects = [
+        waitingTimeouts,
+        passivePoints,
+        activePoints,
+        horizontalLasers,
+        verticalLasers,
+        movingHorizontalLasers,
+        movingVerticalLasers,
+        bombs
     ];
 };
 
@@ -1280,6 +1366,31 @@ function gameLoop() {
         } else if (collidingInstances[i].constructor.name === "ActivePoint") {
             //Adds points to the current level's total.
             currentLevelPoints++;
+
+            //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+            for (let i = 0; i < currentTimeouts.length; i++) {
+                clearTimeout(currentTimeouts[i]);
+            };
+
+            currentTimeouts.splice(0);
+
+            //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+            for (let i = 0; i < currentIntervals.length; i++) {
+                clearInterval(currentIntervals[i]);
+            };
+
+            currentIntervals.splice(0);
+
+            blockie.state = "playing";
+            recoveringFromDash = false;
+            allowDashAgain = true;
+            delete keysDown[16];
+            delete keysDown[37];
+            delete keysDown[38];
+            delete keysDown[39];
+            delete keysDown[40];
+
+            cancelAwaitChain = true;
 
             updateAllObjects();
             for (let i = 0; i < allObjects.length; i++) {

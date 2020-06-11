@@ -7,7 +7,6 @@ context.lineWidth = 4;
 //Variables
 
 let gameState = "playing";
-let displayingGameOverScreen = false;
 
 let currentLevel = 1;
 
@@ -33,9 +32,7 @@ let dashRecoverySeconds = 0.3;
 let allowDashAgainSeconds = 0.9;
 
 //Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
-//screen needs to stop running, yet everything cannot be rejected (because that would stop the level too). Each async function
-//that needs to be affected pushes their unique cancelAwaitChain here to be set to true. This can't be one global variable because 
-//each async function can end at any time, so it would be unclear when to set the global variable back to false.
+//instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
 let cancelAwaitChain = false;
 
 //Loads Blockie's sprite maps. They are large sprite maps to avoid loading many individual sprite files.
@@ -60,6 +57,7 @@ let verticalLasers = [];
 let movingHorizontalLasers = [];
 let movingVerticalLasers = [];
 let bombs = [];
+let partyHats = [];
 
 //allObjects is used to make destroying all instances (reject or resolve) possible with a for loop.
 let allObjects = [];
@@ -242,6 +240,15 @@ class Bomb {
     };
 };
 
+class PartyHat {
+    constructor() {
+        this.x = blockie.x + 8;
+        this.y = 0;
+        this.width = 16;
+        this.height = 20;
+    };
+};
+
 //Functions
 
 //Level-Handling Functions
@@ -257,50 +264,9 @@ async function levelOne() {
         initializeLevel(8 * 16 - blockie.width / 2, center - blockie.height / 2);
 
         await Promise.all([
-            createPassivePoint(center - 8, center - 8, 0, 6),
             createActivePoint(23 * 16, center - 8, 0, 6),
-            fireBomb(2, 2, maxEdge - 4, 11 * 16 - 4, 0, 6),
-            fireBomb(2, 21 * 16 + 2, maxEdge - 4, 11 * 16 - 4, 0, 6),
-
-            fireMovingVerticalLaser(0, 32, 1, 1, 5)
+            fireHorizontalLaser(100, 16, 0, 6)
         ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createActivePoint(8 * 16, center - 8, 0, 5),
-            fireBomb(2, 2, maxEdge - 4, 11 * 16 - 4, 0, 5),
-            fireBomb(2, 21 * 16 + 2, maxEdge - 4, 11 * 16 - 4, 0, 5),
-
-            fireMovingVerticalLaser(30 * 16, 32, -1.75, 1, 4)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createPassivePoint(center - 8, 23 * 16, 0, 2.5),
-            fireMovingHorizontalLaser(8 * 16 - 8, 32, 1.4, 0, 1.75),
-            fireMovingVerticalLaser(0, 32, 1.4, 0, 3.5),
-
-            fireMovingHorizontalLaser(maxEdge - 32, 32, -1.4, 1.75, 3.5),
-
-            createPassivePoint(23 * 16, center - 8, 2.25, 2.5),
-
-            fireMovingVerticalLaser(maxEdge - 32, 32, -1.4, 3.5, 3.5),
-
-            createPassivePoint(center - 8, 8 * 16, 4.5, 2.5),
-
-            fireMovingHorizontalLaser(0, 32, 1.4, 5.25, 1.75)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createActivePoint(center - 8, center - 8, 0, 6),
-            fireBomb(center - 32, center - 32, 64, 64, 0, 2)
-        ]);
-
-        cancelAwaitChain = false;
 
         console.log("Level 1 completed.");
         increaseLevel();
@@ -315,7 +281,6 @@ async function levelTwo() {
 
 
         console.log("Level 2 completed.");
-        currentLevel++;
     } catch (error) {
         console.log("Level 2 restarted.");
     };
@@ -323,8 +288,6 @@ async function levelTwo() {
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
-    document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
-
     gameState = "playing";
 
     blockie.x = blockieX;
@@ -365,24 +328,73 @@ async function restartLevel() {
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
             //Draws the game over screen.
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById("messageDisplayer").innerHTML = "You Are Dead.";
+            document.getElementById("messageDisplayer").innerHTML = "Determination is key!";
+            gameState = "displayingMessage";
             resolve("resolved");
         }, 1.5 * 1000);
     });
 
-    displayingGameOverScreen = true;
+    await new Promise((resolve, reject) => {
+        //Restarts the game.
+        function resumePlaying() {
+            if (keysDown[16] || keysDown[32]) {
+                document.getElementById("messageDisplayer").innerHTML = "";
+
+                gameState = "playing";
+                blockie.state = "playing";
+
+                controlLevel();
+
+                window.requestAnimationFrame(gameLoop);
+                resolve("resolved");
+            } else {
+                window.requestAnimationFrame(resumePlaying);
+            };
+        };
+
+        window.requestAnimationFrame(resumePlaying);
+    });
+};
+
+async function increaseLevel() {
+    gameState = "finishingLevel";
+    blockie.angleMovingDegrees = -180;
+
+    await new Promise((resolve, reject) => {
+        let partyHatInstance = new PartyHat();
+        partyHats.push(partyHatInstance);
+
+        function animateFinishedLevelHat() {
+            partyHatInstance.y += Math.min(2, blockie.y - partyHatInstance.y);
+
+            if (partyHatInstance.y + partyHatInstance.height !== blockie.y) {
+                window.requestAnimationFrame(animateFinishedLevelHat);
+            } else {
+                partyHats.splice(0);
+
+                document.getElementById("messageDisplayer").innerHTML = `Our champion!<br>You beat level ${currentLevel}!`;
+                gameState = "displayingMessage";
+                resolve("resolved");
+            };
+        };
+
+        window.requestAnimationFrame(animateFinishedLevelHat);
+    });
 
     await new Promise((resolve, reject) => {
         function resumePlaying() {
+            //Restarts the game.
             if (keysDown[16] || keysDown[32]) {
-                //Restarts the game.
-                document.removeEventListener("keydown", resumePlaying);
-                displayingGameOverScreen = false;
+                document.getElementById("messageDisplayer").innerHTML = "";
                 gameState = "playing";
                 blockie.state = "playing";
+
+                //Points are only made permanent once a level is completed.
+                permanentPoints += currentLevelPoints;
+
+                currentLevel++;
                 controlLevel();
-                document.getElementById("messageDisplayer").innerHTML = "";
+
                 window.requestAnimationFrame(gameLoop);
                 resolve("resolved");
             } else {
@@ -406,15 +418,6 @@ function controlLevel() {
 };
 
 //Level-Handling Helper Functions
-
-function increaseLevel() {
-    currentLevel++;
-
-    //Points are only made permanent once a level is completed.
-    permanentPoints += currentLevelPoints;
-
-    controlLevel();
-}
 
 //Resolves all promises and removes all instances from their object arrays.
 function resolveInstances(objectArray) {
@@ -497,6 +500,18 @@ function initializeDash() {
     }, allowDashAgainSeconds * 1000);
     addCurrentTimeout(resetAllowDashAgain);
 };
+
+//Allows for dashing again.
+function resetBlockieState() {
+    blockie.state = "playing";
+    recoveringFromDash = false;
+    allowDashAgain = true;
+    delete keysDown[16];
+    delete keysDown[37];
+    delete keysDown[38];
+    delete keysDown[39];
+    delete keysDown[40];
+}
 
 //Instance Functions
 
@@ -628,8 +643,6 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
             passivePoints.splice(instanceIndex, 1);
 
             resolve("resolved");
-
-            console.log("passive point timer");
         }, firingSeconds * 1000);
     });
 };
@@ -674,8 +687,6 @@ async function createActivePoint(x, y, waitingSeconds, firingSeconds) {
             activePoints.splice(instanceIndex, 1);
 
             resolve("resolved");
-
-            console.log("active point timer");
         }, firingSeconds * 1000);
     });
 };
@@ -798,12 +809,7 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
     await setWarningTimeouts(instance, movingVerticalLasers);
 
     //Cancels the next await if the current screen is being resolved by an activePoint.
-    if (cancelAwaitChain) {
-        console.log("supposed to exit");
-        return;
-    };
-
-    console.log("did not exit");
+    if (cancelAwaitChain) return;
 
     //Creates a timeout for the instance's destruction and links its deactivation functions.
     return await new Promise((resolve, reject) => {
@@ -817,8 +823,6 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
             movingVerticalLasers.splice(instanceIndex, 1);
 
             resolve("resolved");
-
-            console.log("moving vertical laser timer");
         }, firingSeconds * 1000);
     });
 };
@@ -853,8 +857,6 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
             bombs.splice(instanceIndex, 1);
 
             resolve("resolved");
-
-            console.log("bomb timer");
         }, firingSeconds * 1000);
     });
 };
@@ -894,9 +896,9 @@ function moveMovingVerticalLasers() {
 
 //Drawing Functions
 
-function drawBlockie() {
+function animateBlockie() {
     //Draws the remaining seconds meter for when Blockie can dash again.
-    if (!allowDashAgain && gameState !== "restartingLevel") {
+    if (!allowDashAgain && gameState === "playing") {
         context.fillStyle = "#FFFFFF";
         context.fillRect(blockie.x, blockie.y - 8, blockie.width * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
     };
@@ -925,7 +927,9 @@ function drawBlockie() {
         }, 0.5 * 1000);
         addCurrentTimeout(animateBlockieDestructing);
     };
+};
 
+function drawBlockie() {
     context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
 };
 
@@ -1083,6 +1087,20 @@ function drawBombs() {
     };
 };
 
+function drawPartyHats() {
+    for (let i = 0; i < partyHats.length; i++) {
+        let currentInstance = partyHats[i];
+
+        context.fillStyle = "#378CFF";
+
+        context.beginPath();
+        context.moveTo(currentInstance.x, currentInstance.y + currentInstance.height);
+        context.lineTo(currentInstance.x + currentInstance.width / 2, currentInstance.y);
+        context.lineTo(currentInstance.x + currentInstance.width, currentInstance.y + currentInstance.height);
+        context.fill();
+    };
+};
+
 //Collision Functions
 
 function checkCollisionsWithClass(classArray) {
@@ -1217,210 +1235,206 @@ function convertRadiansToDegrees(radians) {
 //Game loop
 
 function gameLoop() {
-    //Blockie's Movement
+    if (gameState === "playing") {
+        //Blockie's Movement
 
-    if (!recoveringFromDash) {
-        //xInput and yInput are both used to determine the angle that Blockie is moving in.
-        xInput = 0;
-        yInput = 0;
-
-        //Each WASD key changes the angle of Blockie's movement.
-        //Right
-        if (keysDown[68]) {
-            xInput++;
-        };
-
-        //Left
-        if (keysDown[65]) {
-            xInput--;
-        };
-
-        //Down
-        if (keysDown[83]) {
-            yInput++;
-        };
-
-        //Up
-        if (keysDown[87]) {
-            yInput--;
-        };
-
-        if (keysDown[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
-            //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
-            //animation.
-            initializeDash();
-        } else if ((keysDown[37] || keysDown[38] || keysDown[39] || keysDown[40]) && allowDashAgain) {
-            //Pressing the Arrow keys causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a 
-            //recovery animation. Directional inputs are reset to allow Blockie to dash only in the direction of the arrow keys.
+        if (!recoveringFromDash) {
+            //xInput and yInput are both used to determine the angle that Blockie is moving in.
             xInput = 0;
             yInput = 0;
 
+            //Each WASD key changes the angle of Blockie's movement.
             //Right
-            if (keysDown[39]) {
+            if (keysDown[68]) {
                 xInput++;
             };
 
             //Left
-            if (keysDown[37]) {
+            if (keysDown[65]) {
                 xInput--;
             };
 
             //Down
-            if (keysDown[40]) {
+            if (keysDown[83]) {
                 yInput++;
             };
 
             //Up
-            if (keysDown[38]) {
+            if (keysDown[87]) {
                 yInput--;
             };
 
-            initializeDash();
-        } else {
-            blockie.speed = 2;
-        };
+            if (keysDown[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+                //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
+                //animation.
+                initializeDash();
+            } else if ((keysDown[37] || keysDown[38] || keysDown[39] || keysDown[40]) && allowDashAgain) {
+                //Pressing the Arrow keys causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a 
+                //recovery animation. Directional inputs are reset to allow Blockie to dash only in the direction of the arrow keys.
+                xInput = 0;
+                yInput = 0;
 
-        //By the way atan2() works, all -y values return negative angles; therefore, the idle state image (image 0)
-        //must be set at -180 degrees and all angles must be increased by 180 degrees to rotate from the top-left in a 
-        //clockwise direction continuously.
-        blockie.angleMovingDegrees = -180;
+                //Right
+                if (keysDown[39]) {
+                    xInput++;
+                };
 
-        if (xInput !== 0 || yInput !== 0) {
-            //Finds the angle that Blockie is moving in radians based on the inputs.
-            blockie.angleMovingRadians = calculateAngleRadians(xInput, yInput);
+                //Left
+                if (keysDown[37]) {
+                    xInput--;
+                };
 
-            //Converted to make the direction of Blockie more discernible.
-            blockie.angleMovingDegrees = convertRadiansToDegrees(blockie.angleMovingRadians);
+                //Down
+                if (keysDown[40]) {
+                    yInput++;
+                };
 
-            //blockie.speed is the hypotenuse for all directional velocities to allow for diagonal movement.
-            blockie.dx = Math.cos(blockie.angleMovingRadians) * blockie.speed;
-            blockie.dy = Math.sin(blockie.angleMovingRadians) * blockie.speed;
+                //Up
+                if (keysDown[38]) {
+                    yInput--;
+                };
 
-            //The SubPixels store the directional velocity.
-            blockie.xSubPixel += blockie.dx;
-            blockie.ySubPixel += blockie.dy;
-
-            //The velocity is then floored to avoid the sprite from being on subpixel locations and being distorted.
-            blockie.dx = Math.floor(blockie.xSubPixel);
-            blockie.dy = Math.floor(blockie.ySubPixel);
-
-            //The SubPixels then store the decimal remainders so they can be added on the next step to not lose speed.
-            blockie.xSubPixel -= blockie.dx;
-            blockie.ySubPixel -= blockie.dy;
-
-            //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
-            blockie.testXLocation = blockie.x + blockie.dx;
-            blockie.testYLocation = blockie.y + blockie.dy;
-        } else {
-            //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
-            blockie.testXLocation = blockie.x;
-            blockie.testYLocation = blockie.y;
-        }
-
-        //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
-        //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
-        if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
-            blockie.x = blockie.testXLocation;
-        } else if (blockie.testXLocation <= 0) {
-            blockie.x = 0;
-        } else if ((blockie.testXLocation + blockie.width) >= canvas.width) {
-            blockie.x = canvas.width - blockie.width;
-        };
-
-        if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.height) >= canvas.height)) {
-            blockie.y = blockie.testYLocation;
-        } else if (blockie.testYLocation <= 0) {
-            blockie.y = 0;
-        } else if ((blockie.testYLocation + blockie.height) >= canvas.height) {
-            blockie.y = canvas.height - blockie.height;
-        };
-    };
-
-    //Other Instances' Movements
-
-    moveMovingHorizontalLasers();
-    moveMovingVerticalLasers();
-
-    //Fail state.
-
-    //Resets the collision flag to recheck every frame.
-    colliding = false;
-    collidingInstances.splice(0);
-
-    updateAllObjects();
-    for (let i = 0; i < allObjects.length; i++) {
-        checkCollisionsWithClass(allObjects[i]);
-    };
-
-    for (let i = 0; i < collidingInstances.length; i++) {
-        if (collidingInstances[i].constructor.name === "PassivePoint") {
-            //Adds points to the current level's total.
-            currentLevelPoints++;
-
-            //Resolves the PassivePoint's Promise and destroys the instance once it is touched.
-            let collidingPoint = collidingInstances[i];
-            collidingPoint.externalResolve();
-            clearTimeout(collidingPoint.timeout);
-            let instanceIndex = passivePoints.indexOf(collidingPoint);
-            passivePoints.splice(instanceIndex, 1);
-        } else if (collidingInstances[i].constructor.name === "ActivePoint") {
-            //Adds points to the current level's total.
-            currentLevelPoints++;
-
-            //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
-            for (let i = 0; i < currentTimeouts.length; i++) {
-                clearTimeout(currentTimeouts[i]);
+                initializeDash();
+            } else {
+                blockie.speed = 2;
             };
 
-            currentTimeouts.splice(0);
+            //By the way atan2() works, all -y values return negative angles; therefore, the idle state image (image 0)
+            //must be set at -180 degrees and all angles must be increased by 180 degrees to rotate from the top-left in a 
+            //clockwise direction continuously.
+            blockie.angleMovingDegrees = -180;
 
-            //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
-            for (let i = 0; i < currentIntervals.length; i++) {
-                clearInterval(currentIntervals[i]);
+            if (xInput !== 0 || yInput !== 0) {
+                //Finds the angle that Blockie is moving in radians based on the inputs.
+                blockie.angleMovingRadians = calculateAngleRadians(xInput, yInput);
+
+                //Converted to make the direction of Blockie more discernible.
+                blockie.angleMovingDegrees = convertRadiansToDegrees(blockie.angleMovingRadians);
+
+                //blockie.speed is the hypotenuse for all directional velocities to allow for diagonal movement.
+                blockie.dx = Math.cos(blockie.angleMovingRadians) * blockie.speed;
+                blockie.dy = Math.sin(blockie.angleMovingRadians) * blockie.speed;
+
+                //The SubPixels store the directional velocity.
+                blockie.xSubPixel += blockie.dx;
+                blockie.ySubPixel += blockie.dy;
+
+                //The velocity is then floored to avoid the sprite from being on subpixel locations and being distorted.
+                blockie.dx = Math.floor(blockie.xSubPixel);
+                blockie.dy = Math.floor(blockie.ySubPixel);
+
+                //The SubPixels then store the decimal remainders so they can be added on the next step to not lose speed.
+                blockie.xSubPixel -= blockie.dx;
+                blockie.ySubPixel -= blockie.dy;
+
+                //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
+                blockie.testXLocation = blockie.x + blockie.dx;
+                blockie.testYLocation = blockie.y + blockie.dy;
+            } else {
+                //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
+                blockie.testXLocation = blockie.x;
+                blockie.testYLocation = blockie.y;
+            }
+
+            //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
+            //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
+            if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
+                blockie.x = blockie.testXLocation;
+            } else if (blockie.testXLocation <= 0) {
+                blockie.x = 0;
+            } else if ((blockie.testXLocation + blockie.width) >= canvas.width) {
+                blockie.x = canvas.width - blockie.width;
             };
 
-            currentIntervals.splice(0);
-
-            blockie.state = "playing";
-            recoveringFromDash = false;
-            allowDashAgain = true;
-            delete keysDown[16];
-            delete keysDown[37];
-            delete keysDown[38];
-            delete keysDown[39];
-            delete keysDown[40];
-
-            cancelAwaitChain = true;
-
-            updateAllObjects();
-            for (let i = 0; i < allObjects.length; i++) {
-                resolveInstances(allObjects[i]);
+            if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.height) >= canvas.height)) {
+                blockie.y = blockie.testYLocation;
+            } else if (blockie.testYLocation <= 0) {
+                blockie.y = 0;
+            } else if ((blockie.testYLocation + blockie.height) >= canvas.height) {
+                blockie.y = canvas.height - blockie.height;
             };
-
-            //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
-            break;
-        } else {
-            restartLevel();
-            break;
         };
-    };
 
-    //Recalls the gameLoop for the next frame.
-    if (gameState === "playing") {
+        //Other Instances' Movements
+
+        moveMovingHorizontalLasers();
+        moveMovingVerticalLasers();
+
+        //Collision Handling
+
+        //Resets the collision flag to recheck every frame.
+        colliding = false;
+        collidingInstances.splice(0);
+
+        updateAllObjects();
+        for (let i = 0; i < allObjects.length; i++) {
+            checkCollisionsWithClass(allObjects[i]);
+        };
+
+        for (let i = 0; i < collidingInstances.length; i++) {
+            if (collidingInstances[i].constructor.name === "PassivePoint") {
+                //Adds points to the current level's total.
+                currentLevelPoints++;
+
+                //Resolves the PassivePoint's Promise and destroys the instance once it is touched.
+                let collidingPoint = collidingInstances[i];
+                collidingPoint.externalResolve();
+                clearTimeout(collidingPoint.timeout);
+                let instanceIndex = passivePoints.indexOf(collidingPoint);
+                passivePoints.splice(instanceIndex, 1);
+            } else if (collidingInstances[i].constructor.name === "ActivePoint") {
+                //Adds points to the current level's total.
+                currentLevelPoints++;
+
+                //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+                for (let i = 0; i < currentTimeouts.length; i++) {
+                    clearTimeout(currentTimeouts[i]);
+                };
+
+                currentTimeouts.splice(0);
+
+                //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+                for (let i = 0; i < currentIntervals.length; i++) {
+                    clearInterval(currentIntervals[i]);
+                };
+
+                currentIntervals.splice(0);
+
+                resetBlockieState();
+
+                cancelAwaitChain = true;
+
+                updateAllObjects();
+                for (let i = 0; i < allObjects.length; i++) {
+                    resolveInstances(allObjects[i]);
+                };
+
+                //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
+                break;
+            } else {
+                restartLevel();
+                break;
+            };
+        };
+
+        //Recalls the gameLoop for the next frame.
         window.requestAnimationFrame(gameLoop);
     };
 };
 
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
-//restarting (to draw Blockie's destructing animation).
+//restarting or changing levels.
 function drawingLoop() {
-    if (!displayingGameOverScreen) {
-        //Updates the amount of points in the gameInfo div.
-        document.getElementById("currentPoints").innerHTML = "Points: " + (permanentPoints + currentLevelPoints);
+    //Updates the amount of points in the gameInfo div.
+    document.getElementById("currentPoints").innerHTML = "Points: " + (permanentPoints + currentLevelPoints);
 
-        //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
-        context.clearRect(0, 0, canvas.width, canvas.height);
+    //Update the current level in the currentLevel div.
+    document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
 
+    //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (gameState === "playing") {
         drawPassivePoints();
         drawActivePoints();
         drawHorizontalLasers();
@@ -1428,8 +1442,14 @@ function drawingLoop() {
         drawBombs();
         drawMovingHorizontalLasers();
         drawMovingVerticalLasers();
+    } else if (gameState === "finishingLevel") {
+        drawPartyHats();
+    };
 
-        //Blockie is drawn last to appear over other instances when being destroyed.
+    if (gameState !== "displayingMessage") {
+        //Blockie is drawn last to appear over other instances when being destroyed. He is also drawn when restarting and finishing
+        //a level.
+        animateBlockie();
         drawBlockie();
     };
 

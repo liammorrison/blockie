@@ -364,6 +364,10 @@ async function restartLevel() {
         //Restarts the game.
         function resumePlaying() {
             if (keysDown[16] || keysDown[32]) {
+                //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
+                //otherwise it could never be deleted in the input function.
+                delete keysDown[16];
+
                 document.getElementById("messageDisplayer").innerHTML = "";
 
                 gameState = "playing";
@@ -371,7 +375,6 @@ async function restartLevel() {
 
                 controlLevel();
 
-                window.requestAnimationFrame(gameLoop);
                 resolve("resolved");
             } else {
                 window.requestAnimationFrame(resumePlaying);
@@ -411,6 +414,10 @@ async function increaseLevel() {
         function resumePlaying() {
             //Restarts the game.
             if (keysDown[16] || keysDown[32]) {
+                //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
+                //otherwise it could never be deleted in the input function.
+                delete keysDown[16];
+
                 document.getElementById("messageDisplayer").innerHTML = "";
                 gameState = "playing";
                 blockie.state = "playing";
@@ -422,7 +429,6 @@ async function increaseLevel() {
                 currentLevel++;
                 controlLevel();
 
-                window.requestAnimationFrame(gameLoop);
                 resolve("resolved");
             } else {
                 window.requestAnimationFrame(resumePlaying);
@@ -900,6 +906,19 @@ function updateAllObjects() {
     ];
 };
 
+function updateAllInteractiveObjects() {
+    allObjects = [
+        waitingTimeouts,
+        passivePoints,
+        activePoints,
+        horizontalLasers,
+        verticalLasers,
+        movingHorizontalLasers,
+        movingVerticalLasers,
+        bombs
+    ];
+};
+
 //Moves lasers by adding speed to their location every step.
 function moveMovingHorizontalLasers() {
     for (let i = 0; i < movingHorizontalLasers.length; i++) {
@@ -1169,6 +1188,8 @@ function initializeKeyInputs() {
     document.addEventListener("keydown", e => {
         //Special keys can only be set as "down" during the first single frame of being held until release. This is done by preventing
         //the key from being activated again before release and by deleting it from the array on the second frame of being pressed.
+        console.log("keydown running");
+
         if (shiftAlreadyPressed) {
             delete keysDown[16];
         };
@@ -1225,6 +1246,8 @@ function initializeKeyInputs() {
 
     //Deletes all currently unpressed keys from the keysDown object.
     document.addEventListener("keyup", e => {
+        console.log("keyup running");
+
         //Setting the flag to false allows the key to be set as "down" again.
         if (e.keyCode === 16) {
             delete keysDown[e.keyCode];
@@ -1293,6 +1316,10 @@ function gameLoop() {
             };
 
             if (keysDown[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+                //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
+                //otherwise it could never be deleted in the input function.
+                delete keysDown[16];
+
                 //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
                 //animation.
                 initializeDash();
@@ -1362,10 +1389,12 @@ function gameLoop() {
                 //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
                 blockie.testXLocation = blockie.x;
                 blockie.testYLocation = blockie.y;
-            }
+            };
+
+
 
             //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
-            //the last available space to avoid a gap (the walls are in rigid locations so nothing more fancy is needed).
+            //the last available space to avoid a gap.
             if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
                 blockie.x = blockie.testXLocation;
             } else if (blockie.testXLocation <= 0) {
@@ -1394,7 +1423,7 @@ function gameLoop() {
         colliding = false;
         collidingInstances.splice(0);
 
-        updateAllObjects();
+        updateAllInteractiveObjects();
         for (let i = 0; i < allObjects.length; i++) {
             checkCollisionsWithClass(allObjects[i]);
         };
@@ -1444,10 +1473,10 @@ function gameLoop() {
                 break;
             };
         };
-
-        //Recalls the gameLoop for the next frame.
-        window.requestAnimationFrame(gameLoop);
     };
+
+    //Recalls the gameLoop for the next frame.
+    window.requestAnimationFrame(gameLoop);
 };
 
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 

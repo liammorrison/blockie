@@ -16,7 +16,7 @@ let currentLevelPoints = 0;
 let xInput = 0;
 let yInput = 0;
 
-let colliding = false;
+let preventingMovement = false;
 
 let arrowLeftAlreadyPressed = false;
 let arrowUpAlreadyPressed = false;
@@ -85,8 +85,8 @@ class Player {
         this.dy = 0;
         this.xSubPixel = 0;
         this.ySubPixel = 0;
-        this.testXLocation = this.x;
-        this.testYLocation = this.y;
+        this.targetXLocation = this.x;
+        this.targetYLocation = this.y;
 
         this.state = "playing";
 
@@ -278,14 +278,7 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneThird + blockieAdjustment, oneThird + blockieAdjustment);
-
-        await Promise.all([
-            createActivePoint(fiveSixths - 8, fiveSixths - 8, 0, 11),
-
-            fireHorizontalLaser(oneThird - 8, 16, 3, 2),
-            fireVerticalLaser(oneThird - 8, 16, 3, 2)
-        ]);
+        initializeLevel(fiveSixths + blockieAdjustment, fiveSixths + blockieAdjustment);
 
         cancelAwaitChain = false;
 
@@ -942,7 +935,7 @@ function moveMovingVerticalLasers() {
 function animateBlockie() {
     //Draws the remaining seconds meter for when Blockie can dash again.
     if (!allowDashAgain && gameState === "playing") {
-        context.fillStyle = "#FFFFFF";
+        context.fillStyle = "#378CFF";
         context.fillRect(blockie.x, blockie.y - 8, blockie.width * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
     };
 
@@ -981,7 +974,7 @@ function drawPassivePoints() {
         let currentInstance = passivePoints[i];
 
         //Draws the remaining seconds meter for when the point will disappear.
-        context.fillStyle = "#FFFFFF";
+        context.fillStyle = "#E6FF16";
         context.fillRect(currentInstance.x, currentInstance.y - 8, currentInstance.width * (currentInstance.remainingFiringSeconds / currentInstance.totalFiringSeconds), 4);
 
         //Draws the point itself.
@@ -1152,12 +1145,20 @@ function drawPartyHats() {
 
 function checkCollisionsWithClass(classArray) {
     for (let i = 0; i < classArray.length; i++) {
-        checkSpritesColliding(blockie, classArray[i]);
+        checkInstancesColliding(blockie, classArray[i]);
+    };
+};
+
+function checkTestCollisionsWithClass(instanceOneX, instanceOneY, classArray) {
+    preventingMovement = false;
+
+    for (let i = 0; i < classArray.length; i++) {
+        checkTestInstancesColliding(blockie, instanceOneX, instanceOneY, classArray[i]);
     };
 };
 
 //Determines if two instances are "colliding". They cannot be colliding if one is in the warning state.
-function checkSpritesColliding(instanceOne, instanceTwo) {
+function checkInstancesColliding(instanceOne, instanceTwo) {
     let xColliding = false;
     let yColliding = false;
 
@@ -1175,8 +1176,31 @@ function checkSpritesColliding(instanceOne, instanceTwo) {
 
     //The instances must have an overlapping area (x and y components) for there to be a collision.
     if (xColliding && yColliding) {
-        colliding = true;
         collidingInstances.push(instanceTwo);
+    };
+};
+
+//Determines if two instances are "colliding" (with Blockie's theoretical test locations). They cannot be colliding if one is in 
+//the warning state.
+function checkTestInstancesColliding(instanceOne, instanceOneX, instanceOneY, instanceTwo) {
+    let xColliding = false;
+    let yColliding = false;
+
+    if ((instanceTwo.x <= instanceOneX) && (instanceOneX <= instanceTwo.x + instanceTwo.width)) {
+        xColliding = true;
+    } else if ((instanceOneX <= instanceTwo.x) && (instanceTwo.x <= instanceOneX + instanceOne.width)) {
+        xColliding = true;
+    };
+
+    if ((instanceTwo.y <= instanceOneY) && (instanceOneY <= instanceTwo.y + instanceTwo.height)) {
+        yColliding = true;
+    } else if ((instanceOneY <= instanceTwo.y) && (instanceTwo.y <= instanceOneY + instanceOne.height)) {
+        yColliding = true;
+    };
+
+    //The instances must have an overlapping area (x and y components) for there to be a collision.
+    if (xColliding && yColliding) {
+        preventingMovement = true;
     };
 };
 
@@ -1188,8 +1212,6 @@ function initializeKeyInputs() {
     document.addEventListener("keydown", e => {
         //Special keys can only be set as "down" during the first single frame of being held until release. This is done by preventing
         //the key from being activated again before release and by deleting it from the array on the second frame of being pressed.
-        console.log("keydown running");
-
         if (shiftAlreadyPressed) {
             delete keysDown[16];
         };
@@ -1246,8 +1268,6 @@ function initializeKeyInputs() {
 
     //Deletes all currently unpressed keys from the keysDown object.
     document.addEventListener("keyup", e => {
-        console.log("keyup running");
-
         //Setting the flag to false allows the key to be set as "down" again.
         if (e.keyCode === 16) {
             delete keysDown[e.keyCode];
@@ -1383,33 +1403,89 @@ function gameLoop() {
                 blockie.ySubPixel -= blockie.dy;
 
                 //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
-                blockie.testXLocation = blockie.x + blockie.dx;
-                blockie.testYLocation = blockie.y + blockie.dy;
+                blockie.targetXLocation = blockie.x + blockie.dx;
+                blockie.targetYLocation = blockie.y + blockie.dy;
             } else {
                 //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
-                blockie.testXLocation = blockie.x;
-                blockie.testYLocation = blockie.y;
+                blockie.targetXLocation = blockie.x;
+                blockie.targetYLocation = blockie.y;
             };
 
+            //Movement Obstacles
 
+            checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, walls);
+
+            //Blockie's movement will be prevented on some axes if he is touching a wall at his target location.
+            if (preventingMovement) {
+                blockie.targetXLocation = blockie.x;
+                blockie.targetYLocation = blockie.y;
+
+                let xTestingDistance = 0;
+                let yTestingDistance = 0;
+
+                //This checks for the last available free space in the direction Blockie is traveling by starting at his current
+                //location and moving in the direction of dx and dy.
+                let xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
+                let yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
+                checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation + yChange, walls);
+
+                while (!preventingMovement && Math.abs(xTestingDistance) < Math.abs(blockie.dx) - 1 && Math.abs(yTestingDistance) < Math.abs(blockie.dy) - 1) {
+                    blockie.targetXLocation += xChange;
+                    blockie.targetYLocation += yChange;
+
+                    xTestingDistance += xChange;
+                    yTestingDistance += yChange;
+
+                    xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
+                    yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
+                    checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation + yChange, walls);
+                };
+
+                //This checks for the last available x location after Blockie has already moved in his desired direction. This 
+                //allows for moving along walls while moving in a diagonal direction.
+                xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
+                checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation, walls);
+
+                while (!preventingMovement && Math.abs(xTestingDistance) <= Math.abs(blockie.dx) - 1) {
+                    blockie.targetXLocation += xChange;
+
+                    xTestingDistance += xChange;
+
+                    xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
+                    checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation, walls);
+                };
+
+                //This checks for the last available y location after Blockie has already moved in his desired direction. This 
+                //allows for moving along walls while moving in a diagonal direction.
+                yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
+                checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
+
+                while (!preventingMovement && Math.abs(yTestingDistance) <= Math.abs(blockie.dy) - 1) {
+                    blockie.targetYLocation += yChange;
+
+                    yTestingDistance += yChange;
+
+                    yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
+                    checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
+                };
+            };
 
             //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
             //the last available space to avoid a gap.
-            if (!(blockie.testXLocation <= 0 || (blockie.testXLocation + blockie.width) >= canvas.width)) {
-                blockie.x = blockie.testXLocation;
-            } else if (blockie.testXLocation <= 0) {
-                blockie.x = 0;
-            } else if ((blockie.testXLocation + blockie.width) >= canvas.width) {
-                blockie.x = canvas.width - blockie.width;
+            if (blockie.targetXLocation <= 0) {
+                blockie.targetXLocation = 0;
+            } else if ((blockie.targetXLocation + blockie.width) >= canvas.width) {
+                blockie.targetXLocation = canvas.width - blockie.width;
             };
 
-            if (!(blockie.testYLocation <= 0 || (blockie.testYLocation + blockie.height) >= canvas.height)) {
-                blockie.y = blockie.testYLocation;
-            } else if (blockie.testYLocation <= 0) {
-                blockie.y = 0;
-            } else if ((blockie.testYLocation + blockie.height) >= canvas.height) {
-                blockie.y = canvas.height - blockie.height;
+            if (blockie.targetYLocation <= 0) {
+                blockie.targetYLocation = 0;
+            } else if ((blockie.targetYLocation + blockie.height) >= canvas.height) {
+                blockie.targetYLocation = canvas.height - blockie.height;
             };
+
+            blockie.x = blockie.targetXLocation;
+            blockie.y = blockie.targetYLocation;
         };
 
         //Other Instances' Movements
@@ -1419,8 +1495,6 @@ function gameLoop() {
 
         //Collision Handling
 
-        //Resets the collision flag to recheck every frame.
-        colliding = false;
         collidingInstances.splice(0);
 
         updateAllInteractiveObjects();

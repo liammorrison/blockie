@@ -290,43 +290,22 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(pointTwo + blockieAdjustment, oneHalf + blockieAdjustment);
+        initializeLevel(oneHalf + blockieAdjustment, pointSeven + blockieAdjustment);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(0, 0, fullScreen, threeEigths),
-            createWall(0, fiveEigths, fullScreen, threeEigths),
-            createActivePoint(pointSeven - 8, oneHalf - 8, 0),
-            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
+            createWall(0, 0, fullScreen, fiveEigths),
+            createPassivePoint(pointTwo - 8, pointSeven - 8, 0, 10),
+
+            loopFireVerticalLasers(oneHalf - 8, 16, 2, 2),
+
+            createActivePoint(pointSeven - 8, pointSeven - 8, 3)
         ]);
 
         cancelAwaitChain = false;
 
-        await Promise.all([
-            createWall(0, 0, fullScreen, threeEigths),
-            createWall(0, fiveEigths, oneEigth, threeEigths),
-            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
-            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
-            createPassivePoint(pointTwo - 8, pointEight - 8, 0, 15),
-            createPassivePoint(pointSeven - 8, pointEight - 8, 0, 15),
-
-            createActivePoint(pointTwo - 8, oneHalf - 8, 4)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, threeEigths, threeEigths),
-            createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, fullScreen),
-            createActivePoint(oneHalf - 8, pointSeven - 8, 0),
-            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
-        ]);
-
-        cancelAwaitChain = false;
-
-        console.log("Level 1 completed.");
+        console.log("Level 2 completed.");
         increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");
@@ -768,6 +747,15 @@ async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
     });
 };
 
+async function loopFireVerticalLasers(x, width, waitingSeconds, firingSeconds) {
+    while (!cancelAwaitChain) {
+        await fireVerticalLaser(x, width, waitingSeconds, firingSeconds);
+    };
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+};
+
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
@@ -793,10 +781,9 @@ async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
         instance.externalReject = reject;
 
         instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = verticalLasers.indexOf(instance);
             verticalLasers.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
@@ -1054,7 +1041,7 @@ function drawHorizontalLasers() {
                 context.strokeRect(currentInstance.x + 16, currentInstance.y, 16, currentInstance.height);
                 context.strokeRect(currentInstance.width - 32, currentInstance.y, 16, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#741EFF";
+                context.fillStyle = "#FF51EF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1071,7 +1058,7 @@ function drawVerticalLasers() {
                 context.strokeRect(currentInstance.x, currentInstance.y + 16, currentInstance.width, 16);
                 context.strokeRect(currentInstance.x, currentInstance.height - 32, currentInstance.width, 16);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#741EFF";
+                context.fillStyle = "#FF51EF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1101,7 +1088,7 @@ function drawMovingHorizontalLasers() {
                 context.lineTo(currentInstance.width - 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#741EFF";
+                context.fillStyle = "#FF51EF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1131,7 +1118,7 @@ function drawMovingVerticalLasers() {
                 context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 32);
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#741EFF";
+                context.fillStyle = "#FF51EF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1147,7 +1134,7 @@ function drawBombs() {
                 context.strokeStyle = "#FF51EF";
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#741EFF";
+                context.fillStyle = "#FF51EF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1606,9 +1593,9 @@ function drawingLoop() {
         drawActivePoints();
         drawHorizontalLasers();
         drawVerticalLasers();
-        drawBombs();
         drawMovingHorizontalLasers();
         drawMovingVerticalLasers();
+        drawBombs();
     } else if (gameState === "finishingLevel") {
         drawPartyHats();
     };

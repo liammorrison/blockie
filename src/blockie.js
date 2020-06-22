@@ -267,31 +267,66 @@ let blockie = new Player();
 
 //Since these are frequently used numbers, they are variables for simplicity. The canvas' width and height are the same, so they 
 //work with both axes.
-let oneSixth = 3 * 16;
-let oneThird = 6 * 16;
-let center = canvas.width / 2;
-let twoThirds = 26 * 16;
-let fiveSixths = 29 * 16;
-let maxEdge = canvas.width;
+let oneEigth = 4 * 16;
+let oneFourth = 8 * 16;
+let threeEigths = 12 * 16;
+let oneHalf = canvas.width / 2;
+let fiveEigths = 20 * 16;
+let threeFourths = 24 * 16;
+let sevenEigths = 28 * 16;
+let fullScreen = 32 * 16;
+
+let pointOne = 2 * 16;
+let pointTwo = 6 * 16;
+let pointThree = 10 * 16;
+let pointFour = 14 * 16;
+let pointFive = 18 * 16;
+let pointSix = 22 * 16;
+let pointSeven = 26 * 16;
+let pointEight = 30 * 16;
+
 let blockieAdjustment = -blockie.width / 2
 
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(fiveSixths + blockieAdjustment, fiveSixths + blockieAdjustment);
+        initializeLevel(pointTwo + blockieAdjustment, oneHalf + blockieAdjustment);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createActivePoint(center - 8, center - 8, 0, 19),
-            createWall(oneThird, oneThird, 7 * 16, 20 * 16),
-            createWall(13 * 16, 19 * 16, 6 * 16, 7 * 16),
-            createWall(19 * 16, 0, 13 * 16, twoThirds),
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createActivePoint(pointSeven - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
         ]);
 
         cancelAwaitChain = false;
 
-        console.log("Level 2 completed.");
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(pointTwo - 8, pointEight - 8, 0, 15),
+            createPassivePoint(pointSeven - 8, pointEight - 8, 0, 15),
+
+            createActivePoint(pointTwo - 8, oneHalf - 8, 4)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, pointSeven - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log("Level 1 completed.");
         increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");

@@ -290,7 +290,53 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeFourths),
+            createPassivePoint(pointTwo - 8, sevenEigths - 8, 0, 10),
+
+            loopFireVerticalLasers(oneHalf - 8, 16, 1, 2),
+
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+
+            fireBomb(threeFourths, threeFourths, oneFourth, oneFourth, 1, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, fullScreen),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, pointTwo - 8, 0),
+            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 1, 5)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
+            createActivePoint(oneHalf - 8, pointEight - 8, 0),
+            createPassivePoint(pointOne - 8, oneHalf - 8, 0, 12),
+            createPassivePoint(pointEight - 8, oneHalf - 8, 0, 12),
+            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 1, 2)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log("Level 2 completed.");
+        increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");
     };
@@ -320,14 +366,14 @@ function initializeLevel(blockieX, blockieY) {
 async function restartLevel() {
     gameState = "restartingLevel";
 
-    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
     for (let i = 0; i < currentTimeouts.length; i++) {
         clearTimeout(currentTimeouts[i]);
     };
 
     currentTimeouts.splice(0);
 
-    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
+    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
     for (let i = 0; i < currentIntervals.length; i++) {
         clearInterval(currentIntervals[i]);
     };
@@ -339,8 +385,12 @@ async function restartLevel() {
         rejectInstances(allObjects[i]);
     };
 
+    //Animates Blockie's destruction.
     blockie.state = "destructing";
     blockie.sx = 0;
+
+    //Removes all points collected in the level.
+    currentLevelPoints = 0;
 
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
@@ -355,9 +405,9 @@ async function restartLevel() {
         //Restarts the game.
         function resumePlaying() {
             if (keysDown[16] || keysDown[32]) {
-                //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
-                //otherwise it could never be deleted in the input function.
+                //Prevents dashing immediatley after restarting the game.
                 delete keysDown[16];
+                delete keysDown[32];
 
                 document.getElementById("messageDisplayer").innerHTML = "";
 
@@ -405,9 +455,9 @@ async function increaseLevel() {
         function resumePlaying() {
             //Restarts the game.
             if (keysDown[16] || keysDown[32]) {
-                //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
-                //otherwise it could never be deleted in the input function.
+                //Prevents dashing immediatley after restarting the game.
                 delete keysDown[16];
+                delete keysDown[32];
 
                 document.getElementById("messageDisplayer").innerHTML = "";
                 gameState = "playing";
@@ -530,7 +580,10 @@ function resetBlockieState() {
     blockie.state = "playing";
     recoveringFromDash = false;
     allowDashAgain = true;
+
+    //Prevents Blockie from dashing again based off of one button press.
     delete keysDown[16];
+    delete keysDown[32];
     delete keysDown[37];
     delete keysDown[38];
     delete keysDown[39];
@@ -1381,7 +1434,7 @@ function gameLoop() {
                 yInput--;
             };
 
-            if (keysDown[16] && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+            if ((keysDown[16] || keysDown[32]) && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
                 //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
                 //otherwise it could never be deleted in the input function.
                 delete keysDown[16];
@@ -1605,7 +1658,7 @@ function gameLoop() {
 //restarting or changing levels.
 function drawingLoop() {
     //Updates the amount of points in the gameInfo div.
-    document.getElementById("currentPoints").innerHTML = "Points: " + (permanentPoints + currentLevelPoints);
+    document.getElementById("currentPoints").innerHTML = `Points: ${currentLevelPoints}|7`;
 
     //Update the current level in the currentLevel div.
     document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;

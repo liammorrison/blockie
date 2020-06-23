@@ -27,7 +27,7 @@ let spaceAlreadyPressed = false;
 
 let recoveringFromDash = false;
 let allowDashAgain = true;
-let dashDistance = 88;
+let dashDistance = 96;
 let dashRecoverySeconds = 0.3;
 let allowDashAgainSeconds = 0.9;
 
@@ -295,47 +295,63 @@ async function levelOne() {
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(0, 0, fullScreen, threeFourths),
-            createPassivePoint(pointTwo - 8, sevenEigths - 8, 0, 10),
-
-            loopFireVerticalLasers(oneHalf - 8, 16, 1, 2),
-
-            createActivePoint(sevenEigths - 8, sevenEigths - 8, 3)
+            createWall(0, 0, 14 * 16, fullScreen),
+            createWall(14 * 16, 0, 4 * 16, 14 * 16),
+            createWall(14 * 16, 18 * 16, 4 * 16, 2 * 16),
+            createWall(14 * 16, 24 * 16, 4 * 16, 2 * 16),
+            createWall(14 * 16, 30 * 16, 4 * 16, 2 * 16),
+            createWall(18 * 16, 0, 14 * 16, fullScreen),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, 22 * 16 - 8, 0, 10)
         ]);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createWall(0, 0, fullScreen, 2 * 16),
+            createWall(0, 6 * 16, fullScreen, 2 * 16),
+            createWall(0, 12 * 16, fullScreen, 2 * 16),
+            createWall(0, 18 * 16, fullScreen, 14 * 16),
+            createWall(0, 0, 2 * 16, fullScreen),
+            createWall(6 * 16, 0, 2 * 16, fullScreen),
+            createWall(12 * 16, 0, 2 * 16, fullScreen),
+            createWall(18 * 16, 0, 2 * 16, fullScreen),
+            createWall(24 * 16, 0, 2 * 16, fullScreen),
+            createWall(30 * 16, 0, 2 * 16, fullScreen),
+            createPassivePoint(4 * 16 - 8, oneHalf - 8, 0, 16),
+            createPassivePoint(28 * 16 - 8, oneHalf - 8, 0, 16),
+            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 2, 1),
 
-            fireBomb(threeFourths, threeFourths, oneFourth, oneFourth, 1, 3)
+            createActivePoint(oneHalf - 8, 4 * 16 - 8, 3)
         ]);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(0, 0, threeEigths, fullScreen),
-            createWall(fiveEigths, 0, threeEigths, fullScreen),
-            createActivePoint(oneHalf - 8, pointTwo - 8, 0),
-            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 1, 5)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, threeEigths),
-            createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
+            createWall(0, 0, 14 * 16, fullScreen),
+            createWall(18 * 16, 0, 14 * 16, fullScreen),
             createActivePoint(oneHalf - 8, pointEight - 8, 0),
-            createPassivePoint(pointOne - 8, oneHalf - 8, 0, 12),
-            createPassivePoint(pointEight - 8, oneHalf - 8, 0, 12),
-            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 1, 2)
+            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 0, 5)
         ]);
 
         cancelAwaitChain = false;
 
-        console.log("Level 2 completed.");
+        await Promise.all([
+            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+            fireMovingHorizontalLaser(0, 32, 2, 1, 20),
+            fireMovingHorizontalLaser(0, 32, 1.25, 1, 20),
+            fireMovingHorizontalLaser(0, 32, 0.75, 1, 20)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log("Level 3 completed.");
         increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");

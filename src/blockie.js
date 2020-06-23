@@ -290,23 +290,7 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, pointSeven + blockieAdjustment);
 
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, fiveEigths),
-            createPassivePoint(pointTwo - 8, pointSeven - 8, 0, 10),
-
-            loopFireVerticalLasers(oneHalf - 8, 16, 2, 2),
-
-            createActivePoint(pointSeven - 8, pointSeven - 8, 3)
-        ]);
-
-        cancelAwaitChain = false;
-
-        console.log("Level 2 completed.");
-        increaseLevel();
     } catch (error) {
         console.log("Level 1 restarted.");
     };
@@ -568,10 +552,9 @@ function setWaitingTimeout(waitingSeconds) {
         instance.externalReject = reject;
 
         instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = waitingTimeouts.indexOf(instance);
             waitingTimeouts.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, waitingSeconds * 1000);
     });
@@ -635,9 +618,9 @@ async function setWarningTimeouts(instanceAffecting) {
         instanceAffecting.externalReject = reject;
 
         instanceAffecting.timeout = setTimeout(() => {
+            //Makes the affected instance visible and collidable.
             instanceAffecting.state = "firing";
             instanceAffecting.visible = true;
-
             resolve("resolved");
         }, warningSeconds * 0.25 * 1000);
     });
@@ -678,10 +661,9 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
         instance.timeout = setTimeout(() => {
             removeCurrentInterval(remainingFiringSecondsInterval);
 
-            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = passivePoints.indexOf(instance);
             passivePoints.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
@@ -713,6 +695,17 @@ async function createActivePoint(x, y, waitingSeconds) {
     });
 };
 
+//Continuously recreates the same instance until the activePoint is touched.
+async function loopFireHorizontalLasers(y, height, waitingSeconds, firingSeconds) {
+    //Creates a new instance after each previous one has resolved.
+    while (!cancelAwaitChain) {
+        await fireHorizontalLaser(y, height, waitingSeconds, firingSeconds);
+    };
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    return;
+};
+
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
@@ -738,22 +731,23 @@ async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
         instance.externalReject = reject;
 
         instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = horizontalLasers.indexOf(instance);
             horizontalLasers.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
 };
 
+//Continuously recreates the same instance until the activePoint is touched.
 async function loopFireVerticalLasers(x, width, waitingSeconds, firingSeconds) {
+    //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireVerticalLaser(x, width, waitingSeconds, firingSeconds);
     };
 
     //Cancels the next await if the current screen is being resolved by an activePoint.
-    if (cancelAwaitChain) return;
+    return;
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
@@ -789,6 +783,17 @@ async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
     });
 };
 
+//Continuously recreates the same instance until the activePoint is touched.
+async function loopFireMovingHorizontalLasers(y, height, speed, waitingSeconds, firingSeconds) {
+    //Creates a new instance after each previous one has resolved.
+    while (!cancelAwaitChain) {
+        await fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firingSeconds);
+    };
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    return;
+};
+
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
@@ -814,13 +819,23 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firin
         instance.externalReject = reject;
 
         instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = movingHorizontalLasers.indexOf(instance);
             movingHorizontalLasers.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
+};
+
+//Continuously recreates the same instance until the activePoint is touched.
+async function loopFireMovingVerticalLasers(x, width, speed, waitingSeconds, firingSeconds) {
+    //Creates a new instance after each previous one has resolved.
+    while (!cancelAwaitChain) {
+        await fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSeconds);
+    };
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    return;
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
@@ -848,13 +863,23 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
         instance.externalReject = reject;
 
         instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = movingVerticalLasers.indexOf(instance);
             movingVerticalLasers.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
+};
+
+//Continuously recreates the same instance until the activePoint is touched.
+async function loopFireBombs(x, y, width, height, waitingSeconds, firingSeconds) {
+    //Creates a new instance after each previous one has resolved.
+    while (!cancelAwaitChain) {
+        await fireBomb(x, y, width, height, waitingSeconds, firingSeconds);
+    };
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    return;
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
@@ -882,10 +907,9 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
         instance.externalReject = reject;
 
         instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) once it is "destroyed".
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = bombs.indexOf(instance);
             bombs.splice(instanceIndex, 1);
-
             resolve("resolved");
         }, firingSeconds * 1000);
     });
@@ -1442,52 +1466,54 @@ function gameLoop() {
                 blockie.targetXLocation = blockie.x;
                 blockie.targetYLocation = blockie.y;
 
+                let xChange = 0;
+                let yChange = 0;
                 let xTestingDistance = 0;
                 let yTestingDistance = 0;
 
-                //This checks for the last available free space in the direction Blockie is traveling by starting at his current
-                //location and moving in the direction of dx and dy.
-                let xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
-                let yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
-                checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation + yChange, walls);
-
-                while (!preventingMovement && Math.abs(xTestingDistance) < Math.abs(blockie.dx) - 1 && Math.abs(yTestingDistance) < Math.abs(blockie.dy) - 1) {
-                    blockie.targetXLocation += xChange;
-                    blockie.targetYLocation += yChange;
-
-                    xTestingDistance += xChange;
-                    yTestingDistance += yChange;
-
-                    xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
-                    yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
-                    checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation + yChange, walls);
-                };
-
                 //This checks for the last available x location after Blockie has already moved in his desired direction. This 
                 //allows for moving along walls while moving in a diagonal direction.
-                xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
+                if (Math.abs(blockie.dx - xTestingDistance) < 1) {
+                    xChange = blockie.dx - xTestingDistance;
+                } else {
+                    xChange = Math.sign(blockie.dx);
+                };
+
                 checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation, walls);
 
                 while (!preventingMovement && Math.abs(xTestingDistance) <= Math.abs(blockie.dx) - 1) {
                     blockie.targetXLocation += xChange;
-
                     xTestingDistance += xChange;
 
-                    xChange = Math.min(blockie.dx - xTestingDistance, Math.sign(blockie.dx));
+                    if (Math.abs(blockie.dx - xTestingDistance) < 1) {
+                        xChange = blockie.dx - xTestingDistance;
+                    } else {
+                        xChange = Math.sign(blockie.dx);
+                    };
+
                     checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation, walls);
                 };
 
                 //This checks for the last available y location after Blockie has already moved in his desired direction. This 
                 //allows for moving along walls while moving in a diagonal direction.
-                yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
+                if (Math.abs(blockie.dy - yTestingDistance) < 1) {
+                    yChange = blockie.dy - yTestingDistance;
+                } else {
+                    yChange = Math.sign(blockie.dy);
+                };
+
                 checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
 
                 while (!preventingMovement && Math.abs(yTestingDistance) <= Math.abs(blockie.dy) - 1) {
                     blockie.targetYLocation += yChange;
-
                     yTestingDistance += yChange;
 
-                    yChange = Math.min(blockie.dy - yTestingDistance, Math.sign(blockie.dy));
+                    if (Math.abs(blockie.dy - yTestingDistance) < 1) {
+                        yChange = blockie.dy - yTestingDistance;
+                    } else {
+                        yChange = Math.sign(blockie.dy);
+                    };
+
                     checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
                 };
             };
@@ -1587,6 +1613,11 @@ function drawingLoop() {
     //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    if (gameState !== "displayingMessage") {
+        animateBlockie();
+        drawBlockie();
+    };
+
     if (gameState === "playing") {
         drawWalls();
         drawPassivePoints();
@@ -1598,13 +1629,6 @@ function drawingLoop() {
         drawBombs();
     } else if (gameState === "finishingLevel") {
         drawPartyHats();
-    };
-
-    if (gameState !== "displayingMessage") {
-        //Blockie is drawn last to appear over other instances when being destroyed. He is also drawn when restarting and finishing
-        //a level.
-        animateBlockie();
-        drawBlockie();
     };
 
     window.requestAnimationFrame(drawingLoop);

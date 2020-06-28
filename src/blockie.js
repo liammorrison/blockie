@@ -254,7 +254,7 @@ class Wall {
 class PartyHat {
     constructor() {
         this.x = blockie.x + 8;
-        this.y = 0;
+        this.y = -20;
         this.width = 16;
         this.height = 20;
     };

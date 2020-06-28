@@ -38,6 +38,31 @@ body {
     outline: 5px solid hsl(0, 100%, 100%);
 }
 
+#countdownTimerContainer {
+    width: 64px;
+    height: 32px;
+    position: absolute;
+    float: right;
+    margin-left: 424px;
+    margin-top: 24px;
+    text-align: center;
+    align-items: center;
+    font-size: small;
+}
+
+#countdownTimerSprite {
+    width: 64px;
+    height: 32px;
+    background: url("../images/spCountdownTimerBomb.png");
+    position: absolute;
+}
+
+#countdownTimer {
+    position: absolute;
+    margin-top: 6px;
+    margin-left: 10px;
+}
+
 #messageDisplayer {
     width: 480px;
     height: 100px;

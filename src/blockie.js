@@ -24,6 +24,7 @@ let arrowRightAlreadyPressed = false;
 let arrowDownAlreadyPressed = false;
 let shiftAlreadyPressed = false;
 let spaceAlreadyPressed = false;
+let pAlreadyPressed = false;
 
 let recoveringFromDash = false;
 let allowDashAgain = true;
@@ -320,13 +321,13 @@ async function levelOne() {
             createWall(30 * 16, 0, 2 * 16, fullScreen),
             createPassivePoint(4 * 16 - 8, oneHalf - 8, 0, 16),
             createPassivePoint(28 * 16 - 8, oneHalf - 8, 0, 16),
-            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 2, 1),
-            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 2, 1),
-            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 1),
-            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 1),
-            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 1),
-            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 2, 1),
-            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 2, 1),
+            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
 
             createActivePoint(oneHalf - 8, 4 * 16 - 8, 3)
         ]);
@@ -341,6 +342,20 @@ async function levelOne() {
         ]);
 
         cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+            loopFireMovingHorizontalLasers(0, 32, 2, 0, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 2, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 4, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 6, 1, 4)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log("Level 3 completed.");
+        increaseLevel();
+
 
         await Promise.all([
             createActivePoint(oneHalf - 8, pointOne - 8, 0),
@@ -379,7 +394,7 @@ function initializeLevel(blockieX, blockieY) {
 };
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
-async function restartLevel() {
+async function restartLevel(blockieDied) {
     gameState = "restartingLevel";
 
     //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
@@ -408,38 +423,46 @@ async function restartLevel() {
     //Removes all points collected in the level.
     currentLevelPoints = 0;
 
-    await new Promise((resolve, reject) => {
-        let drawGameOverScreen = setTimeout(() => {
-            //Draws the game over screen.
-            document.getElementById("messageDisplayer").innerHTML = "Determination is key!";
-            gameState = "displayingMessage";
-            resolve("resolved");
-        }, 1.5 * 1000);
-    });
-
-    await new Promise((resolve, reject) => {
-        //Restarts the game.
-        function resumePlaying() {
-            if (keysDown[16] || keysDown[32]) {
-                //Prevents dashing immediatley after restarting the game.
-                delete keysDown[16];
-                delete keysDown[32];
-
-                document.getElementById("messageDisplayer").innerHTML = "";
-
-                gameState = "playing";
-                blockie.state = "playing";
-
-                controlLevel();
-
+    //Animates Blockie's destruction and a game over screen if he dies, but skips over that if P is pressed.
+    if (blockieDied) {
+        await new Promise((resolve, reject) => {
+            let drawGameOverScreen = setTimeout(() => {
+                //Draws the game over screen.
+                document.getElementById("messageDisplayer").innerHTML = "Determination is key!";
+                gameState = "displayingMessage";
                 resolve("resolved");
-            } else {
-                window.requestAnimationFrame(resumePlaying);
-            };
-        };
+            }, 1.5 * 1000);
+        });
 
-        window.requestAnimationFrame(resumePlaying);
-    });
+        await new Promise((resolve, reject) => {
+            //Restarts the game.
+            function resumePlaying() {
+                if (keysDown[16] || keysDown[32]) {
+                    //Prevents dashing immediatley after restarting the game.
+                    delete keysDown[16];
+                    delete keysDown[32];
+
+                    document.getElementById("messageDisplayer").innerHTML = "";
+
+                    gameState = "playing";
+                    blockie.state = "playing";
+
+                    controlLevel();
+
+                    resolve("resolved");
+                } else {
+                    window.requestAnimationFrame(resumePlaying);
+                };
+            };
+
+            window.requestAnimationFrame(resumePlaying);
+        });
+    } else {
+        gameState = "playing";
+        blockie.state = "playing";
+
+        controlLevel();
+    };
 };
 
 async function increaseLevel() {
@@ -765,7 +788,9 @@ async function createActivePoint(x, y, waitingSeconds) {
 };
 
 //Continuously recreates the same instance until the activePoint is touched.
-async function loopFireHorizontalLasers(y, height, waitingSeconds, firingSeconds) {
+async function loopFireHorizontalLasers(y, height, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    await setWaitingTimeout(initialWaitingSeconds);
+
     //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireHorizontalLaser(y, height, waitingSeconds, firingSeconds);
@@ -809,7 +834,9 @@ async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
 };
 
 //Continuously recreates the same instance until the activePoint is touched.
-async function loopFireVerticalLasers(x, width, waitingSeconds, firingSeconds) {
+async function loopFireVerticalLasers(x, width, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    await setWaitingTimeout(initialWaitingSeconds);
+
     //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireVerticalLaser(x, width, waitingSeconds, firingSeconds);
@@ -853,7 +880,9 @@ async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
 };
 
 //Continuously recreates the same instance until the activePoint is touched.
-async function loopFireMovingHorizontalLasers(y, height, speed, waitingSeconds, firingSeconds) {
+async function loopFireMovingHorizontalLasers(y, height, speed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    await setWaitingTimeout(initialWaitingSeconds);
+
     //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firingSeconds);
@@ -897,7 +926,9 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firin
 };
 
 //Continuously recreates the same instance until the activePoint is touched.
-async function loopFireMovingVerticalLasers(x, width, speed, waitingSeconds, firingSeconds) {
+async function loopFireMovingVerticalLasers(x, width, speed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    await setWaitingTimeout(initialWaitingSeconds);
+
     //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSeconds);
@@ -941,7 +972,9 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
 };
 
 //Continuously recreates the same instance until the activePoint is touched.
-async function loopFireBombs(x, y, width, height, waitingSeconds, firingSeconds) {
+async function loopFireBombs(x, y, width, height, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    await setWaitingTimeout(initialWaitingSeconds);
+
     //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireBomb(x, y, width, height, waitingSeconds, firingSeconds);
@@ -1345,6 +1378,9 @@ function initializeKeyInputs() {
         if (arrowDownAlreadyPressed) {
             delete keysDown[40];
         };
+        if (pAlreadyPressed) {
+            delete keysDown[80];
+        };
 
         if (e.keyCode === 16) {
             if (!shiftAlreadyPressed) {
@@ -1376,6 +1412,11 @@ function initializeKeyInputs() {
                 keysDown[e.keyCode] = true;
                 arrowDownAlreadyPressed = true;
             };
+        } else if (e.keyCode === 80) {
+            if (!pAlreadyPressed) {
+                keysDown[e.keyCode] = true;
+                pAlreadyPressed = true;
+            };
         } else {
             keysDown[e.keyCode] = true;
         };
@@ -1402,6 +1443,9 @@ function initializeKeyInputs() {
         } else if (e.keyCode === 40) {
             delete keysDown[e.keyCode];
             arrowDownAlreadyPressed = false;
+        } else if (e.keyCode === 80) {
+            delete keysDown[e.keyCode];
+            pAlreadyPressed = false;
         } else {
             delete keysDown[e.keyCode];
         };
@@ -1421,6 +1465,11 @@ function convertRadiansToDegrees(radians) {
 //Game loop
 
 function gameLoop() {
+    //Restarts the level if P is pressed.
+    if (keysDown[80]) {
+        restartLevel(false);
+    };
+
     if (gameState === "playing") {
         //Blockie's Movement
 
@@ -1660,7 +1709,7 @@ function gameLoop() {
                 //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
                 break;
             } else {
-                restartLevel();
+                restartLevel(true);
                 break;
             };
         };

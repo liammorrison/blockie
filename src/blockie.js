@@ -46,6 +46,8 @@ spBlockieDestructing.src = "../images/spBlockieDestructing.png";
 let spBlockieRecoveringFromDash = document.createElement("img");
 spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 
+let gameScale = 1;
+
 //Arrays
 
 let keysDown = [];
@@ -1452,6 +1454,20 @@ function initializeKeyInputs() {
     });
 };
 
+//Scale Functions 
+
+//Scales the game (including the title, info, and others) along the restricting axis while preserving the games aspect ratio.
+function scaleGame() {
+    //Determines the scale of the most restricted axis.
+    gameScale = Math.min(window.innerWidth / 512, window.innerHeight / 617);
+
+    //Changes the scale of the game's CSS container.
+    let gameContainer = document.getElementById("gameContainer");
+    gameContainer.style.transform = "scale(" + gameScale + ")";
+
+    window.requestAnimationFrame(scaleGame);
+}
+
 //Micellaneous Functions
 
 function calculateAngleRadians(x, y) {
@@ -1759,3 +1775,4 @@ levelOne();
 initializeKeyInputs();
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
+window.requestAnimationFrame(scaleGame);

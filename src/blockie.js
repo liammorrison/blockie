@@ -48,6 +48,8 @@ spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 
 let gameScale = 1;
 
+let countdown = 0;
+
 //Arrays
 
 let keysDown = [];
@@ -295,6 +297,8 @@ async function levelOne() {
     try {
         initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
 
+        createCountdownTimer(300);
+
         cancelAwaitChain = false;
 
         await Promise.all([
@@ -355,18 +359,7 @@ async function levelOne() {
 
         cancelAwaitChain = false;
 
-        console.log("Level 3 completed.");
-        increaseLevel();
-
-
-        await Promise.all([
-            createActivePoint(oneHalf - 8, pointOne - 8, 0),
-            fireMovingHorizontalLaser(0, 32, 2, 1, 20),
-            fireMovingHorizontalLaser(0, 32, 1.25, 1, 20),
-            fireMovingHorizontalLaser(0, 32, 0.75, 1, 20)
-        ]);
-
-        cancelAwaitChain = false;
+        destroyCountdownTimer();
 
         console.log("Level 3 completed.");
         increaseLevel();
@@ -417,6 +410,8 @@ async function restartLevel(blockieDied) {
     for (let i = 0; i < allObjects.length; i++) {
         rejectInstances(allObjects[i]);
     };
+
+    destroyCountdownTimer();
 
     //Animates Blockie's destruction.
     blockie.state = "destructing";
@@ -1459,7 +1454,7 @@ function initializeKeyInputs() {
 //Scales the game (including the title, info, and others) along the restricting axis while preserving the games aspect ratio.
 function scaleGame() {
     //Determines the scale of the most restricted axis.
-    gameScale = Math.min(window.innerWidth / 512, window.innerHeight / 617);
+    gameScale = Math.min(window.innerWidth / 520, window.innerHeight / 617);
 
     //Changes the scale of the game's CSS container.
     let gameContainer = document.getElementById("gameContainer");
@@ -1469,6 +1464,39 @@ function scaleGame() {
 }
 
 //Micellaneous Functions
+
+//Creates a timer that resets the level if the counter reaches 0.
+function createCountdownTimer(totalSeconds) {
+    let seconds = totalSeconds;
+
+    //Sets the timer container to be visible.
+    let countdownTimerContainer = document.getElementById("countdownTimerContainer");
+    countdownTimerContainer.style.visibility = "visible";
+
+    countdown = setInterval(() => {
+        //Each interval the amount of seconds decreases and the displayed numbers are calculated.
+        seconds--;
+        let currentMinutes = Math.floor(seconds / 60);
+        let currentSeconds = seconds % 60;
+
+        //The remaining time is displayed.
+        let countdownTimer = document.getElementById("countdownTimer");
+        countdownTimer.innerHTML = `${currentMinutes}:${currentSeconds}`;
+
+        //Restarts the level if the timer reaches 0.
+        if (seconds <= 0) {
+            destroyCountdownTimer();
+            restartLevel(true);
+        };
+    }, 1000);
+};
+
+//Sets the countdownTimer to be invisible and clears its interval.
+function destroyCountdownTimer() {
+    let countdownTimerContainer = document.getElementById("countdownTimerContainer");
+    countdownTimerContainer.style.visibility = "hidden";
+    clearInterval(countdown);
+}
 
 function calculateAngleRadians(x, y) {
     return Math.atan2(y, x);

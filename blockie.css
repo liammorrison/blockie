@@ -49,6 +49,7 @@ body {
     text-align: center;
     align-items: center;
     font-size: small;
+    visibility: hidden;
 }
 
 #countdownTimerSprite {
@@ -59,9 +60,11 @@ body {
 }
 
 #countdownTimer {
+    width: 64px;
+    height: 32px;
     position: absolute;
+    text-align: center;
     margin-top: 6px;
-    margin-left: 10px;
 }
 
 #messageDisplayer {

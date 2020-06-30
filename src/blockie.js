@@ -36,7 +36,11 @@ let allowDashAgainSeconds = 0.9;
 //instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
 let cancelAwaitChain = false;
 
-//Loads Blockie's sprite maps. They are large sprite maps to avoid loading many individual sprite files.
+//Sprite maps. 
+
+//These are used when drawing to easily reference sprites. They are large sprite maps to avoid loading many individual sprite 
+//files (which would hurt performance).
+
 let spBlockiePlaying = document.createElement("img");
 spBlockiePlaying.src = "../images/spBlockiePlaying.png";
 
@@ -45,6 +49,9 @@ spBlockieDestructing.src = "../images/spBlockieDestructing.png";
 
 let spBlockieRecoveringFromDash = document.createElement("img");
 spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
+
+let spCountdownDestructionScene = document.createElement("img");
+spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
 
 let gameScale = 1;
 
@@ -97,7 +104,6 @@ class Player {
 
         this.sprite = spBlockiePlaying;
         this.sx = 0;
-        this.spriteSideLength = 16;
 
         //Used to draw the remaining seconds meter above the instance.
         this.remainingDashSeconds = 0;
@@ -389,9 +395,7 @@ function initializeLevel(blockieX, blockieY) {
 };
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
-async function restartLevel(blockieDied) {
-    gameState = "restartingLevel";
-
+async function restartLevel(reason) {
     //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
     for (let i = 0; i < currentTimeouts.length; i++) {
         clearTimeout(currentTimeouts[i]);
@@ -413,59 +417,38 @@ async function restartLevel(blockieDied) {
 
     destroyCountdownTimer();
 
-    //Animates Blockie's destruction.
-    blockie.state = "destructing";
-    blockie.sx = 0;
-
     //Removes all points collected in the level.
     currentLevelPoints = 0;
 
-    //Animates Blockie's destruction and a game over screen if he dies, but skips over that if P is pressed.
-    if (blockieDied) {
-        await new Promise((resolve, reject) => {
-            let drawGameOverScreen = setTimeout(() => {
-                //Draws the game over screen.
-                document.getElementById("messageDisplayer").innerHTML = "Determination is key!";
-                gameState = "displayingMessage";
-                resolve("resolved");
-            }, 1.5 * 1000);
-        });
+    //Switches how the game resets based on how it triggered.
+    if (reason === "died") {
+        gameState = "animatingBlockieDestruction";
 
-        await new Promise((resolve, reject) => {
-            //Restarts the game.
-            function resumePlaying() {
-                if (keysDown[16] || keysDown[32]) {
-                    //Prevents dashing immediatley after restarting the game.
-                    delete keysDown[16];
-                    delete keysDown[32];
+        //Animates Blockie's destruction.
+        blockie.state = "destructing";
+        blockie.sx = 0;
 
-                    document.getElementById("messageDisplayer").innerHTML = "";
-
-                    gameState = "playing";
-                    blockie.state = "playing";
-
-                    controlLevel();
-
-                    resolve("resolved");
-                } else {
-                    window.requestAnimationFrame(resumePlaying);
-                };
-            };
-
-            window.requestAnimationFrame(resumePlaying);
-        });
-    } else {
-        gameState = "playing";
+        await displayMessage("Determination is your only asset.");
+    } else if (reason === "keyPressed") {
         blockie.state = "playing";
-
         controlLevel();
+    } else if (reason === "countdownTimer") {
+        gameState = "playingCutscene";
+        await playCutscene(spCountdownDestructionScene);
+        await displayMessage("You've failed another world.");
     };
 };
 
 async function increaseLevel() {
     gameState = "finishingLevel";
-    blockie.angleMovingDegrees = -180;
 
+    blockie.angleMovingDegrees = -180;
+    currentLevel++;
+    //Points are only made permanent once a level is completed and then it is reset.
+    permanentPoints += currentLevelPoints;
+    currentLevelPoints = 0;
+
+    //Waits for the PartyHat to descend on to Blockie's head.
     await new Promise((resolve, reject) => {
         let partyHatInstance = new PartyHat();
         partyHats.push(partyHatInstance);
@@ -474,12 +457,10 @@ async function increaseLevel() {
             partyHatInstance.y += Math.min(2, (blockie.y - partyHatInstance.y - partyHatInstance.height));
 
             if (partyHatInstance.y + partyHatInstance.height !== blockie.y) {
+                //Continuously recalls the function until the PartyHat reaches Blockie's head.
                 window.requestAnimationFrame(animateFinishedLevelHat);
             } else {
                 partyHats.splice(0);
-
-                document.getElementById("messageDisplayer").innerHTML = `Our champion!<br>You beat level ${currentLevel}!`;
-                gameState = "displayingMessage";
                 resolve("resolved");
             };
         };
@@ -487,33 +468,7 @@ async function increaseLevel() {
         window.requestAnimationFrame(animateFinishedLevelHat);
     });
 
-    await new Promise((resolve, reject) => {
-        function resumePlaying() {
-            //Restarts the game.
-            if (keysDown[16] || keysDown[32]) {
-                //Prevents dashing immediatley after restarting the game.
-                delete keysDown[16];
-                delete keysDown[32];
-
-                document.getElementById("messageDisplayer").innerHTML = "";
-                gameState = "playing";
-                blockie.state = "playing";
-
-                //Points are only made permanent once a level is completed and then it is reset.
-                permanentPoints += currentLevelPoints;
-                currentLevelPoints = 0;
-
-                currentLevel++;
-                controlLevel();
-
-                resolve("resolved");
-            } else {
-                window.requestAnimationFrame(resumePlaying);
-            };
-        };
-
-        window.requestAnimationFrame(resumePlaying);
-    });
+    await displayMessage("You haven't escaped yet.")
 };
 
 function controlLevel() {
@@ -578,7 +533,45 @@ function removeCurrentInterval(interval) {
     clearInterval(interval);
     let currentIntervalIndex = currentIntervals.indexOf(interval);
     currentIntervals.splice(currentIntervalIndex, 1);
-}
+};
+
+//Shows a message and awaits a player input to continue the game.
+async function displayMessage(message) {
+    //Forces the player to read the message for 1 second before they can continue the game.
+    await new Promise((resolve, reject) => {
+        let drawGameOverScreen = setTimeout(() => {
+            //Draws the game over screen.
+            document.getElementById("messageDisplayer").innerHTML = message;
+            gameState = "displayingMessage";
+            resolve("resolved");
+        }, 1000);
+    });
+
+    return await new Promise((resolve, reject) => {
+        //Restarts the game once acceptable keys are pressed.
+        function resumePlaying() {
+            if (keysDown[16] || keysDown[32]) {
+                //Prevents dashing immediatley after restarting the game.
+                delete keysDown[16];
+                delete keysDown[32];
+
+                document.getElementById("messageDisplayer").innerHTML = "";
+
+                gameState = "playing";
+                blockie.state = "playing";
+
+                controlLevel();
+
+                resolve("resolved");
+            } else {
+                //Continuously recalls the function until an acceptable key is pressed.
+                window.requestAnimationFrame(resumePlaying);
+            };
+        };
+
+        window.requestAnimationFrame(resumePlaying);
+    });
+};
 
 //Blockie Functions 
 
@@ -1089,7 +1082,7 @@ function animateBlockie() {
         blockie.sprite = spBlockiePlaying;
         //sx is the location on the blockie.png sprite map. Here it determines the sprite's direction facing. It starts at the 
         //idle image, then goes to the top-left, and then continues in a clockwise direction.
-        blockie.sx = blockie.spriteSideLength * (Math.round(blockie.angleMovingDegrees / 45) + 4);
+        blockie.sx = blockie.width * (Math.round(blockie.angleMovingDegrees / 45) + 4);
     } else if (blockie.state === "recoveringFromDash") {
         blockie.sprite = spBlockieRecoveringFromDash;
         blockie.sx = 0;
@@ -1104,14 +1097,14 @@ function animateBlockie() {
         addCurrentTimeout(endAnimateBlockieDestructing);
 
         let animateBlockieDestructing = setInterval(() => {
-            blockie.sx += blockie.spriteSideLength;
+            blockie.sx += blockie.width;
         }, 0.5 * 1000);
         addCurrentTimeout(animateBlockieDestructing);
     };
 };
 
 function drawBlockie() {
-    context.drawImage(blockie.sprite, blockie.sx, 0, blockie.spriteSideLength, blockie.spriteSideLength, blockie.x, blockie.y, blockie.width, blockie.height);
+    context.drawImage(blockie.sprite, blockie.sx, 0, blockie.width, blockie.height, blockie.x, blockie.y, blockie.width, blockie.height);
 };
 
 function drawPassivePoints() {
@@ -1460,7 +1453,42 @@ function scaleGame() {
     let gameContainer = document.getElementById("gameContainer");
     gameContainer.style.transform = "scale(" + gameScale + ")";
 
+    //Continuously recalls the function.
     window.requestAnimationFrame(scaleGame);
+};
+
+//Cutscene Functions
+
+//Waits for a small cutscene to finish.
+async function playCutscene(scene) {
+    let secondsPerFrame = 0.15;
+    let cutsceneSideLength = 128;
+    let cutscenesx = 0;
+    let lastFramesx = scene.naturalWidth - cutsceneSideLength;
+
+    //Each time the frame changes, the next sprite in the sprite map is shown.
+    let cutscene = setInterval(() => {
+        cutscenesx += cutsceneSideLength;
+    }, secondsPerFrame * 1000);
+
+    return new Promise((resolve, reject) => {
+        function drawCutscene() {
+            //Draws a border around the small cutscene in the center of the canvas.
+            context.strokeStyle = "#FFFFFF";
+            context.drawImage(scene, cutscenesx, 0, cutsceneSideLength, cutsceneSideLength, 192, 192, cutsceneSideLength, cutsceneSideLength);
+            context.strokeRect(192, 192, cutsceneSideLength, cutsceneSideLength);
+
+            //Resolves the Promise if the cutscene is over.
+            if (cutscenesx > lastFramesx) {
+                resolve("resolved");
+            } else {
+                //Continuously recalls the function until the animation is completed.
+                window.requestAnimationFrame(drawCutscene);
+            };
+        };
+
+        window.requestAnimationFrame(drawCutscene);
+    });
 }
 
 //Micellaneous Functions
@@ -1486,7 +1514,7 @@ function createCountdownTimer(totalSeconds) {
         //Restarts the level if the timer reaches 0.
         if (seconds <= 0) {
             destroyCountdownTimer();
-            restartLevel(true);
+            restartLevel("countdownTimer");
         };
     }, 1000);
 };
@@ -1511,7 +1539,7 @@ function convertRadiansToDegrees(radians) {
 function gameLoop() {
     //Restarts the level if P is pressed.
     if (keysDown[80]) {
-        restartLevel(false);
+        restartLevel("keyPressed");
     };
 
     if (gameState === "playing") {
@@ -1621,6 +1649,23 @@ function gameLoop() {
 
             //Movement Obstacles
 
+            //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
+            //the last available space to avoid a gap.
+
+            if (blockie.targetXLocation <= 0) {
+                blockie.targetXLocation = 0;
+            } else if ((blockie.targetXLocation + blockie.width) >= canvas.width) {
+                blockie.targetXLocation = canvas.width - blockie.width;
+            };
+
+            if (blockie.targetYLocation <= 0) {
+                blockie.targetYLocation = 0;
+            } else if ((blockie.targetYLocation + blockie.height) >= canvas.height) {
+                blockie.targetYLocation = canvas.height - blockie.height;
+            };
+
+            //Updates Blockie's location if he's touching a wall to the nearest open location.
+
             checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, walls);
 
             //Blockie's movement will be prevented on some axes if he is touching a wall at his target location.
@@ -1678,20 +1723,6 @@ function gameLoop() {
 
                     checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
                 };
-            };
-
-            //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
-            //the last available space to avoid a gap.
-            if (blockie.targetXLocation <= 0) {
-                blockie.targetXLocation = 0;
-            } else if ((blockie.targetXLocation + blockie.width) >= canvas.width) {
-                blockie.targetXLocation = canvas.width - blockie.width;
-            };
-
-            if (blockie.targetYLocation <= 0) {
-                blockie.targetYLocation = 0;
-            } else if ((blockie.targetYLocation + blockie.height) >= canvas.height) {
-                blockie.targetYLocation = canvas.height - blockie.height;
             };
 
             blockie.x = blockie.targetXLocation;
@@ -1753,13 +1784,13 @@ function gameLoop() {
                 //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
                 break;
             } else {
-                restartLevel(true);
+                restartLevel("died");
                 break;
             };
         };
     };
 
-    //Recalls the gameLoop for the next frame.
+    //Continuously recalls the function.
     window.requestAnimationFrame(gameLoop);
 };
 
@@ -1775,7 +1806,7 @@ function drawingLoop() {
     //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState !== "displayingMessage") {
+    if (gameState !== "displayingMessage" && gameState !== "playingCutscene") {
         animateBlockie();
         drawBlockie();
     };
@@ -1793,6 +1824,7 @@ function drawingLoop() {
         drawPartyHats();
     };
 
+    //Continuously recalls the function.
     window.requestAnimationFrame(drawingLoop);
 };
 

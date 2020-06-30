@@ -10,8 +10,8 @@ let gameState = "playing";
 
 let currentLevel = 1;
 
-let permanentPoints = 0;
 let currentLevelPoints = 0;
+let totalPoints = 0;
 
 let xInput = 0;
 let yInput = 0;
@@ -79,6 +79,8 @@ let currentTimeouts = [];
 let currentIntervals = [];
 
 let collidingInstances = [];
+
+let levelPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 //Classes
 
@@ -301,9 +303,106 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
+        initializeLevel(pointTwo + blockieAdjustment, oneHalf + blockieAdjustment);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createActivePoint(pointSeven - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(pointTwo - 8, pointEight - 8, 0, 15),
+            createPassivePoint(pointSeven - 8, pointEight - 8, 0, 15),
+
+            createActivePoint(pointTwo - 8, oneHalf - 8, 4)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log("Level 1 completed.");
+        increaseLevel();
+    } catch (error) {
+        console.log("Level 1 restarted.");
+    };
+};
+
+async function levelTwo() {
+    try {
         initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
 
-        createCountdownTimer(300);
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeFourths),
+            createPassivePoint(pointTwo - 8, sevenEigths - 8, 0, 10),
+
+            loopFireVerticalLasers(oneHalf - 8, 16, 0, 1, 2),
+
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+
+            fireBomb(threeFourths, threeFourths, oneFourth, oneFourth, 1, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, fullScreen),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, pointTwo - 8, 0),
+            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 1, 5)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
+            createActivePoint(oneHalf - 8, pointEight - 8, 0),
+            createPassivePoint(pointOne - 8, oneHalf - 8, 0, 12),
+            createPassivePoint(pointEight - 8, oneHalf - 8, 0, 12),
+            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 0, 1, 2)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log("Level 2 completed.");
+        increaseLevel();
+    } catch (error) {
+        console.log("Level 2 restarted.");
+    };
+};
+
+async function levelThree() {
+    try {
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
 
         cancelAwaitChain = false;
 
@@ -370,16 +469,7 @@ async function levelOne() {
         console.log("Level 3 completed.");
         increaseLevel();
     } catch (error) {
-        console.log("Level 1 restarted.");
-    };
-};
-
-//Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
-async function levelTwo() {
-    try {
-
-    } catch (error) {
-        console.log("Level 2 restarted.");
+        console.log("Level 3 restarted.");
     };
 };
 
@@ -443,10 +533,14 @@ async function increaseLevel() {
     gameState = "finishingLevel";
 
     blockie.angleMovingDegrees = -180;
-    currentLevel++;
-    //Points are only made permanent once a level is completed and then it is reset.
-    permanentPoints += currentLevelPoints;
+
+
+    //Points are only made permanent once a level is completed.
+    updateLevelPoints(currentLevel);
     currentLevelPoints = 0;
+    calculateTotalPoints();
+
+    currentLevel++;
 
     //Waits for the PartyHat to descend on to Blockie's head.
     await new Promise((resolve, reject) => {
@@ -460,7 +554,6 @@ async function increaseLevel() {
                 //Continuously recalls the function until the PartyHat reaches Blockie's head.
                 window.requestAnimationFrame(animateFinishedLevelHat);
             } else {
-                partyHats.splice(0);
                 resolve("resolved");
             };
         };
@@ -478,6 +571,9 @@ function controlLevel() {
             break;
         case 2:
             levelTwo();
+            break;
+        case 3:
+            levelThree();
             break;
     };
 };
@@ -540,6 +636,9 @@ async function displayMessage(message) {
     //Forces the player to read the message for 1 second before they can continue the game.
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
+            //Placed here to draw Blockie with a PartyHat during increaseLevel().
+            partyHats.splice(0);
+
             //Draws the game over screen.
             document.getElementById("messageDisplayer").innerHTML = message;
             gameState = "displayingMessage";
@@ -1455,6 +1554,19 @@ function scaleGame() {
 
     //Continuously recalls the function.
     window.requestAnimationFrame(scaleGame);
+};
+
+//Point Functions
+
+function updateLevelPoints(currentLevel) {
+    levelPoints[currentLevel - 1] = currentLevelPoints;
+};
+
+function calculateTotalPoints() {
+    totalPoints = 0;
+    for (let i = 0; i < levelPoints.length; i++) {
+        totalPoints += levelPoints[i];
+    };
 };
 
 //Cutscene Functions

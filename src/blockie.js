@@ -64,8 +64,6 @@ let keysDown = [];
 let waitingTimeouts = [];
 let passivePoints = [];
 let activePoints = [];
-let horizontalLasers = [];
-let verticalLasers = [];
 let movingHorizontalLasers = [];
 let movingVerticalLasers = [];
 let bombs = [];
@@ -158,40 +156,6 @@ class ActivePoint {
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
         this.externalResolve;
-        this.externalReject;
-        this.timeout;
-    };
-};
-
-class HorizontalLaser {
-    constructor(y, height) {
-        this.x = 0;
-        this.y = y;
-        this.width = canvas.width;
-        this.height = height;
-
-        //When created, the instance begins its warning state to provide visual feedback.
-        this.state = "warning";
-        this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
-        this.externalReject;
-        this.timeout;
-    };
-};
-
-class VerticalLaser {
-    constructor(x, width) {
-        this.x = x;
-        this.y = 0;
-        this.width = width;
-        this.height = canvas.height;
-
-        //When created, the instance begins its warning state to provide visual feedback.
-        this.state = "warning";
-        this.visible = true;
-
-        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
         this.externalReject;
         this.timeout;
     };
@@ -303,107 +267,41 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
-
-        createCountdownTimer(35);
+        initializeLevel(pointTwo + blockieAdjustment, oneHalf + blockieAdjustment);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(threeEigths, 0, 2 * 16, sevenEigths),
-            createWall(oneEigth, 0, oneFourth, 14 * 16),
-            createWall(oneEigth, 18 * 16, oneFourth, 10 * 16),
-            createWall(18 * 16, 0, 14 * 16, fullScreen),
-            createActivePoint(pointOne - 8, pointOne - 8, 0),
-            createPassivePoint(pointOne - 8, pointEight - 8, 0, 9),
-
-            fireMovingVerticalLaser(27 * 16, 16, -1, 2, 9),
-            fireMovingVerticalLaser(29 * 16, 16, -1, 2, 9),
-            fireMovingVerticalLaser(fullScreen - 16, 16, -1, 2, 9)
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createActivePoint(pointSeven - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
         ]);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(oneEigth, 0, 10 * 16, sevenEigths),
-            createWall(18 * 16, 0, oneHalf, fullScreen),
-            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(pointTwo - 8, pointEight - 8, 0, 15),
+            createPassivePoint(pointSeven - 8, pointEight - 8, 0, 15),
 
-            loopFireBombs(0, 0, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(0, oneEigth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(0, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(0, threeEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-            loopFireBombs(0, oneHalf, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(0, fiveEigths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(0, threeFourths, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(0, sevenEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-
-            loopFireBombs(14 * 16, 0, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-            loopFireBombs(14 * 16, oneEigth, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(14 * 16, oneFourth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(14 * 16, threeEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(14 * 16, oneHalf, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-            loopFireBombs(14 * 16, fiveEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(14 * 16, threeFourths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(14 * 16, sevenEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            createActivePoint(pointTwo - 8, oneHalf - 8, 4)
         ]);
 
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(0, 0, 14 * 16, fullScreen),
-            createWall(18 * 16, 0, 14 * 16, oneFourth),
-            createWall(18 * 16, oneFourth, 2 * 16, 12 * 16),
-            createWall(18 * 16, threeFourths, 6 * 16, oneFourth),
-            createWall(threeFourths, oneFourth, oneFourth, threeFourths),
-            createActivePoint(oneHalf - 8, 28 * 16 - 8, 0),
-            createPassivePoint(22 * 16 - 8, 10 * 16 - 8, 0, 5)
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
         ]);
 
         cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, 14 * 16),
-            createWall(0, 14 * 16, oneFourth, 20 * 16),
-            createWall(threeFourths, 14 * 16, oneFourth, 20 * 16),
-            createWall(oneFourth, 14 * 16, 6 * 16, 6 * 16),
-            createWall(18 * 16, 14 * 16, 6 * 16, 6 * 16),
-            createWall(oneFourth, 24 * 16, 6 * 16, 8 * 16),
-            createWall(18 * 16, 24 * 16, 6 * 16, 8 * 16),
-            createWall(14 * 16, pointEight, 4 * 16, 2 * 16),
-
-            fireBomb(14 * 16, 26 * 16, 4 * 16, 4 * 16, 0.5, 0.5),
-
-            fireBomb(14 * 16, 20 * 16, 4 * 16, 4 * 16, 2, 0.5),
-
-            fireBomb(14 * 16, 26 * 16, 4 * 16, 4 * 16, 3.5, 0.5),
-            fireBomb(8 * 16, 20 * 16, 4 * 16, 4 * 16, 3.5, 0.5),
-            fireBomb(20 * 16, 20 * 16, 4 * 16, 4 * 16, 3.5, 0.5),
-
-            createActivePoint(oneHalf - 8, oneHalf - 8, 5)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            fireBomb(16, oneEigth, 30 * 16, oneFourth, 0, 1),
-            fireBomb(16, fiveEigths, 30 * 16, oneFourth, 0.15, 1),
-
-            fireBomb(0, 16, oneEigth, 30 * 16, 2.2, 1),
-            fireBomb(threeEigths, 16, oneFourth, 30 * 16, 2.3, 1),
-            fireBomb(sevenEigths, 16, oneEigth, 30 * 16, 2.45, 1),
-
-            createActivePoint(oneHalf - 8, 8 * 16, 5.35),
-            fireBomb(oneEigth, 16, oneFourth, 30 * 16, 4.75, 1),
-            fireBomb(fiveEigths, 16, oneFourth, 30 * 16, 4.9, 1),
-            fireBomb(16, 0, 30 * 16, oneEigth, 5.05, 1),
-            fireBomb(16, threeEigths, 30 * 16, oneFourth, 5.2, 1),
-            fireBomb(16, sevenEigths, 30 * 16, oneEigth, 5.35, 1)
-        ]);
-
-        cancelAwaitChain = false;
-
-        destroyCountdownTimer();
 
         console.log(`Level ${currentLevel} completed.`);
         increaseLevel();
@@ -832,98 +730,6 @@ async function createActivePoint(x, y, waitingSeconds) {
 };
 
 //Continuously recreates the same instance until the activePoint is touched.
-async function loopFireHorizontalLasers(y, height, initialWaitingSeconds, waitingSeconds, firingSeconds) {
-    await setWaitingTimeout(initialWaitingSeconds);
-
-    //Creates a new instance after each previous one has resolved.
-    while (!cancelAwaitChain) {
-        await fireHorizontalLaser(y, height, waitingSeconds, firingSeconds);
-    };
-
-    //Cancels the next await if the current screen is being resolved by an activePoint.
-    return;
-};
-
-//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireHorizontalLaser(y, height, waitingSeconds, firingSeconds) {
-    //Waits to create the instance to allow for pauses and staggered collision instances.
-    await setWaitingTimeout(waitingSeconds);
-
-    //Cancels the next await if the current screen is being resolved by an activePoint.
-    if (cancelAwaitChain) return;
-
-    //Creates an instance and sets all of its initial properties.
-    let instance = new HorizontalLaser(y, height);
-    horizontalLasers.push(instance);
-
-    //Creates the "blinking" effect for warning of a collision.
-    await setWarningTimeouts(instance);
-
-    //Cancels the next await if the current screen is being resolved by an activePoint.
-    if (cancelAwaitChain) return;
-
-    //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return await new Promise((resolve, reject) => {
-        //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalResolve = resolve;
-        instance.externalReject = reject;
-
-        instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
-            let instanceIndex = horizontalLasers.indexOf(instance);
-            horizontalLasers.splice(instanceIndex, 1);
-            resolve("resolved");
-        }, firingSeconds * 1000);
-    });
-};
-
-//Continuously recreates the same instance until the activePoint is touched.
-async function loopFireVerticalLasers(x, width, initialWaitingSeconds, waitingSeconds, firingSeconds) {
-    await setWaitingTimeout(initialWaitingSeconds);
-
-    //Creates a new instance after each previous one has resolved.
-    while (!cancelAwaitChain) {
-        await fireVerticalLaser(x, width, waitingSeconds, firingSeconds);
-    };
-
-    //Cancels the next await if the current screen is being resolved by an activePoint.
-    return;
-};
-
-//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
-async function fireVerticalLaser(x, width, waitingSeconds, firingSeconds) {
-    //Waits to create the instance to allow for pauses and staggered collision instances.
-    await setWaitingTimeout(waitingSeconds);
-
-    //Cancels the next await if the current screen is being resolved by an activePoint.
-    if (cancelAwaitChain) return;
-
-    //Creates an instance and sets all of its initial properties.
-    let instance = new VerticalLaser(x, width);
-    verticalLasers.push(instance);
-
-    //Creates the "blinking" effect for warning of a collision.
-    await setWarningTimeouts(instance);
-
-    //Cancels the next await if the current screen is being resolved by an activePoint.
-    if (cancelAwaitChain) return;
-
-    //Creates a timeout for the instance's destruction and links its deactivation functions.
-    return await new Promise((resolve, reject) => {
-        //Links the instance's deactivation functions to itself to allow outside callings.
-        instance.externalResolve = resolve;
-        instance.externalReject = reject;
-
-        instance.timeout = setTimeout(() => {
-            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
-            let instanceIndex = verticalLasers.indexOf(instance);
-            verticalLasers.splice(instanceIndex, 1);
-            resolve("resolved");
-        }, firingSeconds * 1000);
-    });
-};
-
-//Continuously recreates the same instance until the activePoint is touched.
 async function loopFireMovingHorizontalLasers(y, height, speed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
     await setWaitingTimeout(initialWaitingSeconds);
 
@@ -1082,8 +888,6 @@ function updateAllObjects() {
         waitingTimeouts,
         passivePoints,
         activePoints,
-        horizontalLasers,
-        verticalLasers,
         movingHorizontalLasers,
         movingVerticalLasers,
         bombs,
@@ -1096,8 +900,6 @@ function updateAllInteractiveObjects() {
         waitingTimeouts,
         passivePoints,
         activePoints,
-        horizontalLasers,
-        verticalLasers,
         movingHorizontalLasers,
         movingVerticalLasers,
         bombs
@@ -1195,40 +997,6 @@ function drawActivePoints() {
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
                 context.fillStyle = "#FF9012";
-                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            };
-        };
-    };
-}
-
-function drawHorizontalLasers() {
-    for (let i = 0; i < horizontalLasers.length; i++) {
-        let currentInstance = horizontalLasers[i];
-        if (currentInstance.visible) {
-            //Changes the sprite depending on the state of the instance.
-            if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF51EF";
-                context.strokeRect(currentInstance.x + 16, currentInstance.y, 16, currentInstance.height);
-                context.strokeRect(currentInstance.width - 32, currentInstance.y, 16, currentInstance.height);
-            } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF51EF";
-                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
-            };
-        };
-    };
-};
-
-function drawVerticalLasers() {
-    for (let i = 0; i < verticalLasers.length; i++) {
-        let currentInstance = verticalLasers[i];
-        if (currentInstance.visible) {
-            //Changes the sprite depending on the state of the instance.
-            if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF51EF";
-                context.strokeRect(currentInstance.x, currentInstance.y + 16, currentInstance.width, 16);
-                context.strokeRect(currentInstance.x, currentInstance.height - 32, currentInstance.width, 16);
-            } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF51EF";
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -1882,8 +1650,6 @@ function drawingLoop() {
         drawWalls();
         drawPassivePoints();
         drawActivePoints();
-        drawHorizontalLasers();
-        drawVerticalLasers();
         drawMovingHorizontalLasers();
         drawMovingVerticalLasers();
         drawBombs();

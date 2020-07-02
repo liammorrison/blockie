@@ -267,86 +267,7 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
 
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, oneFourth),
-            createWall(0, oneFourth, oneFourth, oneHalf),
-            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
-            createWall(0, threeFourths, 14 * 16, oneEigth),
-            createWall(18 * 16, threeFourths, 14 * 16, oneEigth),
-            createActivePoint(oneEigth - 8, pointEight - 8, 0),
-
-            createPassivePoint(sevenEigths - 8, pointEight - 8, 2.5, 7)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(oneFourth, oneFourth, 6 * 16, threeFourths),
-            createWall(14 * 16, 12 * 16, 4 * 16, 20 * 16),
-            createWall(18 * 16, oneFourth, 6 * 16, threeFourths),
-            createActivePoint(sevenEigths - 8, sevenEigths - 8, 0),
-            createPassivePoint(oneHalf - 8, pointThree - 8, 0, 7),
-
-            loopFireBombs(0, oneFourth, oneFourth, 2 * 16, 1, 0, 1),
-            loopFireBombs(0, oneHalf, oneFourth, 2 * 16, 0, 0, 1),
-            loopFireBombs(0, threeFourths, oneFourth, 2 * 16, 1, 0, 1),
-
-            fireMovingHorizontalLaser(0, 32, 1.4, 6.5, 10)
-        ]);
-
-        cancelAwaitChain = false;
-
-        moveBlockie(sevenEigths - 8, sevenEigths - 8);
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, 2 * 16),
-            createWall(0, 6 * 16, fullScreen, 2 * 16),
-            createWall(0, 12 * 16, fullScreen, 2 * 16),
-            createWall(0, 18 * 16, fullScreen, 2 * 16),
-            createWall(0, 24 * 16, fullScreen, 2 * 16),
-            createWall(0, 30 * 16, fullScreen, 2 * 16),
-            createWall(0, 0, 2 * 16, fullScreen),
-            createWall(6 * 16, 0, 2 * 16, fullScreen),
-            createWall(12 * 16, 0, 2 * 16, fullScreen),
-            createWall(18 * 16, 0, 2 * 16, fullScreen),
-            createWall(24 * 16, 0, 2 * 16, fullScreen),
-            createWall(30 * 16, 0, 2 * 16, fullScreen),
-            createActivePoint(4 * 16 - 8, 4 * 16 - 8, 0),
-            createPassivePoint(4 * 16 - 8, 28 * 16 - 8, 0, 17),
-
-            createPassivePoint(oneHalf - 8, oneHalf - 8, 7, 7),
-
-            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-
-            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(8 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 2, 1),
-            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(20 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 2, 1),
-            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-
-            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(14 * 16, 14 * 16, 4 * 16, 4 * 16, 2, 2, 1),
-            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-
-            loopFireBombs(2 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(8 * 16, 20 * 16, 4 * 16, 4 * 16, 2, 2, 1),
-            loopFireBombs(14 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(20 * 16, 20 * 16, 4 * 16, 4 * 16, 2, 2, 1),
-            loopFireBombs(26 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-
-            loopFireBombs(8 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-            loopFireBombs(20 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 2, 1),
-        ]);
-
-        cancelAwaitChain = false;
-
-        console.log(`Level ${currentLevel} completed.`);
-        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -361,6 +282,78 @@ async function levelTwo() {
 };
 
 async function levelThree() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelFour() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelFive() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelSix() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelSeven() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelEight() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelNine() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelTen() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelEleven() {
+    try {
+
+    } catch (error) {
+        console.log(`Level ${currentLevel} restarted.`);
+    };
+};
+
+async function levelTwelve() {
     try {
 
     } catch (error) {
@@ -419,7 +412,7 @@ async function restartLevel(reason) {
         controlLevel();
     } else if (reason === "countdownTimer") {
         gameState = "playingCutscene";
-        await playCutscene(spCountdownDestructionScene);
+        await playCutscene(spCountdownDestructionScene, 0.17);
         await displayMessage("You've failed another world.");
     };
 };
@@ -469,6 +462,33 @@ function controlLevel() {
             break;
         case 3:
             levelThree();
+            break;
+        case 4:
+            levelFour();
+            break;
+        case 5:
+            levelFive();
+            break;
+        case 6:
+            levelSix();
+            break;
+        case 7:
+            levelSeven();
+            break;
+        case 8:
+            levelEight();
+            break;
+        case 9:
+            levelNine();
+            break;
+        case 10:
+            levelTen();
+            break;
+        case 11:
+            levelEleven();
+            break;
+        case 12:
+            levelTwelve();
             break;
     };
 };
@@ -1343,9 +1363,8 @@ function calculateTotalPoints() {
 //Cutscene Functions
 
 //Waits for a small cutscene to finish.
-async function playCutscene(scene) {
-    let secondsPerFrame = 0.15;
-    let cutsceneSideLength = 128;
+async function playCutscene(scene, secondsPerFrame) {
+    let cutsceneSideLength = 512;
     let cutscenesx = 0;
     let lastFramesx = scene.naturalWidth - cutsceneSideLength;
 
@@ -1356,10 +1375,7 @@ async function playCutscene(scene) {
 
     return new Promise((resolve, reject) => {
         function drawCutscene() {
-            //Draws a border around the small cutscene in the center of the canvas.
-            context.strokeStyle = "#FFFFFF";
-            context.drawImage(scene, cutscenesx, 0, cutsceneSideLength, cutsceneSideLength, 192, 192, cutsceneSideLength, cutsceneSideLength);
-            context.strokeRect(192, 192, cutsceneSideLength, cutsceneSideLength);
+            context.drawImage(scene, cutscenesx, 0, cutsceneSideLength, cutsceneSideLength, 0, 0, cutsceneSideLength, cutsceneSideLength);
 
             //Resolves the Promise if the cutscene is over.
             if (cutscenesx > lastFramesx) {

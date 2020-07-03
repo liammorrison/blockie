@@ -267,7 +267,44 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
+        initializeLevel(pointTwo + blockieAdjustment, oneHalf + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createActivePoint(pointSeven - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(pointTwo - 8, pointEight - 8, 0, 15),
+            createPassivePoint(pointSeven - 8, pointEight - 8, 0, 15),
+
+            createActivePoint(pointTwo - 8, oneHalf - 8, 4)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -275,7 +312,53 @@ async function levelOne() {
 
 async function levelTwo() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeFourths),
+            createPassivePoint(pointTwo - 8, sevenEigths - 8, 0, 10),
+
+            loopFireBombs(oneHalf - 16, threeFourths, 32, oneFourth, 0, 1, 1),
+
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+
+            fireBomb(threeFourths, threeFourths, oneFourth, oneFourth, 1, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, fullScreen),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, pointTwo - 8, 0),
+            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 1, 5)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
+            createActivePoint(oneHalf - 8, pointEight - 8, 0),
+            createPassivePoint(pointOne - 8, oneHalf - 8, 0, 12),
+            createPassivePoint(pointEight - 8, oneHalf - 8, 0, 12),
+            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 0, 1, 2)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -283,7 +366,72 @@ async function levelTwo() {
 
 async function levelThree() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, 14 * 16, fullScreen),
+            createWall(14 * 16, 0, 4 * 16, 14 * 16),
+            createWall(14 * 16, 18 * 16, 4 * 16, 2 * 16),
+            createWall(14 * 16, 24 * 16, 4 * 16, 2 * 16),
+            createWall(14 * 16, 30 * 16, 4 * 16, 2 * 16),
+            createWall(18 * 16, 0, 14 * 16, fullScreen),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, 22 * 16 - 8, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, 2 * 16),
+            createWall(0, 6 * 16, fullScreen, 2 * 16),
+            createWall(0, 12 * 16, fullScreen, 2 * 16),
+            createWall(0, 18 * 16, fullScreen, 14 * 16),
+            createWall(0, 0, 2 * 16, fullScreen),
+            createWall(6 * 16, 0, 2 * 16, fullScreen),
+            createWall(12 * 16, 0, 2 * 16, fullScreen),
+            createWall(18 * 16, 0, 2 * 16, fullScreen),
+            createWall(24 * 16, 0, 2 * 16, fullScreen),
+            createWall(30 * 16, 0, 2 * 16, fullScreen),
+            createPassivePoint(4 * 16 - 8, oneHalf - 8, 0, 16),
+            createPassivePoint(28 * 16 - 8, oneHalf - 8, 0, 16),
+            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+
+            createActivePoint(oneHalf - 8, 4 * 16 - 8, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, 14 * 16, fullScreen),
+            createWall(18 * 16, 0, 14 * 16, fullScreen),
+            createActivePoint(oneHalf - 8, pointEight - 8, 0),
+            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 0, 5)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+            loopFireMovingHorizontalLasers(0, 32, 2, 0, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 2, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 4, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 6, 1, 4)
+        ]);
+
+        cancelAwaitChain = false;
+
+        destroyCountdownTimer();
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -291,7 +439,112 @@ async function levelThree() {
 
 async function levelFour() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
 
+        createCountdownTimer(35);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(threeEigths, 0, 2 * 16, sevenEigths),
+            createWall(oneEigth, 0, oneFourth, 14 * 16),
+            createWall(oneEigth, 18 * 16, oneFourth, 10 * 16),
+            createWall(18 * 16, 0, 14 * 16, fullScreen),
+            createActivePoint(pointOne - 8, pointOne - 8, 0),
+            createPassivePoint(pointOne - 8, pointEight - 8, 0, 9),
+
+            fireMovingVerticalLaser(27 * 16, 16, -1, 2, 9),
+            fireMovingVerticalLaser(29 * 16, 16, -1, 2, 9),
+            fireMovingVerticalLaser(fullScreen - 16, 16, -1, 2, 9)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(oneEigth, 0, 10 * 16, sevenEigths),
+            createWall(18 * 16, 0, oneHalf, fullScreen),
+            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+
+            loopFireBombs(0, 0, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(0, oneEigth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(0, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(0, threeEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(0, oneHalf, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(0, fiveEigths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(0, threeFourths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(0, sevenEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+
+            loopFireBombs(14 * 16, 0, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(14 * 16, oneEigth, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(14 * 16, oneFourth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(14 * 16, threeEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(14 * 16, oneHalf, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(14 * 16, fiveEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(14 * 16, threeFourths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(14 * 16, sevenEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, 14 * 16, fullScreen),
+            createWall(18 * 16, 0, 14 * 16, oneFourth),
+            createWall(18 * 16, oneFourth, 2 * 16, 12 * 16),
+            createWall(18 * 16, threeFourths, 6 * 16, oneFourth),
+            createWall(threeFourths, oneFourth, oneFourth, threeFourths),
+            createActivePoint(oneHalf - 8, 28 * 16 - 8, 0),
+            createPassivePoint(22 * 16 - 8, 10 * 16 - 8, 0, 5)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, 8 * 16),
+            createWall(0, 8 * 16, oneFourth, 26 * 16),
+            createWall(threeFourths, 8 * 16, oneFourth, 26 * 16),
+            createWall(oneFourth, 8 * 16, 6 * 16, 6 * 16),
+            createWall(18 * 16, 8 * 16, 6 * 16, 6 * 16),
+            createWall(oneFourth, 18 * 16, 6 * 16, 14 * 16),
+            createWall(18 * 16, 18 * 16, 6 * 16, 14 * 16),
+            createWall(14 * 16, 30 * 16, 4 * 16, 2 * 16),
+
+            fireBomb(14 * 16, 26 * 16, 4 * 16, 4 * 16, 0.7, 0.7),
+
+            fireBomb(14 * 16, 20 * 16, 4 * 16, 4 * 16, 1.4, 0.7),
+
+            fireBomb(14 * 16, 14 * 16, 4 * 16, 4 * 16, 2.1, 0.7),
+            fireBomb(8 * 16, 14 * 16, 4 * 16, 4 * 16, 2.1, 0.7),
+            fireBomb(20 * 16, 14 * 16, 4 * 16, 4 * 16, 2.1, 0.7),
+
+            fireMovingHorizontalLaser(0, 32, 2, 2.1, 10),
+
+            createActivePoint(oneHalf - 8, oneHalf - 8, 3)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            fireBomb(16, 0, 30 * 16, oneEigth, 0, 1),
+            fireBomb(16, threeEigths, 30 * 16, oneFourth, 0.15, 1),
+            fireBomb(16, sevenEigths, 30 * 16, oneEigth, 0.3, 1),
+
+            fireBomb(0, 16, oneEigth, 30 * 16, 2.45, 1),
+            fireBomb(threeEigths, 16, oneFourth, 30 * 16, 2.6, 1),
+            fireBomb(sevenEigths, 16, oneEigth, 30 * 16, 2.75, 1),
+
+            createActivePoint(oneHalf - 8, oneHalf - 8, 7),
+            fireBomb(oneEigth, 16, oneFourth, 30 * 16, 4.75, 1),
+            fireBomb(fiveEigths, 16, oneFourth, 30 * 16, 4.9, 1),
+            fireBomb(16, oneEigth, 30 * 16, oneFourth, 5.05, 1),
+            fireBomb(16, fiveEigths, 30 * 16, oneFourth, 5.2, 1)
+        ]);
+
+        cancelAwaitChain = false;
+
+        destroyCountdownTimer();
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -299,7 +552,86 @@ async function levelFour() {
 
 async function levelFive() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, oneHalf),
+            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
+            createWall(0, threeFourths, 14 * 16, oneEigth),
+            createWall(18 * 16, threeFourths, 14 * 16, oneEigth),
+            createActivePoint(oneEigth - 8, pointEight - 8, 0),
+
+            createPassivePoint(sevenEigths - 8, pointEight - 8, 2.5, 7)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(oneFourth, oneFourth, 6 * 16, threeFourths),
+            createWall(14 * 16, 12 * 16, 4 * 16, 20 * 16),
+            createWall(18 * 16, oneFourth, 6 * 16, threeFourths),
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, pointThree - 8, 0, 7),
+
+            loopFireBombs(0, oneFourth, oneFourth, 2 * 16, 1, 0, 1),
+            loopFireBombs(0, oneHalf, oneFourth, 2 * 16, 0, 0, 1),
+            loopFireBombs(0, threeFourths, oneFourth, 2 * 16, 1, 0, 1),
+
+            fireMovingHorizontalLaser(0, 32, 1.4, 6.5, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        moveBlockie(sevenEigths - 8, sevenEigths - 8);
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, 2 * 16),
+            createWall(0, 6 * 16, fullScreen, 2 * 16),
+            createWall(0, 12 * 16, fullScreen, 2 * 16),
+            createWall(0, 18 * 16, fullScreen, 2 * 16),
+            createWall(0, 24 * 16, fullScreen, 2 * 16),
+            createWall(0, 30 * 16, fullScreen, 2 * 16),
+            createWall(0, 0, 2 * 16, fullScreen),
+            createWall(6 * 16, 0, 2 * 16, fullScreen),
+            createWall(12 * 16, 0, 2 * 16, fullScreen),
+            createWall(18 * 16, 0, 2 * 16, fullScreen),
+            createWall(24 * 16, 0, 2 * 16, fullScreen),
+            createWall(30 * 16, 0, 2 * 16, fullScreen),
+            createActivePoint(4 * 16 - 8, 4 * 16 - 8, 0),
+            createPassivePoint(4 * 16 - 8, 28 * 16 - 8, 0, 17),
+
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 7, 7),
+
+            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+
+            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(8 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 2, 1),
+            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 8 * 16, 4 * 16, 4 * 16, 2, 2, 1),
+            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+
+            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(14 * 16, 14 * 16, 4 * 16, 4 * 16, 2, 2, 1),
+            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+
+            loopFireBombs(2 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(8 * 16, 20 * 16, 4 * 16, 4 * 16, 2, 2, 1),
+            loopFireBombs(14 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 20 * 16, 4 * 16, 4 * 16, 2, 2, 1),
+            loopFireBombs(26 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+
+            loopFireBombs(8 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+            loopFireBombs(20 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 2, 1),
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -307,7 +639,85 @@ async function levelFive() {
 
 async function levelSix() {
     try {
+        initializeLevel(oneEigth + blockieAdjustment, oneEigth + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 6 * 16, 26 * 16, oneFourth),
+            createWall(0, 14 * 16, 14 * 16, 4 * 16),
+            createWall(0, 18 * 16, fullScreen, 14 * 16),
+            createWall(0, 0, 2 * 16, 6 * 16),
+            createWall(2 * 16, 0, 30 * 16, 2 * 16),
+            createWall(30 * 16, 2 * 16, 2 * 16, oneHalf),
+            createWall(17 * 16, 2 * 16, 2 * 16, 4 * 16),
+            createWall(26 * 16, threeEigths, oneEigth, 2 * 16),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            loopFireBombs(7 * 16, 2 * 16, 10 * 16, 4 * 16, 0, 0.5, 1),
+            loopFireBombs(26 * 16, 2 * 16, 4 * 16, 10 * 16, 0, 0.5, 1),
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, oneHalf),
+            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
+            createWall(0, threeFourths, 14 * 16, oneEigth),
+            createWall(18 * 16, threeFourths, 14 * 16, oneEigth),
+            createActivePoint(pointOne - 8, pointEight - 8, 0),
+            loopFireBombs(oneEigth, sevenEigths, 10 * 16, 4 * 16, 0, 0.5, 1),
+            loopFireBombs(18 * 16, sevenEigths, 10 * 16, 4 * 16, 0, 0.5, 1),
+
+            createPassivePoint(pointEight - 8, pointEight - 8, 2.5, 7)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, 14 * 16, sevenEigths),
+            createWall(14 * 16, 0, oneEigth, 14 * 16),
+            createWall(18 * 16, 0, 14 * 16, fullScreen),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            fireMovingHorizontalLaser(0, 16, 0.7, 0, 10),
+
+            fireMovingHorizontalLaser(31 * 16, 16, -1.6, 2, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(pointOne - 8, pointEight - 8, 0),
+            fireBomb(15 * 16, 15 * 16, 2 * 16, 2 * 16, 0.15, 0.5),
+            fireBomb(14 * 16, 14 * 16, 4 * 16, 4 * 16, 0.3, 0.5),
+            fireBomb(13 * 16, 13 * 16, 6 * 16, 6 * 16, 0.45, 0.5),
+            fireBomb(12 * 16, 12 * 16, 8 * 16, 8 * 16, 0.6, 0.5),
+            fireBomb(11 * 16, 11 * 16, 10 * 16, 10 * 16, 0.75, 0.5),
+            fireBomb(10 * 16, 10 * 16, 12 * 16, 12 * 16, 0.9, 0.5),
+            fireBomb(9 * 16, 9 * 16, 14 * 16, 14 * 16, 1.05, 0.5),
+            fireBomb(8 * 16, 8 * 16, 16 * 16, 16 * 16, 1.2, 0.5),
+            fireBomb(7 * 16, 7 * 16, 18 * 16, 18 * 16, 1.35, 0.5),
+            fireBomb(6 * 16, 6 * 16, 20 * 16, 20 * 16, 1.5, 0.5),
+            fireBomb(5 * 16, 5 * 16, 22 * 16, 22 * 16, 1.65, 0.5),
+            fireBomb(4 * 16, 4 * 16, 24 * 16, 24 * 16, 1.8, 0.5),
+            fireBomb(3 * 16, 3 * 16, 26 * 16, 26 * 16, 1.95, 0.5),
+            fireBomb(2 * 16, 2 * 16, 28 * 16, 28 * 16, 2.1, 0.5),
+            fireBomb(1 * 16, 1 * 16, 30 * 16, 30 * 16, 2.25, 0.5),
+            fireBomb(0, 0, 32 * 16, 32 * 16, 2.4, 0.5)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            fireMovingHorizontalLaser(0, oneEigth, 1.4, 0, 10),
+            fireMovingVerticalLaser(sevenEigths, oneEigth, -1.4, 0, 10)
+        ]);
+
+        cancelAwaitChain = false;
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -315,7 +725,158 @@ async function levelSix() {
 
 async function levelSeven() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, 14 * 16),
+            createWall(0, 14 * 16, 14 * 16, oneEigth),
+            createWall(18 * 16, 14 * 16, 18 * 16, oneEigth),
+            createWall(0, 18 * 16, fullScreen, 2 * 16),
+            createWall(0, 20 * 16, oneFourth, oneEigth),
+            createWall(12 * 16, 20 * 16, 20 * 16, 4 * 16),
+            createWall(0, 24 * 16, fullScreen, 2 * 16),
+            createWall(0, 26 * 16, 2 * 16, oneEigth),
+            createWall(6 * 16, 26 * 16, 26 * 16, oneEigth),
+            createWall(0, 30 * 16, fullScreen, 2 * 16),
+            createActivePoint(oneEigth - 8, sevenEigths - 8, 0)
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeFourths, oneFourth),
+            createWall(0, oneFourth, oneHalf, oneFourth),
+            createWall(threeFourths, oneFourth, oneFourth, oneFourth),
+            createWall(0, oneHalf, oneFourth, oneFourth),
+            createWall(oneHalf, oneHalf, oneHalf, oneFourth),
+            createWall(oneFourth, threeFourths, threeFourths, oneFourth),
+            createActivePoint(sevenEigths - 8, oneEigth - 8, 0),
+            loopFireBombs(threeFourths, 0, oneFourth, oneFourth, 0, 0.5, 0.5),
+            loopFireBombs(oneHalf, oneFourth, oneFourth, oneFourth, 1, 0.5, 0.5),
+            loopFireBombs(oneFourth, oneHalf, oneFourth, oneFourth, 0, 0.5, 0.5),
+            loopFireBombs(0, threeFourths, oneFourth, oneFourth, 1, 0.5, 0.5),
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, threeFourths, oneEigth),
+            createWall(0, oneEigth, fiveEigths, oneEigth),
+            createWall(0, oneFourth, oneHalf, oneEigth),
+            createWall(sevenEigths, oneFourth, oneEigth, oneEigth),
+            createWall(0, threeEigths, threeEigths, oneEigth),
+            createWall(threeFourths, threeEigths, oneFourth, oneEigth),
+            createWall(threeFourths, oneHalf, oneFourth, oneEigth),
+            createWall(0, oneHalf, threeEigths, oneEigth),
+            createWall(sevenEigths, fiveEigths, oneEigth, oneEigth),
+            createWall(0, fiveEigths, oneHalf, oneEigth),
+            createWall(0, threeFourths, fiveEigths, oneEigth),
+            createWall(0, sevenEigths, threeFourths, oneEigth),
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 0),
+            createPassivePoint(pointFour - 8, oneHalf - 8, 0, 20),
+            loopFireBombs(threeEigths, threeEigths, oneEigth, oneFourth, 0.7, 2.4, 0.7),
+            loopFireBombs(oneHalf, oneFourth, oneEigth, oneHalf, 0.7, 2.4, 0.7),
+            loopFireBombs(fiveEigths, oneEigth, oneEigth, threeFourths, 0.7, 2.4, 0.7)
+        ]);
+
+        cancelAwaitChain = false;
+
+        moveBlockie(sevenEigths + blockieAdjustment, sevenEigths + blockieAdjustment);
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, 2 * 16),
+            createWall(0, 6 * 16, fullScreen, 2 * 16),
+            createWall(0, 12 * 16, fullScreen, 2 * 16),
+            createWall(0, 18 * 16, fullScreen, 2 * 16),
+            createWall(0, 24 * 16, fullScreen, 2 * 16),
+            createWall(0, 30 * 16, fullScreen, 2 * 16),
+            createWall(0, 0, 2 * 16, fullScreen),
+            createWall(6 * 16, 0, 2 * 16, fullScreen),
+            createWall(12 * 16, 0, 2 * 16, fullScreen),
+            createWall(18 * 16, 0, 2 * 16, fullScreen),
+            createWall(24 * 16, 0, 2 * 16, fullScreen),
+            createWall(30 * 16, 0, 2 * 16, fullScreen),
+            createActivePoint(oneEigth - 8, oneEigth - 8),
+            createPassivePoint(oneEigth - 8, oneHalf - 8, 5, 7),
+
+            loopFireBombs(2 * 16, 2 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(14 * 16, 2 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(26 * 16, 2 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+
+            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(8 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(20 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+
+            loopFireBombs(2 * 16, 14 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(14 * 16, 14 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(26 * 16, 14 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+
+            loopFireBombs(2 * 16, 20 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(8 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(14 * 16, 20 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(20 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(26 * 16, 20 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+
+            loopFireBombs(2 * 16, 26 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(8 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(14 * 16, 26 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+            loopFireBombs(20 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 1, 0.5),
+            loopFireBombs(26 * 16, 26 * 16, 4 * 16, 4 * 16, 1.25, 1, 0.5),
+        ]);
+
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, fullScreen, 2 * 16),
+            createWall(0, 6 * 16, fullScreen, 2 * 16),
+            createWall(0, 12 * 16, fullScreen, 2 * 16),
+            createWall(0, 18 * 16, fullScreen, 2 * 16),
+            createWall(0, 24 * 16, fullScreen, 2 * 16),
+            createWall(0, 30 * 16, fullScreen, 2 * 16),
+            createWall(0, 0, 2 * 16, fullScreen),
+            createWall(6 * 16, 0, 2 * 16, fullScreen),
+            createWall(12 * 16, 0, 2 * 16, fullScreen),
+            createWall(18 * 16, 0, 2 * 16, fullScreen),
+            createWall(24 * 16, 0, 2 * 16, fullScreen),
+            createWall(30 * 16, 0, 2 * 16, fullScreen),
+            createActivePoint(oneEigth - 8, sevenEigths - 8, 0),
+
+            loopFireBombs(8 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(14 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(20 * 16, 2 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+
+            loopFireBombs(2 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(8 * 16, 8 * 16, 4 * 16, 4 * 16, 1, 0.5, 0.5),
+            loopFireBombs(14 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(20 * 16, 8 * 16, 4 * 16, 4 * 16, 1, 0.5, 0.5),
+            loopFireBombs(26 * 16, 8 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+
+            loopFireBombs(2 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(8 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(20 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(26 * 16, 14 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+
+            loopFireBombs(2 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(8 * 16, 20 * 16, 4 * 16, 4 * 16, 1, 0.5, 0.5),
+            loopFireBombs(14 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(20 * 16, 20 * 16, 4 * 16, 4 * 16, 1, 0.5, 0.5),
+            loopFireBombs(26 * 16, 20 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+
+            loopFireBombs(8 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(14 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5),
+            loopFireBombs(20 * 16, 26 * 16, 4 * 16, 4 * 16, 0, 0.5, 0.5)
+        ]);
+
+        console.log(`Level ${currentLevel} completed.`);
+        increaseLevel();
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -1229,6 +1790,10 @@ function checkTestInstancesColliding(instanceOne, instanceOneX, instanceOneY, in
     //The instances must have an overlapping area (x and y components) for there to be a collision.
     if (xColliding && yColliding) {
         preventingMovement = true;
+    } else if (instanceOneX < 0 || canvas.width < (instanceOneX + instanceOne.width)) {
+        preventingMovement = true;
+    } else if (instanceOneY < 0 || canvas.height < (instanceOneY + instanceOne.height)) {
+        preventingMovement = true;
     };
 };
 
@@ -1547,21 +2112,6 @@ function gameLoop() {
             };
 
             //Movement Obstacles
-
-            //Updates Blockie's location if it is not off of the canvas. If it is off of the canvas, Blockie will move towards
-            //the last available space to avoid a gap.
-
-            if (blockie.targetXLocation <= 0) {
-                blockie.targetXLocation = 0;
-            } else if ((blockie.targetXLocation + blockie.width) >= canvas.width) {
-                blockie.targetXLocation = canvas.width - blockie.width;
-            };
-
-            if (blockie.targetYLocation <= 0) {
-                blockie.targetYLocation = 0;
-            } else if ((blockie.targetYLocation + blockie.height) >= canvas.height) {
-                blockie.targetYLocation = canvas.height - blockie.height;
-            };
 
             //Updates Blockie's location if he's touching a wall to the nearest open location.
 

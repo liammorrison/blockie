@@ -72,8 +72,10 @@ let walls = [];
 let movingWalls = [];
 let partyHats = [];
 
-//allObjects is used to make destroying all instances (reject or resolve) possible with a for loop.
-let allObjects = [];
+//Used in for loops to apply a function to many objects.
+let allInstances = [];
+let allInteractiveInstances = [];
+let allCollisionInstances = [];
 
 let currentTimeouts = [];
 let currentIntervals = [];
@@ -99,8 +101,8 @@ class Player {
         this.dy = 0;
         this.xSubPixel = 0;
         this.ySubPixel = 0;
-        this.targetXLocation = this.x;
-        this.targetYLocation = this.y;
+        this.xTarget = this.x;
+        this.yTarget = this.y;
 
         this.state = "playing";
 
@@ -303,180 +305,9 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+        initializeLevel(oneHalf + blockieAdjustment, threeFourths + blockieAdjustment);
 
-        createCountdownTimer(35);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, 10 * 16),
-            createWall(4 * 16, 14 * 16, oneEigth, oneEigth),
-            createWall(24 * 16, 14 * 16, oneEigth, oneEigth),
-            createWall(0, 22 * 16, fullScreen, 10 * 16),
-            createActivePoint(pointOne - 8, oneHalf - 8, 0),
-            createPassivePoint(pointEight - 8, oneHalf - 8, 0, 3),
-
-            loopFireBombs(0, 10 * 16, oneFourth, oneEigth, 0, 0.7, 0.5),
-            loopFireBombs(0, 14 * 16, oneEigth, oneFourth, 0.55, 0.7, 0.5),
-            loopFireBombs(oneEigth, 18 * 16, oneFourth, oneEigth, 1.1, 0.7, 0.5),
-            loopFireBombs(oneFourth, 10 * 16, oneEigth, oneFourth, 1.65, 0.7, 0.5),
-
-            loopFireBombs(threeFourths, 10 * 16, oneFourth, oneEigth, 0, 0.7, 0.5),
-            loopFireBombs(sevenEigths, 14 * 16, oneEigth, oneFourth, 0.55, 0.7, 0.5),
-            loopFireBombs(fiveEigths, 18 * 16, oneFourth, oneEigth, 1.1, 0.7, 0.5),
-            loopFireBombs(fiveEigths, 10 * 16, oneEigth, oneFourth, 1.65, 0.7, 0.5),
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, oneEigth),
-            createWall(0, oneFourth, fullScreen, oneEigth),
-            createWall(0, fiveEigths, fullScreen, oneEigth),
-            createWall(0, sevenEigths, fullScreen, oneEigth),
-            createActivePoint(pointEight - 8, oneHalf - 8, 2),
-
-            fireBomb(0, oneEigth, 2 * 16, oneEigth, 0, 0.15),
-            fireBomb(2 * 16, oneEigth, 2 * 16, oneEigth, 0.15, 0.15),
-            fireBomb(4 * 16, oneEigth, 2 * 16, oneEigth, 0.3, 0.15),
-            fireBomb(6 * 16, oneEigth, 2 * 16, oneEigth, 0.45, 0.15),
-            fireBomb(8 * 16, oneEigth, 2 * 16, oneEigth, 0.6, 0.15),
-            fireBomb(10 * 16, oneEigth, 2 * 16, oneEigth, 0.75, 0.15),
-            fireBomb(12 * 16, oneEigth, 2 * 16, oneEigth, 0.9, 0.15),
-            fireBomb(14 * 16, oneEigth, 2 * 16, oneEigth, 1.05, 0.15),
-            fireBomb(16 * 16, oneEigth, 2 * 16, oneEigth, 1.2, 0.15),
-            fireBomb(18 * 16, oneEigth, 2 * 16, oneEigth, 1.35, 0.15),
-            fireBomb(20 * 16, oneEigth, 2 * 16, oneEigth, 1.5, 0.15),
-            fireBomb(22 * 16, oneEigth, 2 * 16, oneEigth, 1.65, 0.15),
-            fireBomb(24 * 16, oneEigth, 2 * 16, oneEigth, 1.8, 0.15),
-            fireBomb(26 * 16, oneEigth, 2 * 16, oneEigth, 1.95, 0.15),
-            fireBomb(28 * 16, oneEigth, 2 * 16, oneEigth, 2.1, 0.15),
-            fireBomb(30 * 16, oneEigth, 2 * 16, oneEigth, 2.25, 0.15),
-
-            fireBomb(0, threeEigths, 2 * 16, oneFourth, 1, 0.15),
-            fireBomb(2 * 16, threeEigths, 2 * 16, oneFourth, 1.15, 0.15),
-            fireBomb(4 * 16, threeEigths, 2 * 16, oneFourth, 1.3, 0.15),
-            fireBomb(6 * 16, threeEigths, 2 * 16, oneFourth, 1.45, 0.15),
-            fireBomb(8 * 16, threeEigths, 2 * 16, oneFourth, 1.6, 0.15),
-            fireBomb(10 * 16, threeEigths, 2 * 16, oneFourth, 1.75, 0.15),
-            fireBomb(12 * 16, threeEigths, 2 * 16, oneFourth, 1.9, 0.15),
-            fireBomb(14 * 16, threeEigths, 2 * 16, oneFourth, 2.05, 0.15),
-            fireBomb(16 * 16, threeEigths, 2 * 16, oneFourth, 2.2, 0.15),
-            fireBomb(18 * 16, threeEigths, 2 * 16, oneFourth, 2.35, 0.15),
-            fireBomb(20 * 16, threeEigths, 2 * 16, oneFourth, 2.5, 0.15),
-            fireBomb(22 * 16, threeEigths, 2 * 16, oneFourth, 2.65, 0.15),
-            fireBomb(24 * 16, threeEigths, 2 * 16, oneFourth, 2.8, 0.15),
-            fireBomb(26 * 16, threeEigths, 2 * 16, oneFourth, 2.95, 0.15),
-            fireBomb(28 * 16, threeEigths, 2 * 16, oneFourth, 3.1, 0.15),
-            fireBomb(30 * 16, threeEigths, 2 * 16, oneFourth, 3.25, 0.15),
-
-            fireBomb(0, threeFourths, 2 * 16, oneEigth, 0, 0.15),
-            fireBomb(2 * 16, threeFourths, 2 * 16, oneEigth, 0.15, 0.15),
-            fireBomb(4 * 16, threeFourths, 2 * 16, oneEigth, 0.3, 0.15),
-            fireBomb(6 * 16, threeFourths, 2 * 16, oneEigth, 0.45, 0.15),
-            fireBomb(8 * 16, threeFourths, 2 * 16, oneEigth, 0.6, 0.15),
-            fireBomb(10 * 16, threeFourths, 2 * 16, oneEigth, 0.75, 0.15),
-            fireBomb(12 * 16, threeFourths, 2 * 16, oneEigth, 0.9, 0.15),
-            fireBomb(14 * 16, threeFourths, 2 * 16, oneEigth, 1.05, 0.15),
-            fireBomb(16 * 16, threeFourths, 2 * 16, oneEigth, 1.2, 0.15),
-            fireBomb(18 * 16, threeFourths, 2 * 16, oneEigth, 1.35, 0.15),
-            fireBomb(20 * 16, threeFourths, 2 * 16, oneEigth, 1.5, 0.15),
-            fireBomb(22 * 16, threeFourths, 2 * 16, oneEigth, 1.65, 0.15),
-            fireBomb(24 * 16, threeFourths, 2 * 16, oneEigth, 1.8, 0.15),
-            fireBomb(26 * 16, threeFourths, 2 * 16, oneEigth, 1.95, 0.15),
-            fireBomb(28 * 16, threeFourths, 2 * 16, oneEigth, 2.1, 0.15),
-            fireBomb(30 * 16, threeFourths, 2 * 16, oneEigth, 2.25, 0.15),
-        ]);
-
-        cancelAwaitChain = false;
-
-        moveBlockie(pointEight + blockieAdjustment, oneHalf + blockieAdjustment);
-
-        await Promise.all([
-            createWall(0, oneEigth, oneEigth, sevenEigths),
-            createWall(9 * 16, 0, 2 * 16, 4 * 16),
-            createWall(oneFourth, oneEigth, oneEigth, threeFourths),
-            createWall(oneHalf, oneEigth, oneEigth, 10 * 16),
-            createWall(oneHalf, 18 * 16, oneEigth, 14 * 16),
-            createWall(25 * 16, 0, 2 * 16, 4 * 16),
-            createWall(threeFourths, oneEigth, oneEigth, threeFourths),
-            createActivePoint(pointOne - 8, pointOne - 8, 0),
-            createPassivePoint(18 * 16 - 8, oneHalf - 8, 4, 4),
-
-            loopFireBombs(11 * 16, 0, 14 * 16, 2 * 16, 0, 1, 0.3),
-            loopFireBombs(11 * 16, 2 * 16, 14 * 16, 2 * 16, 0.3, 1, 0.3),
-            loopFireBombs(threeEigths, oneEigth, oneEigth, 2 * 16, 0.6, 1, 0.3),
-            loopFireBombs(fiveEigths, oneEigth, oneEigth, 2 * 16, 0.6, 1, 0.3),
-            loopFireBombs(threeEigths, 6 * 16, oneEigth, 2 * 16, 0.9, 1, 0.3),
-            loopFireBombs(fiveEigths, 6 * 16, oneEigth, 2 * 16, 0.9, 1, 0.3),
-            loopFireBombs(threeEigths, oneFourth, oneEigth, 2 * 16, 1.2, 1, 0.3),
-            loopFireBombs(fiveEigths, oneFourth, oneEigth, 2 * 16, 1.2, 1, 0.3),
-            loopFireBombs(threeEigths, 10 * 16, oneEigth, 2 * 16, 1.5, 1, 0.3),
-            loopFireBombs(fiveEigths, 10 * 16, oneEigth, 2 * 16, 1.5, 1, 0.3),
-            loopFireBombs(threeEigths, threeEigths, oneEigth, 2 * 16, 1.8, 1, 0.3),
-            loopFireBombs(fiveEigths, threeEigths, oneEigth, 2 * 16, 1.8, 1, 0.3),
-            loopFireBombs(threeEigths, 14 * 16, threeEigths, 2 * 16, 2.1, 1, 0.3),
-            loopFireBombs(threeEigths, oneHalf, threeEigths, 2 * 16, 2.4, 1, 0.3)
-        ]);
-
-        cancelAwaitChain = false;
-
-        moveBlockie(pointOne + blockieAdjustment, pointOne + blockieAdjustment);
-
-        await Promise.all([
-            createWall(oneEigth, 0, oneEigth, 10 * 16),
-            createWall(oneFourth, 0, threeFourths, 2 * 16),
-            createWall(oneFourth, 6 * 16, fiveEigths, oneEigth),
-            createWall(oneEigth, 10 * 16, oneEigth, oneEigth),
-            createWall(fiveEigths, 10 * 16, oneEigth, oneEigth),
-            createWall(threeEigths, oneHalf, oneEigth, oneEigth),
-            createWall(sevenEigths, oneHalf, oneEigth, oneEigth),
-            createWall(0, fiveEigths, fullScreen, threeEigths),
-            createActivePoint(oneHalf - 8, oneEigth - 8, 0),
-
-            loopFireBombs(oneFourth, 10 * 16, threeEigths, oneEigth, 0, 1.1, 0.7),
-            loopFireBombs(threeFourths, 10 * 16, oneFourth, oneEigth, 1.4, 1.1, 0.7),
-            loopFireBombs(0, oneHalf, threeEigths, oneEigth, 2.1, 1.1, 0.7),
-            loopFireBombs(oneHalf, oneHalf, threeEigths, oneEigth, 0.7, 1.1, 0.7)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 2 * 16, 2 * 16, oneHalf),
-            createWall(6 * 16, 2 * 16, 2 * 16, oneEigth),
-            createWall(24 * 16, 2 * 16, 2 * 16, oneEigth),
-            createWall(6 * 16, 14 * 16, 2 * 16, oneEigth),
-            createWall(24 * 16, 14 * 16, 2 * 16, oneEigth),
-            createWall(30 * 16, 2 * 16, 2 * 16, oneHalf),
-            createWall(0, 0, fullScreen, 2 * 16),
-            createWall(2 * 16, 6 * 16, sevenEigths, 2 * 16),
-            createWall(2 * 16, 12 * 16, sevenEigths, 2 * 16),
-            createWall(0, 18 * 16, fullScreen, 14 * 16),
-
-            fireBomb(oneFourth, 2 * 16, oneHalf, oneEigth, 0.25, 1),
-            fireBomb(oneFourth, 14 * 16, oneHalf, oneEigth, 0.25, 1),
-
-            fireBomb(oneFourth, 2 * 16, oneHalf, oneEigth, 2.25, 1),
-            fireBomb(2 * 16, oneFourth, sevenEigths, oneEigth, 2.25, 1),
-            fireBomb(oneFourth, 14 * 16, oneHalf, oneEigth, 2.25, 1),
-
-            createActivePoint(oneHalf - 8, 10 * 16 - 8, 4.5),
-            fireBomb(2 * 16, 2 * 16, oneEigth, oneEigth, 4.5, 1),
-            fireBomb(oneFourth, 2 * 16, oneHalf, oneEigth, 4.5, 1),
-            fireBomb(26 * 16, 2 * 16, oneEigth, oneEigth, 4.5, 1),
-            fireBomb(2 * 16, 14 * 16, oneEigth, oneEigth, 4.5, 1),
-            fireBomb(oneFourth, 14 * 16, oneHalf, oneEigth, 4.5, 1),
-            fireBomb(26 * 16, 14 * 16, oneEigth, oneEigth, 4.5, 1)
-        ]);
-
-        destroyCountdownTimer();
-
-        cancelAwaitChain = false;
-
-        console.log(`Level ${currentLevel} completed.`);
-        increaseLevel();
+        createWall(12 * 16, 12 * 16, oneFourth, oneFourth);
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -597,9 +428,9 @@ async function restartLevel(reason) {
 
     currentIntervals.splice(0);
 
-    updateAllObjects();
-    for (let i = 0; i < allObjects.length; i++) {
-        rejectInstances(allObjects[i]);
+    updateAllInstances();
+    for (let i = 0; i < allInstances.length; i++) {
+        rejectInstances(allInstances[i]);
     };
 
     destroyCountdownTimer();
@@ -1246,8 +1077,8 @@ async function fireMovingWall(x, y, width, height, xSpeed, ySpeed, waitingSecond
 
 //Instance Helper Functions
 
-function updateAllObjects() {
-    allObjects = [
+function updateAllInstances() {
+    allInstances = [
         waitingTimeouts,
         passivePoints,
         activePoints,
@@ -1260,8 +1091,8 @@ function updateAllObjects() {
     ];
 };
 
-function updateAllInteractiveObjects() {
-    allObjects = [
+function updateAllInteractiveInstances() {
+    allInteractiveInstances = [
         waitingTimeouts,
         passivePoints,
         activePoints,
@@ -1269,6 +1100,13 @@ function updateAllInteractiveObjects() {
         movingVerticalLasers,
         bombs,
         movingBombs
+    ];
+};
+
+function updateAllCollisionInstances() {
+    allCollisionInstances = [
+        walls,
+        movingWalls
     ];
 };
 
@@ -1513,17 +1351,23 @@ function drawPartyHats() {
 
 //Collision Functions
 
-function checkCollisionsWithClass(classArray) {
-    for (let i = 0; i < classArray.length; i++) {
-        checkInstancesColliding(blockie, classArray[i]);
+function checkCollisionsWithClasses(classesArray) {
+    for (let i = 0; i < classesArray.length; i++) {
+        let currentClass = classesArray[i];
+        for (let i = 0; i < currentClass.length; i++) {
+            checkInstancesColliding(blockie, currentClass[i]);
+        };
     };
 };
 
-function checkTestCollisionsWithClass(instanceOneX, instanceOneY, classArray) {
+function checkTestCollisionsWithClasses(instanceOneX, instanceOneY, classesArray) {
     preventingMovement = false;
 
-    for (let i = 0; i < classArray.length; i++) {
-        checkTestInstancesColliding(blockie, instanceOneX, instanceOneY, classArray[i]);
+    for (let i = 0; i < classesArray.length; i++) {
+        let currentClass = classesArray[i];
+        for (let i = 0; i < currentClass.length; i++) {
+            checkTestInstancesColliding(blockie, instanceOneX, instanceOneY, currentClass[i]);
+        };
     };
 };
 
@@ -1884,84 +1728,108 @@ function gameLoop() {
                 blockie.ySubPixel -= blockie.dy;
 
                 //The testLocations are where Blockie should go, but it must also be checked for collisions before he is moved.
-                blockie.targetXLocation = blockie.x + blockie.dx;
-                blockie.targetYLocation = blockie.y + blockie.dy;
+                blockie.xTarget = blockie.x + blockie.dx;
+                blockie.yTarget = blockie.y + blockie.dy;
             } else {
                 //Accounts for possible changes in Blockie's location due to respawning or something else that isn't an input.
-                blockie.targetXLocation = blockie.x;
-                blockie.targetYLocation = blockie.y;
+                blockie.xTarget = blockie.x;
+                blockie.yTarget = blockie.y;
             };
 
             //Movement Obstacles
 
-            //Updates Blockie's location if he's touching a wall to the nearest open location.
+            updateAllCollisionInstances();
+            checkTestCollisionsWithClasses(blockie.xTarget, blockie.yTarget, allCollisionInstances);
 
-            checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, walls);
-            checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, movingWalls);
-
-            //Blockie's movement will be prevented on some axes if he is touching a wall at his target location.
+            //Moves Blockie to an open space if he is trying to move into a collision instance.
             if (preventingMovement) {
-                blockie.targetXLocation = blockie.x;
-                blockie.targetYLocation = blockie.y;
+                //Resets Blockie's target location to his current location because there is a 100% chance that space is clear.
+                blockie.xTarget = blockie.x;
+                blockie.yTarget = blockie.y;
 
                 let xChange = 0;
                 let yChange = 0;
-                let xTestingDistance = 0;
-                let yTestingDistance = 0;
+                let xDir = Math.sign(blockie.dx);
+                let yDir = Math.sign(blockie.dy);
+                let lastAvailableX = blockie.xTarget;
+                let lastAvailableY = blockie.yTarget;
 
-                //This checks for the last available x location after Blockie has already moved in his desired direction. This 
-                //allows for moving along walls while moving in a diagonal direction.
-                if (Math.abs(blockie.dx - xTestingDistance) < 1) {
-                    xChange = blockie.dx - xTestingDistance;
-                } else {
-                    xChange = Math.sign(blockie.dx);
-                };
-
-                checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation, walls);
-                checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, movingWalls);
-
-                while (!preventingMovement && Math.abs(xTestingDistance) <= Math.abs(blockie.dx) - 1) {
-                    blockie.targetXLocation += xChange;
-                    xTestingDistance += xChange;
-
-                    if (Math.abs(blockie.dx - xTestingDistance) < 1) {
-                        xChange = blockie.dx - xTestingDistance;
+                //Finds the last free space in the direction that Blockie is moving in. Stops checking for more spaces once 
+                //Blockie has moved past his dx or dy each frame.
+                while (Math.abs(xChange) < Math.abs(blockie.dx) || Math.abs(yChange) < Math.abs(blockie.dy)) {
+                    //Allows for Blockie to move in non-integer increments.
+                    if (Math.abs(blockie.dx) - xChange < 1) {
+                        xChange += blockie.dx - xChange;
                     } else {
-                        xChange = Math.sign(blockie.dx);
+                        xChange += xDir;
                     };
 
-                    checkTestCollisionsWithClass(blockie.targetXLocation + xChange, blockie.targetYLocation, walls);
-                    checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, movingWalls);
-                };
-
-                //This checks for the last available y location after Blockie has already moved in his desired direction. This 
-                //allows for moving along walls while moving in a diagonal direction.
-                if (Math.abs(blockie.dy - yTestingDistance) < 1) {
-                    yChange = blockie.dy - yTestingDistance;
-                } else {
-                    yChange = Math.sign(blockie.dy);
-                };
-
-                checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
-                checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, movingWalls);
-
-                while (!preventingMovement && Math.abs(yTestingDistance) <= Math.abs(blockie.dy) - 1) {
-                    blockie.targetYLocation += yChange;
-                    yTestingDistance += yChange;
-
-                    if (Math.abs(blockie.dy - yTestingDistance) < 1) {
-                        yChange = blockie.dy - yTestingDistance;
+                    //Allows for Blockie to move in non-integer increments.
+                    if (Math.abs(blockie.dy) - yChange < 1) {
+                        yChange += blockie.dy - yChange;
                     } else {
-                        yChange = Math.sign(blockie.dy);
+                        yChange += yDir;
                     };
 
-                    checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation + yChange, walls);
-                    checkTestCollisionsWithClass(blockie.targetXLocation, blockie.targetYLocation, movingWalls);
+                    //Checks if each increment is empty and replaces the last available location with it.
+                    checkTestCollisionsWithClasses(blockie.xTarget + xChange, blockie.yTarget + yChange, allCollisionInstances);
+                    if (!preventingMovement) {
+                        lastAvailableX = blockie.xTarget + xChange;
+                        lastAvailableY = blockie.yTarget + yChange;
+                    };
                 };
+
+                //Sets Blockie's location to the last available one in the direction that he's moving in.
+                blockie.xTarget = lastAvailableX;
+                blockie.yTarget = lastAvailableY;
+
+                //Resets dx and dy to be relative to his new position.
+                blockie.dx = blockie.x + blockie.dx - blockie.xTarget;
+                blockie.dy = blockie.y + blockie.dy - blockie.yTarget;
+                xChange = 0;
+                yChange = 0;
+
+                //Independently checks along the x-axis for an available space after moving in Blockie's exact direction (this
+                //only activates when moving diagonally and allows for "sliding").
+                while (Math.abs(xChange) < Math.abs(blockie.dx)) {
+                    //Allows for Blockie to move in non-integer increments.
+                    if (Math.abs(blockie.dx) - xChange < 1) {
+                        xChange += blockie.dx - xChange;
+                    } else {
+                        xChange += xDir;
+                    };
+
+                    //Checks if each increment is empty and replaces the last available location with it.
+                    checkTestCollisionsWithClasses(blockie.xTarget + xChange, blockie.yTarget, allCollisionInstances);
+                    if (!preventingMovement) {
+                        lastAvailableX = blockie.xTarget + xChange;
+                    };
+                };
+
+                blockie.xTarget = lastAvailableX;
+
+                //Independently checks along the y-axis for an available space after moving in Blockie's exact direction (this
+                //only activates when moving diagonally and allows for "sliding").
+                while (Math.abs(yChange) < Math.abs(blockie.dy)) {
+                    //Allows for Blockie to move in non-integer increments.
+                    if (Math.abs(blockie.dy) - yChange < 1) {
+                        yChange += blockie.dy - yChange;
+                    } else {
+                        yChange += yDir;
+                    };
+
+                    //Checks if each increment is empty and replaces the last available location with it.
+                    checkTestCollisionsWithClasses(blockie.xTarget, blockie.yTarget + yChange, allCollisionInstances);
+                    if (!preventingMovement) {
+                        lastAvailableY = blockie.yTarget + yChange;
+                    };
+                };
+
+                blockie.yTarget = lastAvailableY;
             };
 
-            blockie.x = blockie.targetXLocation;
-            blockie.y = blockie.targetYLocation;
+            blockie.x = blockie.xTarget;
+            blockie.y = blockie.yTarget;
         };
 
         //Other Instances' Movements
@@ -1975,10 +1843,8 @@ function gameLoop() {
 
         collidingInstances.splice(0);
 
-        updateAllInteractiveObjects();
-        for (let i = 0; i < allObjects.length; i++) {
-            checkCollisionsWithClass(allObjects[i]);
-        };
+        updateAllInteractiveInstances();
+        checkCollisionsWithClasses(allInteractiveInstances);
 
         for (let i = 0; i < collidingInstances.length; i++) {
             if (collidingInstances[i].constructor.name === "PassivePoint") {
@@ -2013,9 +1879,9 @@ function gameLoop() {
 
                 cancelAwaitChain = true;
 
-                updateAllObjects();
-                for (let i = 0; i < allObjects.length; i++) {
-                    resolveInstances(allObjects[i]);
+                updateAllInstances();
+                for (let i = 0; i < allInstances.length; i++) {
+                    resolveInstances(allInstances[i]);
                 };
 
                 //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
@@ -2025,10 +1891,10 @@ function gameLoop() {
                 break;
             };
         };
-    };
 
-    //Continuously recalls the function.
-    window.requestAnimationFrame(gameLoop);
+        //Continuously recalls the function.
+        window.requestAnimationFrame(gameLoop);
+    };
 };
 
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 

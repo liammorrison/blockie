@@ -63,7 +63,9 @@ let keysDown = [];
 
 let waitingTimeouts = [];
 let passivePoints = [];
+let movingPassivePoints = [];
 let activePoints = [];
+let movingActivePoints = [];
 let movingHorizontalLasers = [];
 let movingVerticalLasers = [];
 let bombs = [];
@@ -147,12 +149,56 @@ class PassivePoint {
     };
 };
 
+class MovingPassivePoint {
+    constructor(x, y, xSpeed, ySpeed, totalFiringSeconds) {
+        this.x = x;
+        this.y = y;
+        this.width = 16;
+        this.height = 16;
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+
+        //When created, the instance begins its warning state to provide visual feedback.
+        this.state = "warning";
+        this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
+        this.externalReject;
+        this.timeout;
+
+        //Used to draw the remaining seconds meter above the instance.
+        this.totalFiringSeconds = totalFiringSeconds;
+        this.remainingFiringSeconds = 0;
+    };
+};
+
 class ActivePoint {
     constructor(x, y, totalFiringSeconds) {
         this.x = x;
         this.y = y;
         this.width = 16;
         this.height = 16;
+
+        //When created, the instance begins its warning state to provide visual feedback.
+        this.state = "warning";
+        this.visible = true;
+
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
+        this.externalReject;
+        this.timeout;
+    };
+};
+
+class MovingActivePoint {
+    constructor(x, y, xSpeed, ySpeed, totalFiringSeconds) {
+        this.x = x;
+        this.y = y;
+        this.width = 16;
+        this.height = 16;
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
 
         //When created, the instance begins its warning state to provide visual feedback.
         this.state = "warning";
@@ -317,7 +363,7 @@ async function levelOne() {
 
         cancelAwaitChain = false;
 
-        await loopFireMovingWalls(14 * 16, 14 * 16, oneEigth, oneEigth, -1, 1, 0, 0, 7);
+        await fireMovingActivePoint(100, 100, 1, 1, 0);
 
         cancelAwaitChain = false;
     } catch (error) {
@@ -820,6 +866,49 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
 };
 
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+async function fireMovingPassivePoint(x, y, xSpeed, ySpeed, waitingSeconds, firingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
+    await setWaitingTimeout(waitingSeconds);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates an instance and sets all of its initial properties.
+    let instance = new MovingPassivePoint(x, y, xSpeed, ySpeed, firingSeconds);
+    movingPassivePoints.push(instance);
+
+    //Creates the "blinking" effect for warning of a collision.
+    await setWarningTimeouts(instance);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates a timeout for the instance's destruction and links its deactivation functions.
+    return await new Promise((resolve, reject) => {
+        //Links the instance's deactivation functions to itself to allow outside callings.
+        instance.externalResolve = resolve;
+        instance.externalReject = reject;
+
+        //Sets an interval to the length of the firingSeconds which counts down the semi-accurate remaining length of the timeout.
+        //This is used in drawing the remaining seconds meter to show the player how much longer the point will exist.
+        instance.remainingFiringSeconds = firingSeconds;
+        let remainingFiringSecondsInterval = setInterval(() => {
+            instance.remainingFiringSeconds -= 0.004;
+        }, 1);
+        addCurrentInterval(remainingFiringSecondsInterval);
+
+        instance.timeout = setTimeout(() => {
+            removeCurrentInterval(remainingFiringSecondsInterval);
+
+            //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
+            let instanceIndex = movingPassivePoints.indexOf(instance);
+            movingPassivePoints.splice(instanceIndex, 1);
+            resolve("resolved");
+        }, firingSeconds * 1000);
+    });
+};
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function createActivePoint(x, y, waitingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(waitingSeconds);
@@ -830,6 +919,32 @@ async function createActivePoint(x, y, waitingSeconds) {
     //Creates an instance and sets all of its initial properties.
     let instance = new ActivePoint(x, y);
     activePoints.push(instance);
+
+    //Creates the "blinking" effect for warning of a collision.
+    await setWarningTimeouts(instance);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates a timeout for the instance's destruction and links its deactivation functions.
+    return await new Promise((resolve, reject) => {
+        //Links the instance's deactivation functions to itself to allow outside callings.
+        instance.externalResolve = resolve;
+        instance.externalReject = reject;
+    });
+};
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+async function fireMovingActivePoint(x, y, xSpeed, ySpeed, waitingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
+    await setWaitingTimeout(waitingSeconds);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates an instance and sets all of its initial properties.
+    let instance = new MovingActivePoint(x, y, xSpeed, ySpeed);
+    movingActivePoints.push(instance);
 
     //Creates the "blinking" effect for warning of a collision.
     await setWarningTimeouts(instance);
@@ -1089,7 +1204,9 @@ function updateAllInstances() {
     allInstances = [
         waitingTimeouts,
         passivePoints,
+        movingPassivePoints,
         activePoints,
+        movingActivePoints,
         movingHorizontalLasers,
         movingVerticalLasers,
         bombs,
@@ -1103,7 +1220,9 @@ function updateAllInteractiveInstances() {
     allInteractiveInstances = [
         waitingTimeouts,
         passivePoints,
+        movingPassivePoints,
         activePoints,
+        movingActivePoints,
         movingHorizontalLasers,
         movingVerticalLasers,
         bombs,
@@ -1132,6 +1251,26 @@ function moveMovingVerticalLasers() {
     for (let i = 0; i < movingVerticalLasers.length; i++) {
         if (movingVerticalLasers[i].state !== "warning") {
             movingVerticalLasers[i].x += movingVerticalLasers[i].speed;
+        };
+    };
+};
+
+//Moves instances by adding speed to their location every step.
+function moveMovingPassivePoints() {
+    for (let i = 0; i < movingPassivePoints.length; i++) {
+        if (movingPassivePoints[i].state !== "warning") {
+            movingPassivePoints[i].x += movingPassivePoints[i].xSpeed;
+            movingPassivePoints[i].y += movingPassivePoints[i].ySpeed;
+        };
+    };
+};
+
+//Moves instances by adding speed to their location every step.
+function moveMovingActivePoints() {
+    for (let i = 0; i < movingActivePoints.length; i++) {
+        if (movingActivePoints[i].state !== "warning") {
+            movingActivePoints[i].x += movingActivePoints[i].xSpeed;
+            movingActivePoints[i].y += movingActivePoints[i].ySpeed;
         };
     };
 };
@@ -1217,9 +1356,49 @@ function drawPassivePoints() {
     };
 };
 
+function drawMovingPassivePoints() {
+    for (let i = 0; i < movingPassivePoints.length; i++) {
+        let currentInstance = movingPassivePoints[i];
+
+        //Draws the remaining seconds meter for when the point will disappear.
+        context.fillStyle = "#E6FF16";
+        context.fillRect(currentInstance.x, currentInstance.y - 8, currentInstance.width * (currentInstance.remainingFiringSeconds / currentInstance.totalFiringSeconds), 4);
+
+        //Draws the point itself.
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeStyle = "#E6FF16";
+                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            } else if (currentInstance.state == "firing") {
+                context.fillStyle = "#E6FF16";
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
 function drawActivePoints() {
     for (let i = 0; i < activePoints.length; i++) {
         let currentInstance = activePoints[i];
+
+        //Draws the point itself.
+        if (currentInstance.visible) {
+            //Changes the sprite depending on the state of the instance.
+            if (currentInstance.state == "warning") {
+                context.strokeStyle = "#FF9012";
+                context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            } else if (currentInstance.state == "firing") {
+                context.fillStyle = "#FF9012";
+                context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
+            };
+        };
+    };
+};
+
+function drawMovingActivePoints() {
+    for (let i = 0; i < movingActivePoints.length; i++) {
+        let currentInstance = movingActivePoints[i];
 
         //Draws the point itself.
         if (currentInstance.visible) {
@@ -1654,6 +1833,8 @@ function gameLoop() {
     if (gameState === "playing") {
         //Other Instances' Movements
 
+        moveMovingPassivePoints();
+        moveMovingActivePoints();
         moveMovingHorizontalLasers();
         moveMovingVerticalLasers();
         moveMovingBombs();
@@ -1908,7 +2089,17 @@ function gameLoop() {
                 clearTimeout(collidingPoint.timeout);
                 let instanceIndex = passivePoints.indexOf(collidingPoint);
                 passivePoints.splice(instanceIndex, 1);
-            } else if (collidingInstances[i].constructor.name === "ActivePoint") {
+            } else if (collidingInstances[i].constructor.name === "MovingPassivePoint") {
+                //Adds points to the current level's total.
+                currentLevelPoints++;
+
+                //Resolves the PassivePoint's Promise and destroys the instance once it is touched.
+                let collidingPoint = collidingInstances[i];
+                collidingPoint.externalResolve();
+                clearTimeout(collidingPoint.timeout);
+                let instanceIndex = movingPassivePoints.indexOf(collidingPoint);
+                movingPassivePoints.splice(instanceIndex, 1);
+            } else if (collidingInstances[i].constructor.name === "ActivePoint" || collidingInstances[i].constructor.name === "MovingActivePoint") {
                 //Adds points to the current level's total.
                 currentLevelPoints++;
 
@@ -1968,7 +2159,9 @@ function drawingLoop() {
     if (gameState === "playing") {
         drawWalls();
         drawPassivePoints();
+        drawMovingPassivePoints();
         drawActivePoints();
+        drawMovingActivePoints();
         drawMovingHorizontalLasers();
         drawMovingVerticalLasers();
         drawBombs();

@@ -244,6 +244,10 @@ class Wall {
         this.width = width;
         this.height = height;
 
+        //Walls are always "firing" and visible.
+        this.state = "firing";
+        this.visible = true;
+
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
         this.externalReject;
         this.timeout;
@@ -258,6 +262,10 @@ class MovingWall {
         this.height = height;
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
+
+        //Walls are always "firing" and visible.
+        this.state = "firing";
+        this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
         this.externalReject;
@@ -307,7 +315,11 @@ async function levelOne() {
     try {
         initializeLevel(oneHalf + blockieAdjustment, threeFourths + blockieAdjustment);
 
-        createWall(12 * 16, 12 * 16, oneFourth, oneFourth);
+        cancelAwaitChain = false;
+
+        await loopFireMovingWalls(14 * 16, 14 * 16, oneEigth, oneEigth, -1, 1, 0, 0, 7);
+
+        cancelAwaitChain = false;
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -448,7 +460,7 @@ async function restartLevel(reason) {
 
         await displayMessage("Determination is your only asset.");
     } else if (reason === "keyPressed") {
-        blockie.state = "playing";
+        resetBlockieState();
         controlLevel();
     } else if (reason === "countdownTimer") {
         gameState = "playingCutscene";
@@ -605,14 +617,10 @@ async function displayMessage(message) {
         //Restarts the game once acceptable keys are pressed.
         function resumePlaying() {
             if (keysDown[16] || keysDown[32]) {
-                //Prevents dashing immediatley after restarting the game.
-                delete keysDown[16];
-                delete keysDown[32];
-
                 document.getElementById("messageDisplayer").innerHTML = "";
 
                 gameState = "playing";
-                blockie.state = "playing";
+                resetBlockieState();
 
                 controlLevel();
 
@@ -1351,7 +1359,17 @@ function drawPartyHats() {
 
 //Collision Functions
 
+function checkCollisionsWithClass(classArray) {
+    collidingInstances.splice(0);
+
+    for (let i = 0; i < classArray.length; i++) {
+        checkInstancesColliding(blockie, classArray[i]);
+    };
+};
+
 function checkCollisionsWithClasses(classesArray) {
+    collidingInstances.splice(0);
+
     for (let i = 0; i < classesArray.length; i++) {
         let currentClass = classesArray[i];
         for (let i = 0; i < currentClass.length; i++) {
@@ -1419,6 +1437,8 @@ function checkTestInstancesColliding(instanceOne, instanceOneX, instanceOneY, in
         preventingMovement = true;
     } else if (instanceOneY < 0 || canvas.height < (instanceOneY + instanceOne.height)) {
         preventingMovement = true;
+    } else {
+        preventingMovement = false;
     };
 };
 
@@ -1632,6 +1652,38 @@ function gameLoop() {
     };
 
     if (gameState === "playing") {
+        //Other Instances' Movements
+
+        moveMovingHorizontalLasers();
+        moveMovingVerticalLasers();
+        moveMovingBombs();
+        moveMovingWalls();
+
+        //Collision Handling
+
+        //Loops through each moving wall that Blockie is touching and pushes Blockie away from it.
+        checkCollisionsWithClass(movingWalls);
+        for (let i = 0; i < collidingInstances.length; i++) {
+            let collidingMovingWallInstance = collidingInstances[i];
+            preventingMovement = false;
+
+            //Checks if Blockie would be not touching the current moving wall if he moved with the wall's xSpeed, and if so, 
+            //"pushes" Blockie there.
+            checkTestInstancesColliding(blockie, blockie.x + collidingMovingWallInstance.xSpeed, blockie.y, collidingMovingWallInstance);
+            if (!preventingMovement) {
+                blockie.x += collidingMovingWallInstance.xSpeed;
+                break;
+            };
+
+            //Checks if Blockie would be not touching the current moving wall if he moved with the wall's ySpeed, and if so, 
+            //"pushes" Blockie there.
+            checkTestInstancesColliding(blockie, blockie.x, blockie.y + collidingMovingWallInstance.ySpeed, collidingMovingWallInstance);
+            if (!preventingMovement) {
+                blockie.y += collidingMovingWallInstance.ySpeed;
+                break;
+            };
+        };
+
         //Blockie's Movement
 
         if (!recoveringFromDash) {
@@ -1832,16 +1884,15 @@ function gameLoop() {
             blockie.y = blockie.yTarget;
         };
 
-        //Other Instances' Movements
+        //Is Blockie Being Crushed?
 
-        moveMovingHorizontalLasers();
-        moveMovingVerticalLasers();
-        moveMovingBombs();
-        moveMovingWalls();
+        //Checks if Blockie is colliding after everything has moved, and if so, restarts the level.
+        checkTestCollisionsWithClasses(blockie.x, blockie.y, allCollisionInstances);
+        if (preventingMovement) {
+            restartLevel("died");
+        };
 
-        //Collision Handling
-
-        collidingInstances.splice(0);
+        //Interactivity Handling
 
         updateAllInteractiveInstances();
         checkCollisionsWithClasses(allInteractiveInstances);
@@ -1891,10 +1942,10 @@ function gameLoop() {
                 break;
             };
         };
-
-        //Continuously recalls the function.
-        window.requestAnimationFrame(gameLoop);
     };
+
+    //Continuously recalls the function.
+    window.requestAnimationFrame(gameLoop);
 };
 
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 

@@ -359,13 +359,122 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, threeFourths + blockieAdjustment);
+        initializeLevel(oneHalf + blockieAdjustment, pointSix + blockieAdjustment);
 
         cancelAwaitChain = false;
 
-        await fireMovingActivePoint(100, 100, 1, 1, 0);
+        await Promise.all([
+            createWall(0, 0, threeEigths, fullScreen),
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 0, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 1.5, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 3, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 4.5, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 6, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 7.5, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 9, 0, 12),
+            loopFireMovingWalls(threeEigths, -2 * 16, oneFourth, 2 * 16, 0, 1.5, 10.5, 0, 12)
+        ]);
 
         cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(0, 0, 2 * 16, fullScreen),
+            createWall(2 * 16, 0, 10 * 16, 6 * 16),
+            createWall(20 * 16, 0, 10 * 16, 6 * 16),
+            createWall(2 * 16, 13 * 16, 10 * 16, 6 * 16),
+            createWall(20 * 16, 13 * 16, 10 * 16, 6 * 16),
+            createWall(2 * 16, 26 * 16, 10 * 16, 6 * 16),
+            createWall(20 * 16, 26 * 16, 10 * 16, 6 * 16),
+            createWall(30 * 16, 0, 2 * 16, fullScreen),
+            createActivePoint(oneHalf - 8, pointEight - 8, 0),
+
+            fireContinuallyMovingWall(2 * 16, 6 * 16, 7 * 17, 7 * 16, 1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(23 * 16, 6 * 16, 7 * 17, 7 * 16, -1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(2 * 16, 19 * 16, 7 * 16, 7 * 16, 1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(23 * 16, 19 * 16, 7 * 16, 7 * 16, -1.5, 0, 0, 1.25),
+        ]);
+
+        cancelAwaitChain = false;
+
+        moveBlockie(oneHalf + blockieAdjustment, pointEight + blockieAdjustment);
+
+        await Promise.all([
+            createWall(0, 0, threeEigths, oneEigth),
+            createWall(fiveEigths, 0, threeEigths, oneEigth),
+            createWall(0, sevenEigths, threeEigths, oneEigth),
+            createWall(fiveEigths, sevenEigths, threeEigths, oneEigth),
+            createActivePoint(oneHalf - 8, pointOne - 8, 0),
+
+            loopFireBombs(0, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
+            loopFireBombs(sevenEigths, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
+
+            fireContinuallyMovingWall(oneEigth, oneEigth, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
+            fireContinuallyMovingWall(fiveEigths, threeEigths, oneFourth, oneFourth, -1.5, 0, 0, 2.9),
+            fireContinuallyMovingWall(oneEigth, fiveEigths, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
+        ]);
+
+        cancelAwaitChain = false;
+
+        moveBlockie(oneHalf + blockieAdjustment, pointOne + blockieAdjustment);
+
+        await Promise.all([
+            createWall(0, 0, 14 * 16, oneEigth),
+            createWall(0, oneEigth, sevenEigths, 10 * 16),
+            createWall(oneEigth, 14 * 16, 10 * 16, oneEigth),
+            createWall(oneEigth, 18 * 16, threeFourths, 10 * 16),
+            createActivePoint(pointOne - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 5, 144),
+
+            loopFireMovingWalls(sevenEigths, -3 * 16, oneEigth, 2 * 16, 0, 2, 0, 1, 2.31),
+            loopFireMovingWalls(sevenEigths, 33 * 16, oneEigth, 2 * 16, 0, -2, 0, 1, 2.31),
+
+            loopFireMovingWalls(13 * 16, 14 * 16, 2 * 16, oneEigth, 2, 0, 0.67, 1.56, 1.75),
+
+            loopFireMovingWalls(-3 * 16, sevenEigths, 2 * 16, oneEigth, 2, 0, 1.7, 1, 2.31),
+            loopFireMovingWalls(33 * 16, sevenEigths, 2 * 16, oneEigth, -2, 0, 1.7, 1, 2.31)
+        ]);
+
+        cancelAwaitChain = false;
+
+        moveBlockie(pointOne + blockieAdjustment, oneHalf + blockieAdjustment);
+
+        await Promise.all([
+            fireMovingWall(-33 * 16, 0, fullScreen, fullScreen, 1.2, 0, 0.5, 15),
+
+            createWall(oneEigth, 0, oneEigth, threeEigths),
+            createWall(oneEigth, fiveEigths, oneEigth, threeEigths),
+
+            createWall(oneFourth, 0, oneEigth, oneFourth),
+            createWall(oneFourth, oneHalf, oneEigth, oneHalf),
+
+            createWall(threeEigths, 0, oneEigth, oneEigth),
+            createWall(threeEigths, threeEigths, oneEigth, fiveEigths),
+
+            createWall(oneHalf, 0, oneEigth, oneFourth),
+            createWall(oneHalf, oneHalf, oneEigth, oneHalf),
+
+            createWall(fiveEigths, 0, oneEigth, oneEigth),
+            createWall(fiveEigths, threeEigths, oneEigth, fiveEigths),
+
+            createWall(threeFourths, oneFourth, oneEigth, threeFourths),
+
+            createWall(sevenEigths, oneEigth, oneEigth, sevenEigths),
+            createActivePoint(pointEight - 8, pointOne - 8, 5.1)
+        ]);
+
+        cancelAwaitChain = false;
+
+        moveBlockie(pointEight + blockieAdjustment, pointOne + blockieAdjustment);
+
+        await Promise.all([
+            createWall(0, 0, sevenEigths, oneEigth),
+
+            fireContinuallyMovingWall(-sevenEigths, oneEigth, sevenEigths, oneEigth, 1.5, 0, 0, 4.98),
+            fireContinuallyMovingWall(oneEigth, oneEigth, sevenEigths, oneEigth, 1.5, 0, 0, 4.98),
+        ]);
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -1162,6 +1271,9 @@ async function createWall(x, y, width, height) {
 async function loopFireMovingWalls(x, y, width, height, xSpeed, ySpeed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
     await setWaitingTimeout(initialWaitingSeconds);
 
+    //Fires the first instance with 0 waiting seconds because the initialWaitingSeconds has already been waited for.
+    await fireMovingWall(x, y, width, height, xSpeed, ySpeed, 0, firingSeconds);
+
     //Creates a new instance after each previous one has resolved.
     while (!cancelAwaitChain) {
         await fireMovingWall(x, y, width, height, xSpeed, ySpeed, waitingSeconds, firingSeconds);
@@ -1195,6 +1307,39 @@ async function fireMovingWall(x, y, width, height, xSpeed, ySpeed, waitingSecond
             movingWalls.splice(instanceIndex, 1);
             resolve("resolved");
         }, firingSeconds * 1000);
+    });
+};
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+async function fireContinuallyMovingWall(x, y, width, height, xSpeed, ySpeed, initialWaitingSeconds, directionChangeSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
+    await setWaitingTimeout(initialWaitingSeconds);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates an instance and sets all of its initial properties.
+    let instance = new MovingWall(x, y, width, height, xSpeed, ySpeed);
+    movingWalls.push(instance);
+
+    //Creates a timeout for the instance's destruction and links its deactivation functions.
+    return await new Promise((resolve, reject) => {
+        //Links the instance's deactivation functions to itself to allow outside callings.
+        instance.externalResolve = resolve;
+        instance.externalReject = reject;
+
+        //Continually switches the sign of the wall's speed over the set parameter of time.
+        function directionChangeTimeout() {
+            instance.timeout = setTimeout(() => {
+                //Makes the wall move in its opposite direction.
+                instance.xSpeed *= -1;
+                instance.ySpeed *= -1;
+
+                directionChangeTimeout();
+            }, directionChangeSeconds * 1000);
+        };
+
+        directionChangeTimeout();
     });
 };
 
@@ -1616,8 +1761,6 @@ function checkTestInstancesColliding(instanceOne, instanceOneX, instanceOneY, in
         preventingMovement = true;
     } else if (instanceOneY < 0 || canvas.height < (instanceOneY + instanceOne.height)) {
         preventingMovement = true;
-    } else {
-        preventingMovement = false;
     };
 };
 
@@ -1850,6 +1993,7 @@ function gameLoop() {
 
             //Checks if Blockie would be not touching the current moving wall if he moved with the wall's xSpeed, and if so, 
             //"pushes" Blockie there.
+            preventingMovement = false;
             checkTestInstancesColliding(blockie, blockie.x + collidingMovingWallInstance.xSpeed, blockie.y, collidingMovingWallInstance);
             if (!preventingMovement) {
                 blockie.x += collidingMovingWallInstance.xSpeed;
@@ -1858,6 +2002,7 @@ function gameLoop() {
 
             //Checks if Blockie would be not touching the current moving wall if he moved with the wall's ySpeed, and if so, 
             //"pushes" Blockie there.
+            preventingMovement = false;
             checkTestInstancesColliding(blockie, blockie.x, blockie.y + collidingMovingWallInstance.ySpeed, collidingMovingWallInstance);
             if (!preventingMovement) {
                 blockie.y += collidingMovingWallInstance.ySpeed;
@@ -2157,16 +2302,16 @@ function drawingLoop() {
     };
 
     if (gameState === "playing") {
-        drawWalls();
         drawPassivePoints();
         drawMovingPassivePoints();
         drawActivePoints();
         drawMovingActivePoints();
+        drawWalls();
+        drawMovingWalls();
         drawMovingHorizontalLasers();
         drawMovingVerticalLasers();
         drawBombs();
         drawMovingBombs();
-        drawMovingWalls();
     } else if (gameState === "finishingLevel") {
         drawPartyHats();
     };

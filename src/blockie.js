@@ -359,7 +359,24 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
+        initializeLevel(oneHalf + blockieAdjustment, pointOne + blockieAdjustment);
 
+        cancelAwaitChain = false;
+
+        await Promise.all([
+            createWall(oneEigth, 0, pointThree, oneEigth),
+            createWall(pointFive, 0, threeEigths, oneEigth),
+            createWall(oneEigth, sevenEigths, pointThree, oneEigth),
+            createWall(pointFive, sevenEigths, threeEigths, oneEigth),
+            createWall(0, 0, oneEigth, fullScreen),
+            createWall(sevenEigths, 0, oneEigth, fullScreen),
+            createActivePoint(oneHalf - 8, pointEight - 8, 0),
+
+            fireContinuallyMovingBomb(oneEigth, oneEigth, threeFourths, pointOne, 0, 1.4, 0, 4.2),
+            fireContinuallyMovingBomb(oneEigth, pointSeven, threeFourths, pointOne, 0, -1.4, 0, 4.2),
+
+            fireContinuallyMovingBomb(threeFourths, oneEigth, oneEigth, threeFourths, -1.28, 0, 0, 4.2)
+        ]);
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };
@@ -1176,6 +1193,45 @@ async function fireMovingBomb(x, y, width, height, xSpeed, ySpeed, waitingSecond
             movingBombs.splice(instanceIndex, 1);
             resolve("resolved");
         }, firingSeconds * 1000);
+    });
+};
+
+//Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
+async function fireContinuallyMovingBomb(x, y, width, height, xSpeed, ySpeed, initialWaitingSeconds, directionChangeSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
+    await setWaitingTimeout(initialWaitingSeconds);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates an instance and sets all of its initial properties.
+    let instance = new MovingBomb(x, y, width, height, xSpeed, ySpeed);
+    movingBombs.push(instance);
+
+    //Creates the "blinking" effect for warning of a collision.
+    await setWarningTimeouts(instance);
+
+    //Cancels the next await if the current screen is being resolved by an activePoint.
+    if (cancelAwaitChain) return;
+
+    //Creates a timeout for the instance's destruction and links its deactivation functions.
+    return await new Promise((resolve, reject) => {
+        //Links the instance's deactivation functions to itself to allow outside callings.
+        instance.externalResolve = resolve;
+        instance.externalReject = reject;
+
+        //Continually switches the sign of the wall's speed over each interval of the set parameter of time.
+        function directionChangeTimeout() {
+            instance.timeout = setTimeout(() => {
+                directionChangeTimeout();
+
+                //Makes the wall switch directions.
+                instance.xSpeed *= -1;
+                instance.ySpeed *= -1;
+            }, directionChangeSeconds * 1000);
+        };
+
+        directionChangeTimeout();
     });
 };
 

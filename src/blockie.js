@@ -359,24 +359,7 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, pointOne + blockieAdjustment);
 
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(oneEigth, 0, pointThree, oneEigth),
-            createWall(pointFive, 0, threeEigths, oneEigth),
-            createWall(oneEigth, sevenEigths, pointThree, oneEigth),
-            createWall(pointFive, sevenEigths, threeEigths, oneEigth),
-            createWall(0, 0, oneEigth, fullScreen),
-            createWall(sevenEigths, 0, oneEigth, fullScreen),
-            createActivePoint(oneHalf - 8, pointEight - 8, 0),
-
-            fireContinuallyMovingBomb(oneEigth, oneEigth, threeFourths, pointOne, 0, 1.4, 0, 4.2),
-            fireContinuallyMovingBomb(oneEigth, pointSeven, threeFourths, pointOne, 0, -1.4, 0, 4.2),
-
-            fireContinuallyMovingBomb(threeFourths, oneEigth, oneEigth, threeFourths, -1.28, 0, 0, 4.2)
-        ]);
     } catch (error) {
         console.log(`Level ${currentLevel} restarted.`);
     };

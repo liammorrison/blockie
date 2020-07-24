@@ -9,14 +9,14 @@ html,
 body {
     height: 100%;
     width: 100%;
-    background: hsl(0, 100%, 0%);
+    background: black;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     font-family: symtext;
-    color: hsl(0, 100%, 100%);
+    color: white;
     /*Disables selecting (highlighting) the text.*/
     -moz-user-select: none;
     /* Firefox */
@@ -36,7 +36,7 @@ body {
 }
 
 #game {
-    outline: 5px solid hsl(0, 100%, 100%);
+    outline: 5px solid white;
 }
 
 #countdownTimerContainer {
@@ -65,6 +65,240 @@ body {
     position: absolute;
     text-align: center;
     margin-top: 6px;
+}
+
+#levelOneMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 16px;
+    margin-top: 16px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelOneMenuIconText {
+    margin-top: 20px;
+}
+
+#levelTwoMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 144px;
+    margin-top: 16px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelTwoMenuIconText {
+    margin-top: 20px;
+}
+
+#levelThreeMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 272px;
+    margin-top: 16px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelThreeMenuIconText {
+    margin-top: 20px;
+}
+
+#levelFourMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 400px;
+    margin-top: 16px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelFourMenuIconText {
+    margin-top: 20px;
+}
+
+#levelFiveMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 16px;
+    margin-top: 144px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelFiveMenuIconText {
+    margin-top: 20px;
+}
+
+#levelSixMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 144px;
+    margin-top: 144px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelSixMenuIconText {
+    margin-top: 20px;
+}
+
+#levelSevenMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 272px;
+    margin-top: 144px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelSevenMenuIconText {
+    margin-top: 20px;
+}
+
+#levelEightMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 400px;
+    margin-top: 144px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelEightMenuIconText {
+    margin-top: 20px;
+}
+
+#levelNineMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 16px;
+    margin-top: 272px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelNineMenuIconText {
+    margin-top: 20px;
+}
+
+#levelTenMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 144px;
+    margin-top: 272px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelTenMenuIconText {
+    margin-top: 20px;
+}
+
+#levelElevenMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 272px;
+    margin-top: 272px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelElevenMenuIconText {
+    margin-top: 20px;
+}
+
+#levelTwelveMenuIcon {
+    width: 96px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 400px;
+    margin-top: 272px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelTwelveMenuIconText {
+    margin-top: 20px;
+}
+
+#levelEndMenuIcon {
+    width: 480px;
+    height: 96px;
+    position: absolute;
+    float: left;
+    margin-left: 16px;
+    margin-top: 400px;
+    text-align: center;
+    font-size: xx-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+}
+
+#levelEndMenuIconText {
+    margin-top: 20px;
 }
 
 #messageDisplayer {

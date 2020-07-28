@@ -2214,87 +2214,26 @@ function callLevel(levelNum) {
 };
 
 function initializeLevelMenu() {
-    var menuIconArray = document.querySelectorAll(".menuIcon");
+    document.getElementById("levelOneMenuIcon").style.visibility = "visible";
+    document.getElementById("levelTwoMenuIcon").style.visibility = "visible";
+    document.getElementById("levelThreeMenuIcon").style.visibility = "visible";
+    document.getElementById("levelFourMenuIcon").style.visibility = "visible";
+    document.getElementById("levelFiveMenuIcon").style.visibility = "visible";
+    document.getElementById("levelSixMenuIcon").style.visibility = "visible";
+    document.getElementById("levelSevenMenuIcon").style.visibility = "visible";
+    document.getElementById("levelEightMenuIcon").style.visibility = "visible";
+    document.getElementById("levelNineMenuIcon").style.visibility = "visible";
+    document.getElementById("levelTenMenuIcon").style.visibility = "visible";
+    document.getElementById("levelElevenMenuIcon").style.visibility = "visible";
+    document.getElementById("levelTwelveMenuIcon").style.visibility = "visible";
+    document.getElementById("levelEndMenuIcon").style.visibility = "visible";
 
-    //Makes all HTML menu elements visible.
-    for (var i = 0; i < menuIconArray.length; i++) {
-        menuIconArray[i].style.visibility = "visible";
-    };
+    function controlLevelIconClicks() {
+        console.log();
+        callLevel(2);
+    }
 
-    //Clicking Handling
-
-    function controlLevelIconClicks(iconNum) {
-        //Makes all HTML menu elements invisible.
-        for (var _i3 = 0; _i3 < menuIconArray.length; _i3++) {
-            menuIconArray[_i3].style.visibility = "hidden";
-        };
-
-        //Stops listening if any menu elements are clicked.
-
-        var _loop = function _loop(_i4) {
-            menuIconArray[_i4].removeEventListener("click", function () {
-                controlLevelIconClicks(_i4 + 1);
-            });
-        };
-
-        for (var _i4 = 0; _i4 < menuIconArray.length; _i4++) {
-            _loop(_i4);
-        };
-
-        //Begins the level that the player clicked the corresponding icon for.
-        callLevel(iconNum);
-    };
-
-    //Listens for if the player clicks on any menu icons and calls that level.
-
-    var _loop2 = function _loop2(_i5) {
-        menuIconArray[_i5].addEventListener("click", function () {
-            controlLevelIconClicks(_i5 + 1);
-        });
-    };
-
-    for (var _i5 = 0; _i5 < menuIconArray.length; _i5++) {
-        _loop2(_i5);
-    };
-
-    //Hovering Handling
-
-    function highlightLevelIconHovering(iconNum) {
-        menuIconArray[iconNum].style.outline = "5px solid #741EFF";
-        menuIconArray[iconNum].style.color = "#741EFF";
-        menuIconArray[iconNum].style.backgroundColor = "#FF51EF";
-    };
-
-    //Listens for if the player hovers over any menu icons and colors that element (if they aren't using the keys to navigate 
-    //the menu).
-
-    var _loop3 = function _loop3(_i6) {
-        menuIconArray[_i6].addEventListener("mouseover", function () {
-            highlightLevelIconHovering(_i6);
-        });
-    };
-
-    for (var _i6 = 0; _i6 < menuIconArray.length; _i6++) {
-        _loop3(_i6);
-    };
-
-    function revertLevelIconHovering(iconNum) {
-        menuIconArray[iconNum].style.outline = "5px solid white";
-        menuIconArray[iconNum].style.color = "white";
-        menuIconArray[iconNum].style.backgroundColor = "black";
-    };
-
-    //Listens for if the player stops hovering over any menu icons and makes that element's color white again.
-
-    var _loop4 = function _loop4(_i7) {
-        menuIconArray[_i7].addEventListener("mouseleave", function () {
-            revertLevelIconHovering(_i7);
-        });
-    };
-
-    for (var _i7 = 0; _i7 < menuIconArray.length; _i7++) {
-        _loop4(_i7);
-    };
+    document.getElementById("levelTwoMenuIcon").addEventListener("click", controlLevelIconClicks);
 };;
 
 //Level-Handling Helper Functions
@@ -2782,8 +2721,8 @@ function checkCollisionsWithClasses(classesArray) {
 
     for (var i = 0; i < classesArray.length; i++) {
         var currentClass = classesArray[i];
-        for (var _i8 = 0; _i8 < currentClass.length; _i8++) {
-            checkInstancesColliding(blockie, currentClass[_i8]);
+        for (var _i3 = 0; _i3 < currentClass.length; _i3++) {
+            checkInstancesColliding(blockie, currentClass[_i3]);
         };
     };
 };
@@ -2795,8 +2734,8 @@ function checkTestCollisionsWithClasses(instanceOneX, instanceOneY, classesArray
 
     for (var i = 0; i < classesArray.length; i++) {
         var currentClass = classesArray[i];
-        for (var _i9 = 0; _i9 < currentClass.length; _i9++) {
-            checkTestInstancesColliding(blockie, instanceOneX, instanceOneY, currentClass[_i9]);
+        for (var _i4 = 0; _i4 < currentClass.length; _i4++) {
+            checkTestInstancesColliding(blockie, instanceOneX, instanceOneY, currentClass[_i4]);
         };
     };
 };
@@ -3026,6 +2965,8 @@ function convertRadiansToDegrees(radians) {
 //Game loop
 
 function gameLoop() {
+    console.log("fdjsahlfadskjh");
+
     if (gameState === "playing") {
         //Restarts the level if P is pressed.
         if (keysDown[80]) {
@@ -3290,15 +3231,15 @@ function gameLoop() {
                 currentLevelPoints++;
 
                 //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
-                for (var _i10 = 0; _i10 < currentTimeouts.length; _i10++) {
-                    clearTimeout(currentTimeouts[_i10]);
+                for (var _i5 = 0; _i5 < currentTimeouts.length; _i5++) {
+                    clearTimeout(currentTimeouts[_i5]);
                 };
 
                 currentTimeouts.splice(0);
 
                 //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
-                for (var _i11 = 0; _i11 < currentIntervals.length; _i11++) {
-                    clearInterval(currentIntervals[_i11]);
+                for (var _i6 = 0; _i6 < currentIntervals.length; _i6++) {
+                    clearInterval(currentIntervals[_i6]);
                 };
 
                 currentIntervals.splice(0);
@@ -3308,8 +3249,8 @@ function gameLoop() {
                 cancelAwaitChain = true;
 
                 updateAllInstances();
-                for (var _i12 = 0; _i12 < allInstances.length; _i12++) {
-                    resolveInstances(allInstances[_i12]);
+                for (var _i7 = 0; _i7 < allInstances.length; _i7++) {
+                    resolveInstances(allInstances[_i7]);
                 };
 
                 //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.

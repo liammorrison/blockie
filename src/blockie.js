@@ -650,26 +650,67 @@ function callLevel(levelNum) {
 };
 
 function initializeLevelMenu() {
-    document.getElementById("levelOneMenuIcon").style.visibility = "visible";
-    document.getElementById("levelTwoMenuIcon").style.visibility = "visible";
-    document.getElementById("levelThreeMenuIcon").style.visibility = "visible";
-    document.getElementById("levelFourMenuIcon").style.visibility = "visible";
-    document.getElementById("levelFiveMenuIcon").style.visibility = "visible";
-    document.getElementById("levelSixMenuIcon").style.visibility = "visible";
-    document.getElementById("levelSevenMenuIcon").style.visibility = "visible";
-    document.getElementById("levelEightMenuIcon").style.visibility = "visible";
-    document.getElementById("levelNineMenuIcon").style.visibility = "visible";
-    document.getElementById("levelTenMenuIcon").style.visibility = "visible";
-    document.getElementById("levelElevenMenuIcon").style.visibility = "visible";
-    document.getElementById("levelTwelveMenuIcon").style.visibility = "visible";
-    document.getElementById("levelEndMenuIcon").style.visibility = "visible";
+    let menuIconArray = document.querySelectorAll(".menuIcon");
 
-    function controlLevelIconClicks() {
-        console.log();
-        callLevel(2);
-    }
+    //Makes all HTML menu elements visible.
+    for (let i = 0; i < menuIconArray.length; i++) {
+        menuIconArray[i].style.visibility = "visible";
+    };
 
-    document.getElementById("levelTwoMenuIcon").addEventListener("click", controlLevelIconClicks);
+    //Clicking Handling
+
+    function controlLevelIconClicks(iconNum) {
+        //Makes all HTML menu elements invisible.
+        for (let i = 0; i < menuIconArray.length; i++) {
+            menuIconArray[i].style.visibility = "hidden";
+        };
+
+        //Stops listening if any menu elements are clicked.
+        for (let i = 0; i < menuIconArray.length; i++) {
+            menuIconArray[i].removeEventListener("click", () => {
+                controlLevelIconClicks(i + 1);
+            });
+        };
+
+        //Begins the level that the player clicked the corresponding icon for.
+        callLevel(iconNum);
+    };
+
+    //Listens for if the player clicks on any menu icons and calls that level.
+    for (let i = 0; i < menuIconArray.length; i++) {
+        menuIconArray[i].addEventListener("click", () => {
+            controlLevelIconClicks(i + 1);
+        });
+    };
+
+    //Hovering Handling
+
+    function highlightLevelIconHovering(iconNum) {
+        menuIconArray[iconNum].style.outline = "5px solid #741EFF";
+        menuIconArray[iconNum].style.color = "#741EFF";
+        menuIconArray[iconNum].style.backgroundColor = "#FF51EF";
+    };
+
+    //Listens for if the player hovers over any menu icons and colors that element (if they aren't using the keys to navigate 
+    //the menu).
+    for (let i = 0; i < menuIconArray.length; i++) {
+        menuIconArray[i].addEventListener("mouseover", () => {
+            highlightLevelIconHovering(i);
+        });
+    };
+
+    function revertLevelIconHovering(iconNum) {
+        menuIconArray[iconNum].style.outline = "5px solid white";
+        menuIconArray[iconNum].style.color = "white";
+        menuIconArray[iconNum].style.backgroundColor = "black";
+    };
+
+    //Listens for if the player stops hovering over any menu icons and makes that element's color white again.
+    for (let i = 0; i < menuIconArray.length; i++) {
+        menuIconArray[i].addEventListener("mouseleave", () => {
+            revertLevelIconHovering(i);
+        });
+    };
 };
 
 //Shows a message and awaits a player input to continue the game.

@@ -18,14 +18,6 @@ let yInput = 0;
 
 let preventingMovement = false;
 
-let arrowLeftAlreadyPressed = false;
-let arrowUpAlreadyPressed = false;
-let arrowRightAlreadyPressed = false;
-let arrowDownAlreadyPressed = false;
-let shiftAlreadyPressed = false;
-let spaceAlreadyPressed = false;
-let pAlreadyPressed = false;
-
 let recoveringFromDash = false;
 let allowDashAgain = true;
 let dashDistance = 96;
@@ -60,6 +52,10 @@ let countdown = 0;
 //Arrays
 
 let keysDown = [];
+let keysHeld = [];
+
+//tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed.
+let tapKeys = [16, 32, 37, 38, 39, 40, 80];
 
 let waitingTimeouts = [];
 let passivePoints = [];
@@ -1876,100 +1872,24 @@ function checkBlockieOutsideBorder(instanceOne, instanceOneX, instanceOneY) {
 //Input Functions
 
 function initializeKeyInputs() {
-    //Adds all currently pressed keys as a keyCode with a pair of true in the keysDown object. .keyCode is used instead of .key so 
-    //that capital letters can't cause unwanted movements.
     document.addEventListener("keydown", e => {
-        //Special keys can only be set as "down" during the first single frame of being held until release. This is done by preventing
-        //the key from being activated again before release and by deleting it from the array on the second frame of being pressed.
-        if (shiftAlreadyPressed) {
-            delete keysDown[16];
-        };
-        if (spaceAlreadyPressed) {
-            delete keysDown[32];
-        };
-        if (arrowLeftAlreadyPressed) {
-            delete keysDown[37];
-        };
-        if (arrowUpAlreadyPressed) {
-            delete keysDown[38];
-        };
-        if (arrowRightAlreadyPressed) {
-            delete keysDown[39];
-        };
-        if (arrowDownAlreadyPressed) {
-            delete keysDown[40];
-        };
-        if (pAlreadyPressed) {
-            delete keysDown[80];
+        //Prevents tapKeys from being set to true after 1 frame of being pressed.
+        for (let i = 0; i < tapKeys.length; i++) {
+            delete keysDown[tapKeys[i]];
         };
 
-        if (e.keyCode === 16) {
-            if (!shiftAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                shiftAlreadyPressed = true;
-            };
-        } else if (e.keyCode === 32) {
-            if (!spaceAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                spaceAlreadyPressed = true;
-            };
-        } else if (e.keyCode === 37) {
-            if (!arrowLeftAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                arrowLeftAlreadyPressed = true;
-            };
-        } else if (e.keyCode === 38) {
-            if (!arrowUpAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                arrowUpAlreadyPressed = true;
-            };
-        } else if (e.keyCode === 39) {
-            if (!arrowRightAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                arrowRightAlreadyPressed = true;
-            };
-        } else if (e.keyCode === 40) {
-            if (!arrowDownAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                arrowDownAlreadyPressed = true;
-            };
-        } else if (e.keyCode === 80) {
-            if (!pAlreadyPressed) {
-                keysDown[e.keyCode] = true;
-                pAlreadyPressed = true;
-            };
-        } else {
+        //Adds all pressed keys to an array for game loops to react to without having to create a unique eventListener for every 
+        //possible input.
+        if (!keysHeld[e.keyCode]) {
             keysDown[e.keyCode] = true;
+            keysHeld[e.keyCode] = true;
         };
     });
 
-    //Deletes all currently unpressed keys from the keysDown object.
+    //Removes lifted keys from the keysDown array so that they can no longer call their associated functions.
     document.addEventListener("keyup", e => {
-        //Setting the flag to false allows the key to be set as "down" again.
-        if (e.keyCode === 16) {
-            delete keysDown[e.keyCode];
-            shiftAlreadyPressed = false;
-        } else if (e.keyCode === 32) {
-            delete keysDown[e.keyCode];
-            spaceAlreadyPressed = false;
-        } else if (e.keyCode === 37) {
-            delete keysDown[e.keyCode];
-            arrowLeftAlreadyPressed = false;
-        } else if (e.keyCode === 38) {
-            delete keysDown[e.keyCode];
-            arrowUpAlreadyPressed = false;
-        } else if (e.keyCode === 39) {
-            delete keysDown[e.keyCode];
-            arrowRightAlreadyPressed = false;
-        } else if (e.keyCode === 40) {
-            delete keysDown[e.keyCode];
-            arrowDownAlreadyPressed = false;
-        } else if (e.keyCode === 80) {
-            delete keysDown[e.keyCode];
-            pAlreadyPressed = false;
-        } else {
-            delete keysDown[e.keyCode];
-        };
+        delete keysDown[e.keyCode];
+        delete keysHeld[e.keyCode];
     });
 };
 
@@ -2126,10 +2046,6 @@ function gameLoop() {
             };
 
             if ((keysDown[16] || keysDown[32]) && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
-                //Shift acts uniquely because it only is "down" for one frame; therefore, it must also be deleted after use because
-                //otherwise it could never be deleted in the input function.
-                delete keysDown[16];
-
                 //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
                 //animation.
                 initializeDash();

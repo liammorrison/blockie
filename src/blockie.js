@@ -54,7 +54,8 @@ let countdown = 0;
 let keysDown = [];
 let keysHeld = [];
 
-//tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed.
+//tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed (and that actually do something
+//in the game).
 let tapKeys = [16, 32, 37, 38, 39, 40, 80];
 
 let waitingTimeouts = [];
@@ -845,13 +846,9 @@ function resetBlockieState() {
     recoveringFromDash = false;
     allowDashAgain = true;
 
-    //Prevents Blockie from dashing again based off of one button press.
+    //Prevents Blockie from dashing immedaitely after respawning due to the same button press that was meant to only reset the level.
     delete keysDown[16];
     delete keysDown[32];
-    delete keysDown[37];
-    delete keysDown[38];
-    delete keysDown[39];
-    delete keysDown[40];
 };
 
 //Adjusts Blockie's location to prevent wall clipping in screen transitions.
@@ -1873,6 +1870,8 @@ function checkBlockieOutsideBorder(instanceOne, instanceOneX, instanceOneY) {
 
 function initializeKeyInputs() {
     document.addEventListener("keydown", e => {
+        console.log("keyDown");
+
         //Prevents tapKeys from being set to true after 1 frame of being pressed.
         for (let i = 0; i < tapKeys.length; i++) {
             delete keysDown[tapKeys[i]];
@@ -2046,6 +2045,10 @@ function gameLoop() {
             };
 
             if ((keysDown[16] || keysDown[32]) && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
+                //Since the shift key is unique and only counts as "down" for 1 frame, it can't always be removed from the keysDown 
+                //array even while it's being held, so it must be removed manually after each time it's used.
+                delete keysDown[16];
+                
                 //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
                 //animation.
                 initializeDash();

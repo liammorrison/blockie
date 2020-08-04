@@ -707,6 +707,8 @@ async function restartLevel(reason) {
     } else if (reason === "keyPressed") {
         resetBlockieState();
         callLevel(currentLevel);
+    } else if (reason === "lostFocus") {
+        await displayMessage("Escaping this tab will not save you!", "restartLevel");
     } else if (reason === "countdownTimer") {
         gameState = "playingCutscene";
         await playCutscene(spCountdownDestructionScene, 0.17);
@@ -907,6 +909,8 @@ function initializeLevelMenu() {
 
 //Shows a message and awaits a player input to continue the game.
 async function displayMessage(message, endAction) {
+    gameState = "displayingMessage";
+
     //Forces the player to read the message for 1 second before they can continue the game.
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
@@ -915,7 +919,7 @@ async function displayMessage(message, endAction) {
 
             //Draws the game over screen.
             document.getElementById("messageDisplayer").innerHTML = message;
-            gameState = "displayingMessage";
+
             resolve("resolved");
         }, 1000);
     });
@@ -2529,6 +2533,18 @@ function drawingLoop() {
     window.requestAnimationFrame(drawingLoop);
 };
 
+//Check Page Focus
+
+//Since this game uses async-await and timers regularly, having the browser focus on other tabs completely ruins the game's structure
+//(timing of instances, etc.); therefore, once the player refocusses on the tab, the level restarts.
+function checkPageFocus() {
+    if (!document.hasFocus() && gameState === "playing") {
+        restartLevel("lostFocus");
+    };
+
+    window.requestAnimationFrame(checkPageFocus);
+};
+
 //Game Start
 
 levelOne();
@@ -2537,3 +2553,4 @@ initializeKeyInputs();
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
 window.requestAnimationFrame(scaleGame);
+window.requestAnimationFrame(checkPageFocus);

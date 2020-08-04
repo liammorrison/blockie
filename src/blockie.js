@@ -49,6 +49,10 @@ let gameScale = 1;
 
 let countdown = 0;
 
+//Sound Loading
+
+let stockSong = new Audio("../sounds/stock_song.mp3")
+
 //Arrays
 
 let keysDown = [];

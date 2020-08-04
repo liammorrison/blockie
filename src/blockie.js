@@ -355,42 +355,184 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
-
+        initializeLevel(oneHalf + blockieAdjustment, elevenSixteenths + blockieAdjustment);
+ 
         cancelAwaitChain = false;
-
+ 
         await Promise.all([
-            createWall(0, 0, fullScreen, threeEigths),
-            createWall(0, fiveEigths, fullScreen, threeEigths),
-            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
-            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, fullScreen, threeEigths),
-            createWall(0, fiveEigths, oneEigth, threeEigths),
-            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
-            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
-            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
-            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
-
-            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, threeEigths, threeEigths),
-            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(0, 0, threeEigths, fullScreen),
             createWall(fiveEigths, 0, threeEigths, fullScreen),
-            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
-            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 0, 0, 12),
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 3, 0, 12),
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 6, 0, 12),
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 9, 0, 12),
         ]);
-
+ 
         cancelAwaitChain = false;
-
+ 
+        await Promise.all([
+            createWall(0, 0, oneSixteenth, fullScreen),
+            createWall(oneSixteenth, 0, fiveSixteenths, threeSixteenths),
+            createWall(fiveEigths, 0, fiveSixteenths, threeSixteenths),
+            createWall(oneSixteenth, 13 * 16, fiveSixteenths, threeSixteenths),
+            createWall(fiveEigths, 13 * 16, fiveSixteenths, threeSixteenths),
+            createWall(oneSixteenth, thirteenSixteenths, fiveSixteenths, threeSixteenths),
+            createWall(fiveEigths, thirteenSixteenths, fiveSixteenths, threeSixteenths),
+            createWall(fifteenSixteenths, 0, oneSixteenth, fullScreen),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+ 
+            fireContinuallyMovingWall(oneSixteenth, threeSixteenths, 7 * 17, 7 * 16, 1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(23 * 16, threeSixteenths, 7 * 17, 7 * 16, -1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(oneSixteenth, 19 * 16, 7 * 16, 7 * 16, 1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(23 * 16, 19 * 16, 7 * 16, 7 * 16, -1.5, 0, 0, 1.25),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, oneEigth),
+            createWall(fiveEigths, 0, threeEigths, oneEigth),
+            createWall(0, sevenEigths, threeEigths, oneEigth),
+            createWall(fiveEigths, sevenEigths, threeEigths, oneEigth),
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            loopFireBombs(0, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
+            loopFireBombs(sevenEigths, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
+ 
+            fireContinuallyMovingWall(oneEigth, oneEigth, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
+            fireContinuallyMovingWall(fiveEigths, threeEigths, oneFourth, oneFourth, -1.5, 0, 0, 2.9),
+            fireContinuallyMovingWall(oneEigth, fiveEigths, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, oneEigth),
+            createWall(0, oneEigth, 25 * 16, 3 * 16),
+            createWall(0, 7 * 16, sevenEigths, 7 * 16),
+            createWall(oneEigth, sevenSixteenths, fiveSixteenths, oneEigth),
+            createWall(oneEigth, nineSixteenths, threeFourths, 7 * 16),
+            createWall(7 * 16, 25 * 16, nineSixteenths, 3 * 16),
+            createActivePoint(oneSixteenth - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 3.5),
+ 
+            loopFireMovingWalls(sevenEigths, -3 * 16, oneEigth, oneSixteenth, 0, 3, 1.3, 1.21, 1.33),
+            loopFireMovingWalls(sevenEigths, 33 * 16, oneEigth, oneSixteenth, 0, -3, 1.3, 1.21, 1.33),
+ 
+            loopFireMovingWalls(11 * 16, sevenSixteenths, oneSixteenth, oneEigth, 3, 0, 1.3, 0.85, 1.69),
+ 
+            loopFireMovingWalls(-3 * 16, sevenEigths, oneSixteenth, oneEigth, 3, 0, 0, 1, 1.54),
+            loopFireMovingWalls(33 * 16, sevenEigths, oneSixteenth, oneEigth, -3, 0, 0, 1, 1.54)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            fireMovingWall(-33 * 16, 0, fullScreen, fullScreen, 1.2, 0, 0.5, 15),
+ 
+            fireMovingWall(0, 0, oneSixteenth, threeEigths, 0, -0.2, 0, 10),
+            fireMovingWall(0, fiveEigths, oneSixteenth, fullScreen, 0, -0.2, 0, 10),
+ 
+            fireMovingWall(oneSixteenth, 0, oneSixteenth, threeEigths, 0, -0.35, 0, 10),
+            fireMovingWall(oneSixteenth, fiveEigths, oneSixteenth, fullScreen, 0, -0.35, 0, 10),
+ 
+            fireMovingWall(oneEigth, 0, oneSixteenth, threeEigths, 0, -0.45, 0, 10),
+            fireMovingWall(oneEigth, fiveEigths, oneSixteenth, fullScreen, 0, -0.45, 0, 10),
+ 
+            fireMovingWall(threeSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
+            fireMovingWall(threeSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.5, 0, 10),
+ 
+            fireMovingWall(oneFourth, 0, oneSixteenth, threeEigths, 0, -0.55, 0, 10),
+            fireMovingWall(oneFourth, fiveEigths, oneSixteenth, fullScreen, 0, -0.55, 0, 10),
+ 
+            fireMovingWall(fiveSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
+            fireMovingWall(fiveSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.5, 0, 10),
+ 
+            fireMovingWall(threeEigths, 0, oneSixteenth, threeEigths, 0, -0.45, 0, 10),
+            fireMovingWall(threeEigths, fiveEigths, oneSixteenth, fullScreen, 0, -0.45, 0, 10),
+ 
+            fireMovingWall(sevenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.35, 0, 10),
+            fireMovingWall(sevenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.35, 0, 10),
+ 
+            fireMovingWall(oneHalf, 0, oneSixteenth, threeEigths, 0, -0.2, 0, 10),
+            fireMovingWall(oneHalf, fiveEigths, oneSixteenth, fullScreen, 0, -0.2, 0, 10),
+ 
+            fireMovingWall(nineSixteenths, 0, oneSixteenth, threeEigths, 0, -0.1, 0, 10),
+            fireMovingWall(nineSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.1, 0, 10),
+ 
+            fireMovingWall(fiveEigths, 0, oneSixteenth, threeEigths, 0, -0.15, 0, 10),
+            fireMovingWall(fiveEigths, fiveEigths, oneSixteenth, fullScreen, 0, -0.15, 0, 10),
+ 
+            fireMovingWall(elevenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.27, 0, 10),
+            fireMovingWall(elevenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.27, 0, 10),
+ 
+            fireMovingWall(threeFourths, 0, oneSixteenth, threeEigths, 0, -0.4, 0, 10),
+            fireMovingWall(threeFourths, fiveEigths, oneSixteenth, fullScreen, 0, -0.4, 0, 10),
+ 
+            fireMovingWall(thirteenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
+            fireMovingWall(thirteenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.5, 0, 10),
+ 
+            fireMovingWall(sevenEigths, 0, oneSixteenth, threeEigths, 0, -0.55, 0, 10),
+            fireMovingWall(sevenEigths, fiveEigths, oneSixteenth, fullScreen, 0, -0.55, 0, 10),
+ 
+            fireMovingWall(fifteenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.6, 0, 10),
+            fireMovingWall(fifteenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.6, 0, 10),
+ 
+            createActivePoint(fifteenSixteenths - 8, oneSixteenth - 8, 5.1)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(fifteenSixteenths + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createActivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0),
+ 
+            createWall(0, 0, sevenEigths, oneEigth),
+ 
+            fireContinuallyMovingWall(-fullScreen, oneEigth, fullScreen, oneEigth, 1.5, 0, 0, 4.98),
+            fireContinuallyMovingWall(oneEigth, oneEigth, fullScreen, oneEigth, 1.5, 0, 0, 4.98),
+ 
+            createWall(0, oneFourth, fullScreen, oneSixteenth),
+ 
+            fireContinuallyMovingWall(-oneEigth, fiveSixteenths, fullScreen, oneEigth, -1.5, 0, 0, 4.98),
+            fireContinuallyMovingWall(fullScreen, fiveSixteenths, fullScreen, oneEigth, -1.5, 0, 0, 4.98),
+ 
+            createWall(0, sevenSixteenths, fullScreen, oneSixteenth),
+ 
+            createWall(0, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(oneSixteenth, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
+            createWall(threeSixteenths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(oneFourth, oneHalf, oneEigth, oneEigth, 2.85, 4, 0.7),
+            createWall(threeEigths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(sevenSixteenths, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
+            createWall(nineSixteenths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(fiveEigths, oneHalf, oneEigth, oneEigth, 2.85, 4, 0.7),
+            createWall(threeFourths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(thirteenSixteenths, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
+            createWall(fifteenSixteenths, oneHalf, oneSixteenth, oneEigth),
+ 
+            createWall(0, fiveEigths, fullScreen, oneSixteenth),
+ 
+            loopFireBombs(0, elevenSixteenths, oneFourth, oneEigth, 0, 0, 1000000),
+            fireContinuallyMovingWall(oneFourth, elevenSixteenths, oneSixteenth, oneEigth, 2, 0, 0, 1.9),
+            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneEigth, 0, 0, 1000000),
+ 
+            createWall(0, thirteenSixteenths, fullScreen, oneSixteenth),
+ 
+            loopFireBombs(0, sevenEigths, fullScreen, oneEigth, 0, 2, 1)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
         increaseLevel();
     } catch (error) {};
 };
@@ -586,7 +728,7 @@ async function increaseLevel() {
         partyHats.push(partyHatInstance);
 
         function animateFinishedLevelHat() {
-            partyHatInstance.y += Math.min(2, (blockie.y - partyHatInstance.y - partyHatInstance.height));
+            partyHatInstance.y += Math.min((blockie.y - partyHatInstance.y - partyHatInstance.height), 2);
 
             if (partyHatInstance.y + partyHatInstance.height !== blockie.y) {
                 //Continuously recalls the function until the PartyHat reaches Blockie's head.
@@ -648,6 +790,8 @@ function callLevel(levelNum) {
 
 function initializeLevelMenu() {
     let menuIconArray = document.querySelectorAll(".menuIcon");
+    let hoveringIcon = 0;
+    let followMouse = false;
 
     //Makes all HTML menu elements visible.
     for (let i = 0; i < menuIconArray.length; i++) {
@@ -662,12 +806,25 @@ function initializeLevelMenu() {
             menuIconArray[i].style.visibility = "hidden";
         };
 
-        //Stops listening if any menu elements are clicked.
+        //Removes all menu-specific eventListeners.
+        
         for (let i = 0; i < menuIconArray.length; i++) {
             menuIconArray[i].removeEventListener("click", () => {
                 controlLevelIconClicks(i + 1);
             });
         };
+
+        for (let i = 0; i < menuIconArray.length; i++) {
+            menuIconArray[i].removeEventListener("mouseover", () => {
+                if (followMouse) {
+                    revertLevelIcon(hoveringIcon);
+                    hoveringIcon = i;
+                    highlightLevelIcon(hoveringIcon);
+                };
+            });
+        };
+
+        document.removeEventListener("mousemove", checkFollowMouse);
 
         //Begins the level that the player clicked the corresponding icon for.
         callLevel(iconNum);
@@ -682,32 +839,66 @@ function initializeLevelMenu() {
 
     //Hovering Handling
 
-    function highlightLevelIconHovering(iconNum) {
+    function highlightLevelIcon(iconNum) {
         menuIconArray[iconNum].style.outline = "5px solid #741EFF";
         menuIconArray[iconNum].style.color = "#741EFF";
         menuIconArray[iconNum].style.backgroundColor = "#FF51EF";
     };
 
-    //Listens for if the player hovers over any menu icons and colors that element (if they aren't using the keys to navigate 
-    //the menu).
-    for (let i = 0; i < menuIconArray.length; i++) {
-        menuIconArray[i].addEventListener("mouseover", () => {
-            highlightLevelIconHovering(i);
-        });
-    };
-
-    function revertLevelIconHovering(iconNum) {
+    function revertLevelIcon(iconNum) {
         menuIconArray[iconNum].style.outline = "5px solid white";
         menuIconArray[iconNum].style.color = "white";
         menuIconArray[iconNum].style.backgroundColor = "black";
     };
 
-    //Listens for if the player stops hovering over any menu icons and makes that element's color white again.
+    function checkFollowKeys() {
+        revertLevelIcon(hoveringIcon);
+
+        //Left
+        if (keysDown[65]) {
+            hoveringIcon = min(hoveringIcon - 1, 0);
+        };
+
+        //Right
+        if (keysDown[68]) {
+            hoveringIcon = min(hoveringIcon + 1, 0);
+        };
+
+        //Up
+        if (keysDown[65]) {
+            hoveringIcon = min(hoveringIcon - 4, 0);
+        };
+
+        //Down
+        if (keysDown[65]) {
+            hoveringIcon = min(hoveringIcon + 4, 0);
+        };
+
+        highlightLevelIcon(hoveringIcon);
+    };
+
+    function checkFollowMouse() {
+        followMouse = true;
+        let stopFollowingMouse = setTimeout(() => {
+            followMouse = false;
+        }, 1000);
+    };
+
+    document.addEventListener("mousemove", checkFollowMouse);
+
+    //Listens for if the player hovers over any menu icons and colors that element (if they aren't using the keys to navigate 
+    //the menu).
     for (let i = 0; i < menuIconArray.length; i++) {
-        menuIconArray[i].addEventListener("mouseleave", () => {
-            revertLevelIconHovering(i);
+        menuIconArray[i].addEventListener("mouseover", () => {
+            if (followMouse) {
+                revertLevelIcon(hoveringIcon);
+                hoveringIcon = i;
+                highlightLevelIcon(hoveringIcon);
+            };
         });
     };
+
+    
 };
 
 //Shows a message and awaits a player input to continue the game.
@@ -846,9 +1037,14 @@ function resetBlockieState() {
     recoveringFromDash = false;
     allowDashAgain = true;
 
-    //Prevents Blockie from dashing immedaitely after respawning due to the same button press that was meant to only reset the level.
+    //Prevents Blockie from dashing immedaitely after respawning/entering another screen due to the same button press that was meant 
+    //to only dash/end a message.
     delete keysDown[16];
     delete keysDown[32];
+    delete keysDown[37];
+    delete keysDown[38];
+    delete keysDown[39];
+    delete keysDown[40];
 };
 
 //Adjusts Blockie's location to prevent wall clipping in screen transitions.
@@ -1665,16 +1861,16 @@ function drawMovingHorizontalLasers() {
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Left warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x + 16, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
-                context.lineTo(currentInstance.x + 24, currentInstance.y + currentInstance.height * Math.max(0, Math.sign(currentInstance.speed)));
-                context.lineTo(currentInstance.x + 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
+                context.moveTo(currentInstance.x + 16, currentInstance.y + currentInstance.height * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)));
+                context.lineTo(currentInstance.x + 24, currentInstance.y + currentInstance.height * Math.max(Math.sign(currentInstance.speed), 0));
+                context.lineTo(currentInstance.x + 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)));
                 context.fill();
 
                 //Right warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.width - 16, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
-                context.lineTo(currentInstance.width - 24, currentInstance.y + currentInstance.height * Math.max(0, Math.sign(currentInstance.speed)));
-                context.lineTo(currentInstance.width - 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(0, Math.sign(currentInstance.speed))));
+                context.moveTo(currentInstance.width - 16, currentInstance.y + currentInstance.height * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)));
+                context.lineTo(currentInstance.width - 24, currentInstance.y + currentInstance.height * Math.max(Math.sign(currentInstance.speed), 0));
+                context.lineTo(currentInstance.width - 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)));
                 context.fill();
             } else if (currentInstance.state == "firing") {
                 context.fillStyle = "#FF51EF";
@@ -1695,16 +1891,16 @@ function drawMovingVerticalLasers() {
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Top warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.y + 16);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.max(0, Math.sign(currentInstance.speed)), currentInstance.y + 24);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.y + 32);
+                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.y + 16, 0);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.max(Math.sign(currentInstance.speed), 0), currentInstance.y + 24);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.y + 32, 0);
                 context.fill();
 
                 //Bottom warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 16);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.max(0, Math.sign(currentInstance.speed)), currentInstance.height - 24);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(0, Math.sign(currentInstance.speed))), currentInstance.height - 32);
+                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.height - 16, 0);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.max(Math.sign(currentInstance.speed), 0), currentInstance.height - 24);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.height - 32, 0);
                 context.fill();
             } else if (currentInstance.state == "firing") {
                 context.fillStyle = "#FF51EF";
@@ -1870,8 +2066,6 @@ function checkBlockieOutsideBorder(instanceOne, instanceOneX, instanceOneY) {
 
 function initializeKeyInputs() {
     document.addEventListener("keydown", e => {
-        console.log("keyDown");
-
         //Prevents tapKeys from being set to true after 1 frame of being pressed.
         for (let i = 0; i < tapKeys.length; i++) {
             delete keysDown[tapKeys[i]];
@@ -2024,24 +2218,24 @@ function gameLoop() {
             yInput = 0;
 
             //Each WASD key changes the angle of Blockie's movement.
-            //Right
-            if (keysDown[68]) {
-                xInput++;
-            };
-
             //Left
             if (keysDown[65]) {
                 xInput--;
             };
 
-            //Down
-            if (keysDown[83]) {
-                yInput++;
+            //Right
+            if (keysDown[68]) {
+                xInput++;
             };
 
             //Up
             if (keysDown[87]) {
                 yInput--;
+            };
+
+            //Down
+            if (keysDown[83]) {
+                yInput++;
             };
 
             if ((keysDown[16] || keysDown[32]) && allowDashAgain && (xInput !== 0 || yInput !== 0)) {

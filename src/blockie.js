@@ -359,180 +359,38 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, elevenSixteenths + blockieAdjustment);
+        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, threeEigths, fullScreen),
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+ 
+            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
             createWall(fiveEigths, 0, threeEigths, fullScreen),
-            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
- 
-            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 0, 0, 12),
-            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 3, 0, 12),
-            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 6, 0, 12),
-            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 9, 0, 12),
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, oneSixteenth, fullScreen),
-            createWall(oneSixteenth, 0, fiveSixteenths, threeSixteenths),
-            createWall(fiveEigths, 0, fiveSixteenths, threeSixteenths),
-            createWall(oneSixteenth, 13 * 16, fiveSixteenths, threeSixteenths),
-            createWall(fiveEigths, 13 * 16, fiveSixteenths, threeSixteenths),
-            createWall(oneSixteenth, thirteenSixteenths, fiveSixteenths, threeSixteenths),
-            createWall(fiveEigths, thirteenSixteenths, fiveSixteenths, threeSixteenths),
-            createWall(fifteenSixteenths, 0, oneSixteenth, fullScreen),
-            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
- 
-            fireContinuallyMovingWall(oneSixteenth, threeSixteenths, 7 * 17, 7 * 16, 1.5, 0, 0, 1.25),
-            fireContinuallyMovingWall(23 * 16, threeSixteenths, 7 * 17, 7 * 16, -1.5, 0, 0, 1.25),
-            fireContinuallyMovingWall(oneSixteenth, 19 * 16, 7 * 16, 7 * 16, 1.5, 0, 0, 1.25),
-            fireContinuallyMovingWall(23 * 16, 19 * 16, 7 * 16, 7 * 16, -1.5, 0, 0, 1.25),
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        moveBlockie(oneHalf + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
- 
-        await Promise.all([
-            createWall(0, 0, threeEigths, oneEigth),
-            createWall(fiveEigths, 0, threeEigths, oneEigth),
-            createWall(0, sevenEigths, threeEigths, oneEigth),
-            createWall(fiveEigths, sevenEigths, threeEigths, oneEigth),
-            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
- 
-            loopFireBombs(0, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
-            loopFireBombs(sevenEigths, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
- 
-            fireContinuallyMovingWall(oneEigth, oneEigth, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
-            fireContinuallyMovingWall(fiveEigths, threeEigths, oneFourth, oneFourth, -1.5, 0, 0, 2.9),
-            fireContinuallyMovingWall(oneEigth, fiveEigths, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        moveBlockie(oneHalf + blockieAdjustment, oneSixteenth + blockieAdjustment);
- 
-        await Promise.all([
-            createWall(0, 0, sevenSixteenths, oneEigth),
-            createWall(0, oneEigth, 25 * 16, 3 * 16),
-            createWall(0, 7 * 16, sevenEigths, 7 * 16),
-            createWall(oneEigth, sevenSixteenths, fiveSixteenths, oneEigth),
-            createWall(oneEigth, nineSixteenths, threeFourths, 7 * 16),
-            createWall(7 * 16, 25 * 16, nineSixteenths, 3 * 16),
-            createActivePoint(oneSixteenth - 8, oneHalf - 8, 0),
-            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 3.5),
- 
-            loopFireMovingWalls(sevenEigths, -3 * 16, oneEigth, oneSixteenth, 0, 3, 1.3, 1.21, 1.33),
-            loopFireMovingWalls(sevenEigths, 33 * 16, oneEigth, oneSixteenth, 0, -3, 1.3, 1.21, 1.33),
- 
-            loopFireMovingWalls(11 * 16, sevenSixteenths, oneSixteenth, oneEigth, 3, 0, 1.3, 0.85, 1.69),
- 
-            loopFireMovingWalls(-3 * 16, sevenEigths, oneSixteenth, oneEigth, 3, 0, 0, 1, 1.54),
-            loopFireMovingWalls(33 * 16, sevenEigths, oneSixteenth, oneEigth, -3, 0, 0, 1, 1.54)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        moveBlockie(oneSixteenth + blockieAdjustment, oneHalf + blockieAdjustment);
- 
-        await Promise.all([
-            fireMovingWall(-33 * 16, 0, fullScreen, fullScreen, 1.2, 0, 0.5, 15),
- 
-            fireMovingWall(0, 0, oneSixteenth, threeEigths, 0, -0.2, 0, 10),
-            fireMovingWall(0, fiveEigths, oneSixteenth, fullScreen, 0, -0.2, 0, 10),
- 
-            fireMovingWall(oneSixteenth, 0, oneSixteenth, threeEigths, 0, -0.35, 0, 10),
-            fireMovingWall(oneSixteenth, fiveEigths, oneSixteenth, fullScreen, 0, -0.35, 0, 10),
- 
-            fireMovingWall(oneEigth, 0, oneSixteenth, threeEigths, 0, -0.45, 0, 10),
-            fireMovingWall(oneEigth, fiveEigths, oneSixteenth, fullScreen, 0, -0.45, 0, 10),
- 
-            fireMovingWall(threeSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
-            fireMovingWall(threeSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.5, 0, 10),
- 
-            fireMovingWall(oneFourth, 0, oneSixteenth, threeEigths, 0, -0.55, 0, 10),
-            fireMovingWall(oneFourth, fiveEigths, oneSixteenth, fullScreen, 0, -0.55, 0, 10),
- 
-            fireMovingWall(fiveSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
-            fireMovingWall(fiveSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.5, 0, 10),
- 
-            fireMovingWall(threeEigths, 0, oneSixteenth, threeEigths, 0, -0.45, 0, 10),
-            fireMovingWall(threeEigths, fiveEigths, oneSixteenth, fullScreen, 0, -0.45, 0, 10),
- 
-            fireMovingWall(sevenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.35, 0, 10),
-            fireMovingWall(sevenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.35, 0, 10),
- 
-            fireMovingWall(oneHalf, 0, oneSixteenth, threeEigths, 0, -0.2, 0, 10),
-            fireMovingWall(oneHalf, fiveEigths, oneSixteenth, fullScreen, 0, -0.2, 0, 10),
- 
-            fireMovingWall(nineSixteenths, 0, oneSixteenth, threeEigths, 0, -0.1, 0, 10),
-            fireMovingWall(nineSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.1, 0, 10),
- 
-            fireMovingWall(fiveEigths, 0, oneSixteenth, threeEigths, 0, -0.15, 0, 10),
-            fireMovingWall(fiveEigths, fiveEigths, oneSixteenth, fullScreen, 0, -0.15, 0, 10),
- 
-            fireMovingWall(elevenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.27, 0, 10),
-            fireMovingWall(elevenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.27, 0, 10),
- 
-            fireMovingWall(threeFourths, 0, oneSixteenth, threeEigths, 0, -0.4, 0, 10),
-            fireMovingWall(threeFourths, fiveEigths, oneSixteenth, fullScreen, 0, -0.4, 0, 10),
- 
-            fireMovingWall(thirteenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
-            fireMovingWall(thirteenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.5, 0, 10),
- 
-            fireMovingWall(sevenEigths, 0, oneSixteenth, threeEigths, 0, -0.55, 0, 10),
-            fireMovingWall(sevenEigths, fiveEigths, oneSixteenth, fullScreen, 0, -0.55, 0, 10),
- 
-            fireMovingWall(fifteenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.6, 0, 10),
-            fireMovingWall(fifteenSixteenths, fiveEigths, oneSixteenth, fullScreen, 0, -0.6, 0, 10),
- 
-            createActivePoint(fifteenSixteenths - 8, oneSixteenth - 8, 5.1)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        moveBlockie(fifteenSixteenths + blockieAdjustment, oneSixteenth + blockieAdjustment);
- 
-        await Promise.all([
-            createActivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0),
- 
-            createWall(0, 0, sevenEigths, oneEigth),
- 
-            fireContinuallyMovingWall(-fullScreen, oneEigth, fullScreen, oneEigth, 1.5, 0, 0, 4.98),
-            fireContinuallyMovingWall(oneEigth, oneEigth, fullScreen, oneEigth, 1.5, 0, 0, 4.98),
- 
-            createWall(0, oneFourth, fullScreen, oneSixteenth),
- 
-            fireContinuallyMovingWall(-oneEigth, fiveSixteenths, fullScreen, oneEigth, -1.5, 0, 0, 4.98),
-            fireContinuallyMovingWall(fullScreen, fiveSixteenths, fullScreen, oneEigth, -1.5, 0, 0, 4.98),
- 
-            createWall(0, sevenSixteenths, fullScreen, oneSixteenth),
- 
-            createWall(0, oneHalf, oneSixteenth, oneEigth),
-            loopFireBombs(oneSixteenth, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
-            createWall(threeSixteenths, oneHalf, oneSixteenth, oneEigth),
-            loopFireBombs(oneFourth, oneHalf, oneEigth, oneEigth, 2.85, 4, 0.7),
-            createWall(threeEigths, oneHalf, oneSixteenth, oneEigth),
-            loopFireBombs(sevenSixteenths, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
-            createWall(nineSixteenths, oneHalf, oneSixteenth, oneEigth),
-            loopFireBombs(fiveEigths, oneHalf, oneEigth, oneEigth, 2.85, 4, 0.7),
-            createWall(threeFourths, oneHalf, oneSixteenth, oneEigth),
-            loopFireBombs(thirteenSixteenths, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
-            createWall(fifteenSixteenths, oneHalf, oneSixteenth, oneEigth),
- 
-            createWall(0, fiveEigths, fullScreen, oneSixteenth),
- 
-            loopFireBombs(0, elevenSixteenths, oneFourth, oneEigth, 0, 0, 1000000),
-            fireContinuallyMovingWall(oneFourth, elevenSixteenths, oneSixteenth, oneEigth, 2, 0, 0, 1.9),
-            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneEigth, 0, 0, 1000000),
- 
-            createWall(0, thirteenSixteenths, fullScreen, oneSixteenth),
- 
-            loopFireBombs(0, sevenEigths, fullScreen, oneEigth, 0, 2, 1)
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
         ]);
  
         cancelAwaitChain = false;
@@ -703,6 +561,13 @@ async function restartLevel(reason) {
         blockie.state = "destructing";
         blockie.sx = 0;
 
+        //Waits half a second before displaying a message.
+        await new Promise((resolve, reject) => {
+            let continueDestruction = setTimeout(() => {
+                resolve("resolved");
+            }, 500);
+        });
+
         await displayMessage("Determination is your only asset.", "restartLevel");
     } else if (reason === "keyPressed") {
         resetBlockieState();
@@ -711,6 +576,14 @@ async function restartLevel(reason) {
         await displayMessage("Escaping this tab will not save you!", "restartLevel");
     } else if (reason === "countdownTimer") {
         gameState = "playingCutscene";
+
+        //Waits half a second before displaying a message.
+        await new Promise((resolve, reject) => {
+            let continueDestruction = setTimeout(() => {
+                resolve("resolved");
+            }, 500);
+        });
+
         await playCutscene(spCountdownDestructionScene, 0.17);
         await displayMessage("You've failed another world.", "restartLevel");
     };
@@ -796,8 +669,10 @@ function callLevel(levelNum) {
 
 function initializeLevelMenu() {
     let menuIconArray = document.querySelectorAll(".menuIcon");
+    let numMenuIconArrayValues = menuIconArray.length - 1;
     let hoveringIcon = 0;
     let followMouse = false;
+    let stopFollowingMouse;
 
     //Makes all HTML menu elements visible.
     for (let i = 0; i < menuIconArray.length; i++) {
@@ -806,17 +681,17 @@ function initializeLevelMenu() {
 
     //Clicking Handling
 
-    function controlLevelIconClicks(iconNum) {
+    function beginSelectedLevel(iconNum) {
         //Makes all HTML menu elements invisible.
         for (let i = 0; i < menuIconArray.length; i++) {
             menuIconArray[i].style.visibility = "hidden";
         };
 
-        //Removes all menu-specific eventListeners.
+        //Removes all menu-specific eventListeners and timers.
         
         for (let i = 0; i < menuIconArray.length; i++) {
             menuIconArray[i].removeEventListener("click", () => {
-                controlLevelIconClicks(i + 1);
+                beginSelectedLevel(i + 1);
             });
         };
 
@@ -832,14 +707,16 @@ function initializeLevelMenu() {
 
         document.removeEventListener("mousemove", checkFollowMouse);
 
+        clearInterval(checkFollowKeys);
+
         //Begins the level that the player clicked the corresponding icon for.
         callLevel(iconNum);
     };
 
-    //Listens for if the player clicks on any menu icons and calls that level.
+    //Beggins the level that is clicked on (even if followMouse is false).
     for (let i = 0; i < menuIconArray.length; i++) {
         menuIconArray[i].addEventListener("click", () => {
-            controlLevelIconClicks(i + 1);
+            beginSelectedLevel(i + 1);
         });
     };
 
@@ -857,37 +734,51 @@ function initializeLevelMenu() {
         menuIconArray[iconNum].style.backgroundColor = "black";
     };
 
-    function checkFollowKeys() {
+    let checkFollowKeys = setInterval(() => {
+        //Dehighlights the previous hovering icon (as it may change any frame outside of a moved mouse).
         revertLevelIcon(hoveringIcon);
+
+        //Moves the hoveringIcon if any keys are pressed.
 
         //Left
         if (keysDown[65]) {
-            hoveringIcon = min(hoveringIcon - 1, 0);
+            hoveringIcon--;
         };
 
         //Right
         if (keysDown[68]) {
-            hoveringIcon = min(hoveringIcon + 1, 0);
+            hoveringIcon++;
         };
 
         //Up
-        if (keysDown[65]) {
-            hoveringIcon = min(hoveringIcon - 4, 0);
+        if (keysDown[87]) {
+            hoveringIcon -= 4;
         };
 
         //Down
-        if (keysDown[65]) {
-            hoveringIcon = min(hoveringIcon + 4, 0);
+        if (keysDown[83]) {
+            hoveringIcon += 4;
         };
 
-        highlightLevelIcon(hoveringIcon);
-    };
+        hoveringIcon = Math.min(hoveringIcon, numMenuIconArrayValues);
+        hoveringIcon = Math.max(hoveringIcon, 0);
 
+        //Highlights the new hoveringIcon (which may be different than the previous hovering icon if a key was pressed).
+        highlightLevelIcon(hoveringIcon);
+
+        //Begins the currently highlighted level (even if followMouse is still true).
+        if (keysDown[16] || keysDown[32]) {
+            beginSelectedLevel(hoveringIcon + 1);
+        };
+    }, 120);
+
+    //Stops following the mouse (allow for following keys) after half a second of not moving the mouse.
     function checkFollowMouse() {
+        clearTimeout(stopFollowingMouse);
         followMouse = true;
-        let stopFollowingMouse = setTimeout(() => {
+        stopFollowingMouse = setTimeout(() => {
             followMouse = false;
-        }, 1000);
+        }, 500);
     };
 
     document.addEventListener("mousemove", checkFollowMouse);
@@ -903,8 +794,6 @@ function initializeLevelMenu() {
             };
         });
     };
-
-    
 };
 
 //Shows a message and awaits a player input to continue the game.
@@ -928,6 +817,9 @@ async function displayMessage(message, endAction) {
         //Restarts the game once acceptable keys are pressed.
         function resumePlaying() {
             if (keysDown[16] || keysDown[32]) {
+                delete keysDown[16];
+                delete keysDown[32];
+
                 document.getElementById("messageDisplayer").innerHTML = "";
 
                 switch (endAction) {

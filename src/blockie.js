@@ -7,22 +7,17 @@ context.lineWidth = 4;
 //Variables
 
 let gameState = "playing";
-
 let currentLevel = 1;
-
 let currentLevelPoints = 0;
-let totalPoints = 0;
-
 let xInput = 0;
 let yInput = 0;
-
 let preventingMovement = false;
-
 let recoveringFromDash = false;
 let allowDashAgain = true;
 let dashDistance = 96;
 let dashRecoverySeconds = 0.3;
 let allowDashAgainSeconds = 0.9;
+let hoveringIcon = 0;
 
 //Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
 //instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
@@ -85,7 +80,11 @@ let currentIntervals = [];
 
 let collidingInstances = [];
 
-let levelPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+//Holds the highest number of points that were touched in a full run of each level.
+let earnedPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+//Holds the total number of points that spawn in each level.
+let possiblePoints = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 1];
 
 //Classes
 
@@ -395,7 +394,7 @@ async function levelOne() {
  
         cancelAwaitChain = false;
  
-        increaseLevel();
+        endLevel();
     } catch (error) {};
 };
 
@@ -446,13 +445,77 @@ async function levelTwo() {
 
         cancelAwaitChain = false;
 
-        increaseLevel();
+        endLevel();
     } catch (error) {};
 };
 
 async function levelThree() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, fullScreen),
+            createWall(sevenSixteenths, 0, oneEigth, sevenSixteenths),
+            createWall(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeFourths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+            createWall(nineSixteenths, 0, sevenSixteenths, fullScreen),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, elevenSixteenths - 8, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, fullScreen, oneSixteenth),
+            createWall(0, threeSixteenths, fullScreen, oneSixteenth),
+            createWall(0, threeEigths, fullScreen, oneSixteenth),
+            createWall(0, nineSixteenths, fullScreen, sevenSixteenths),
+            createWall(0, 0, oneSixteenth, fullScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, fullScreen),
+            createWall(threeEigths, 0, oneSixteenth, fullScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, fullScreen),
+            createWall(threeFourths, 0, oneSixteenth, fullScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, fullScreen),
+            createPassivePoint(oneEigth - 8, oneHalf - 8, 0, 16),
+            createPassivePoint(sevenEigths - 8, oneHalf - 8, 0, 16),
+            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(thirteenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 1, 1, 1),
+ 
+            createActivePoint(oneHalf - 8, oneEigth - 8, 3)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, fullScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, fullScreen),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 0, 5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+            loopFireMovingHorizontalLasers(0, 32, 2, 0, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 2, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 4, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 6, 1, 4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        destroyCountdownTimer();
+ 
+        endLevel();
     } catch (error) {};
 };
 
@@ -589,17 +652,15 @@ async function restartLevel(reason) {
     };
 };
 
-async function increaseLevel() {
+async function endLevel() {
     gameState = "finishingLevel";
 
     blockie.angleMovingDegrees = -180;
 
-    //Points are only made permanent once a level is completed.
-    updateLevelPoints(currentLevel);
-    currentLevelPoints = 0;
-    calculateTotalPoints();
-
-    currentLevel++;
+    //Points are only made permanent once a level is completed and only the high score is recorded in earnedPoints.
+    if (earnedPoints[currentLevel - 1] < currentLevelPoints) {
+        earnedPoints[currentLevel - 1] = currentLevelPoints;
+    };
 
     //Waits for the PartyHat to descend on to Blockie's head.
     await new Promise((resolve, reject) => {
@@ -621,6 +682,8 @@ async function increaseLevel() {
     });
 
     await displayMessage("You haven't escaped yet.", "enterLevelMenu");
+
+    currentLevelPoints = 0;
 };
 
 function callLevel(levelNum) {
@@ -668,9 +731,9 @@ function callLevel(levelNum) {
 };
 
 function initializeLevelMenu() {
+    gameState = "inMenu"
     let menuIconArray = document.querySelectorAll(".menuIcon");
     let numMenuIconArrayValues = menuIconArray.length - 1;
-    let hoveringIcon = 0;
     let followMouse = false;
     let stopFollowingMouse;
 
@@ -682,6 +745,8 @@ function initializeLevelMenu() {
     //Clicking Handling
 
     function beginSelectedLevel(iconNum) {
+        currentLevel = iconNum
+
         //Makes all HTML menu elements invisible.
         for (let i = 0; i < menuIconArray.length; i++) {
             menuIconArray[i].style.visibility = "hidden";
@@ -710,7 +775,7 @@ function initializeLevelMenu() {
         clearInterval(checkFollowKeys);
 
         //Begins the level that the player clicked the corresponding icon for.
-        callLevel(iconNum);
+        callLevel(currentLevel);
     };
 
     //Beggins the level that is clicked on (even if followMouse is false).
@@ -803,7 +868,7 @@ async function displayMessage(message, endAction) {
     //Forces the player to read the message for 1 second before they can continue the game.
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
-            //Placed here to draw Blockie with a PartyHat during increaseLevel().
+            //Placed here to draw Blockie with a PartyHat during endLevel().
             partyHats.splice(0);
 
             //Draws the game over screen.
@@ -2003,16 +2068,7 @@ function scaleGame() {
 
 //Point Functions
 
-function updateLevelPoints(currentLevel) {
-    levelPoints[currentLevel - 1] = currentLevelPoints;
-};
 
-function calculateTotalPoints() {
-    totalPoints = 0;
-    for (let i = 0; i < levelPoints.length; i++) {
-        totalPoints += levelPoints[i];
-    };
-};
 
 //Cutscene Functions
 
@@ -2392,8 +2448,11 @@ function gameLoop() {
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
 //restarting or changing levels.
 function drawingLoop() {
-    //Updates the amount of points in the gameInfo div.
-    document.getElementById("currentPoints").innerHTML = `Points: ${currentLevelPoints}|7`;
+    if (gameState === "inMenu") {
+        document.getElementById("currentPoints").innerHTML = `Points: ${earnedPoints[hoveringIcon]}|${possiblePoints[hoveringIcon]}`;
+    } else {
+        document.getElementById("currentPoints").innerHTML = `Points: ${currentLevelPoints}|${possiblePoints[currentLevel - 1]}`;
+    };
 
     //Update the current level in the currentLevel div.
     document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
@@ -2401,7 +2460,7 @@ function drawingLoop() {
     //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState !== "displayingMessage" && gameState !== "playingCutscene") {
+    if (gameState !== "displayingMessage" && gameState !== "playingCutscene" && gameState !== "inMenu") {
         animateBlockie();
         drawBlockie();
     };

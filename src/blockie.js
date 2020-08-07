@@ -597,7 +597,7 @@ function initializeLevel(blockieX, blockieY) {
 };
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
-async function restartLevel(reason) {
+async function stopLevel(reason) {
     //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
     for (let i = 0; i < currentTimeouts.length; i++) {
         clearTimeout(currentTimeouts[i]);
@@ -637,13 +637,15 @@ async function restartLevel(reason) {
             }, 500);
         });
 
-        await displayMessage("Determination is your only asset.", "restartLevel");
-    } else if (reason === "keyPressed") {
+        displayMessage("Determination is your only asset.", "restartLevel");
+    } else if (reason === "restartLevelPressed") {
         resetBlockieState();
         callLevel(currentLevelNum);
+    } else if (reason === "enterMenuPressed") {
+        initializeLevelMenu();
     } else if (reason === "lostFocus") {
-        await displayMessage("Escaping this tab will not save you!", "restartLevel");
-    } else if (reason === "countdownTimer") {
+        displayMessage("Escaping this tab will not save you!", "restartLevel");
+    } else if (reason === "countdownTimerEnded") {
         gameState = "playingCutscene";
 
         //Waits half a second before displaying a message.
@@ -654,7 +656,7 @@ async function restartLevel(reason) {
         });
 
         await playCutscene(spCountdownDestructionScene, 0.17);
-        await displayMessage("You've failed another world.", "restartLevel");
+        displayMessage("You've failed another world.", "restartLevel");
     };
 };
 
@@ -2141,7 +2143,7 @@ function createCountdownTimer(totalSeconds) {
         //Restarts the level if the timer reaches 0.
         if (seconds <= 0) {
             destroyCountdownTimer();
-            restartLevel("countdownTimer");
+            stopLevel("countdownTimerEnded");
         };
     }, 1000);
 };
@@ -2165,9 +2167,14 @@ function convertRadiansToDegrees(radians) {
 
 function gameLoop() {
     if (gameState === "playing") {
-        //Restarts the level if P is pressed.
+        //Restarts the level if O is pressed.
+        if (keysDown[79]) {
+            stopLevel("restartLevelPressed");
+        };
+
+        //Enters the level menu if P is pressed.
         if (keysDown[80]) {
-            restartLevel("keyPressed");
+            stopLevel("enterMenuPressed");
         };
 
         //Other Instances' Movements
@@ -2394,7 +2401,7 @@ function gameLoop() {
         //Checks if Blockie is colliding after everything has moved, and if so, restarts the level.
         checkTestCollisionsWithClasses(blockie.x, blockie.y, allCollisionInstances);
         if (preventingMovement) {
-            restartLevel("died");
+            stopLevel("died");
         };
 
         //Interactivity Handling
@@ -2453,7 +2460,7 @@ function gameLoop() {
                 //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
                 break;
             } else {
-                restartLevel("died");
+                stopLevel("died");
                 break;
             };
         };
@@ -2517,7 +2524,7 @@ function drawingLoop() {
 //(timing of instances, etc.); therefore, once the player refocusses on the tab, the level restarts.
 function checkPageFocus() {
     if (!document.hasFocus() && gameState === "playing") {
-        restartLevel("lostFocus");
+        stopLevel("lostFocus");
     };
 
     window.requestAnimationFrame(checkPageFocus);

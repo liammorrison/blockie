@@ -7,8 +7,18 @@ context.lineWidth = 4;
 //Variables
 
 let gameState = "playing";
-let currentLevel = 1;
+let currentLevelNum = 1;
+
+//Stores the number of levels that are unlocked (since the game is linear, each newly unlocked level is assumed to be 1 higher than 
+//the previous one).
+let numUnlockedLevels = 1;
+
 let currentLevelPoints = 0;
+
+//Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
+//instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
+let cancelAwaitChain = false;
+
 let xInput = 0;
 let yInput = 0;
 let preventingMovement = false;
@@ -17,11 +27,7 @@ let allowDashAgain = true;
 let dashDistance = 96;
 let dashRecoverySeconds = 0.3;
 let allowDashAgainSeconds = 0.9;
-let hoveringIcon = 0;
-
-//Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
-//instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
-let cancelAwaitChain = false;
+let hoveringIconArrayNum = 0;
 
 //Sprite maps. 
 
@@ -634,7 +640,7 @@ async function restartLevel(reason) {
         await displayMessage("Determination is your only asset.", "restartLevel");
     } else if (reason === "keyPressed") {
         resetBlockieState();
-        callLevel(currentLevel);
+        callLevel(currentLevelNum);
     } else if (reason === "lostFocus") {
         await displayMessage("Escaping this tab will not save you!", "restartLevel");
     } else if (reason === "countdownTimer") {
@@ -655,12 +661,17 @@ async function restartLevel(reason) {
 async function endLevel() {
     gameState = "finishingLevel";
 
-    blockie.angleMovingDegrees = -180;
-
     //Points are only made permanent once a level is completed and only the high score is recorded in earnedPoints.
-    if (earnedPoints[currentLevel - 1] < currentLevelPoints) {
-        earnedPoints[currentLevel - 1] = currentLevelPoints;
+    if (earnedPoints[currentLevelNum - 1] < currentLevelPoints) {
+        earnedPoints[currentLevelNum - 1] = currentLevelPoints;
     };
+
+    //Unlocks the next level (because arrays are 0-indexed) which allows it to be seen and selected in the menu.
+    numUnlockedLevels = Math.max(currentLevelNum + 1, numUnlockedLevels);
+    numUnlockedLevels = Math.min(numUnlockedLevels, 13);
+
+    //Makes Blockie face the player during the PartyHat animation.
+    blockie.angleMovingDegrees = -180;
 
     //Waits for the PartyHat to descend on to Blockie's head.
     await new Promise((resolve, reject) => {
@@ -732,40 +743,45 @@ function callLevel(levelNum) {
 
 function initializeLevelMenu() {
     gameState = "inMenu"
+
+    //Creates an array of all 13 menu Icon IDs.
     let menuIconArray = document.querySelectorAll(".menuIcon");
-    let numMenuIconArrayValues = menuIconArray.length - 1;
+
+    //If followMouse is true, then whatever icon that the mouse is over will be highlighted.
     let followMouse = false;
+
+    //This timer allows for keys to be used in menus after half a second of the mouse idling.
     let stopFollowingMouse;
 
-    //Makes all HTML menu elements visible.
-    for (let i = 0; i < menuIconArray.length; i++) {
+    //Makes all unlocked HTML menu elements visible.
+    for (let i = 0; i < numUnlockedLevels; i++) {
         menuIconArray[i].style.visibility = "visible";
     };
 
     //Clicking Handling
 
     function beginSelectedLevel(iconNum) {
-        currentLevel = iconNum
+        currentLevelNum = iconNum
 
-        //Makes all HTML menu elements invisible.
-        for (let i = 0; i < menuIconArray.length; i++) {
+        //Makes all unlocked HTML menu elements invisible.
+        for (let i = 0; i < numUnlockedLevels; i++) {
             menuIconArray[i].style.visibility = "hidden";
         };
 
         //Removes all menu-specific eventListeners and timers.
         
-        for (let i = 0; i < menuIconArray.length; i++) {
+        for (let i = 0; i < numUnlockedLevels; i++) {
             menuIconArray[i].removeEventListener("click", () => {
-                beginSelectedLevel(i + 1);
+                beginSelectedLevel(i + 1)
             });
         };
 
-        for (let i = 0; i < menuIconArray.length; i++) {
+        for (let i = 0; i < numUnlockedLevels; i++) {
             menuIconArray[i].removeEventListener("mouseover", () => {
                 if (followMouse) {
-                    revertLevelIcon(hoveringIcon);
-                    hoveringIcon = i;
-                    highlightLevelIcon(hoveringIcon);
+                    revertLevelIcon(hoveringIconArrayNum);
+                    hoveringIconArrayNum = i;
+                    highlightLevelIcon(hoveringIconArrayNum);
                 };
             });
         };
@@ -775,13 +791,13 @@ function initializeLevelMenu() {
         clearInterval(checkFollowKeys);
 
         //Begins the level that the player clicked the corresponding icon for.
-        callLevel(currentLevel);
+        callLevel(currentLevelNum);
     };
 
-    //Beggins the level that is clicked on (even if followMouse is false).
-    for (let i = 0; i < menuIconArray.length; i++) {
+    //Begins the level that is clicked on (even if followMouse is false).
+    for (let i = 0; i < numUnlockedLevels; i++) {
         menuIconArray[i].addEventListener("click", () => {
-            beginSelectedLevel(i + 1);
+            beginSelectedLevel(i + 1)
         });
     };
 
@@ -800,44 +816,45 @@ function initializeLevelMenu() {
     };
 
     let checkFollowKeys = setInterval(() => {
-        //Dehighlights the previous hovering icon (as it may change any frame outside of a moved mouse).
-        revertLevelIcon(hoveringIcon);
+        //Dehighlights the previous hovering icon (as it may change depending on key inputs during this function).
+        revertLevelIcon(hoveringIconArrayNum);
 
-        //Moves the hoveringIcon if any keys are pressed.
+        //Moves the hoveringIconArrayNum if any keys are pressed.
 
         //Left
         if (keysDown[65]) {
-            hoveringIcon--;
+            hoveringIconArrayNum--;
         };
 
         //Right
         if (keysDown[68]) {
-            hoveringIcon++;
+            hoveringIconArrayNum++;
         };
 
         //Up
         if (keysDown[87]) {
-            hoveringIcon -= 4;
+            hoveringIconArrayNum -= 4;
         };
 
         //Down
         if (keysDown[83]) {
-            hoveringIcon += 4;
+            hoveringIconArrayNum += 4;
         };
 
-        hoveringIcon = Math.min(hoveringIcon, numMenuIconArrayValues);
-        hoveringIcon = Math.max(hoveringIcon, 0);
+        //Limits moving the cursor to only unlocked level icons.
+        hoveringIconArrayNum = Math.min(hoveringIconArrayNum, numUnlockedLevels - 1);
+        hoveringIconArrayNum = Math.max(hoveringIconArrayNum, 0);
 
-        //Highlights the new hoveringIcon (which may be different than the previous hovering icon if a key was pressed).
-        highlightLevelIcon(hoveringIcon);
+        //Highlights the new hoveringIconArrayNum (which may be different than the previous hovering icon if a key was pressed).
+        highlightLevelIcon(hoveringIconArrayNum);
 
         //Begins the currently highlighted level (even if followMouse is still true).
         if (keysDown[16] || keysDown[32]) {
-            beginSelectedLevel(hoveringIcon + 1);
+            beginSelectedLevel(hoveringIconArrayNum + 1);
         };
     }, 120);
 
-    //Stops following the mouse (allow for following keys) after half a second of not moving the mouse.
+    //Stops following the mouse (allows for following keys) after half a second of not moving the mouse.
     function checkFollowMouse() {
         clearTimeout(stopFollowingMouse);
         followMouse = true;
@@ -848,14 +865,15 @@ function initializeLevelMenu() {
 
     document.addEventListener("mousemove", checkFollowMouse);
 
-    //Listens for if the player hovers over any menu icons and colors that element (if they aren't using the keys to navigate 
+    //Listens for if the player hovers over any menu icons and highlights that element (if they aren't using the keys to navigate 
     //the menu).
-    for (let i = 0; i < menuIconArray.length; i++) {
+    for (let i = 0; i < numUnlockedLevels; i++) {
         menuIconArray[i].addEventListener("mouseover", () => {
             if (followMouse) {
-                revertLevelIcon(hoveringIcon);
-                hoveringIcon = i;
-                highlightLevelIcon(hoveringIcon);
+                //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
+                revertLevelIcon(hoveringIconArrayNum);
+                hoveringIconArrayNum = i;
+                highlightLevelIcon(hoveringIconArrayNum);
             };
         });
     };
@@ -891,7 +909,7 @@ async function displayMessage(message, endAction) {
                     case "restartLevel":
                         gameState = "playing";
                         resetBlockieState();
-                        callLevel(currentLevel);
+                        callLevel(currentLevelNum);
                         break;
                     case "enterLevelMenu":
                         initializeLevelMenu();
@@ -2448,14 +2466,23 @@ function gameLoop() {
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
 //restarting or changing levels.
 function drawingLoop() {
+    //Updates the high score in the points div of the level that is being played or hovered over.
     if (gameState === "inMenu") {
-        document.getElementById("currentPoints").innerHTML = `Points: ${earnedPoints[hoveringIcon]}|${possiblePoints[hoveringIcon]}`;
+        document.getElementById("points").innerHTML = `Points: ${earnedPoints[hoveringIconArrayNum]}|${possiblePoints[hoveringIconArrayNum]}`;
     } else {
-        document.getElementById("currentPoints").innerHTML = `Points: ${currentLevelPoints}|${possiblePoints[currentLevel - 1]}`;
+        document.getElementById("points").innerHTML = `Points: ${currentLevelPoints}|${possiblePoints[currentLevelNum - 1]}`;
     };
 
-    //Update the current level in the currentLevel div.
-    document.getElementById("currentLevel").innerHTML = "Level: " + currentLevel;
+    //Updates the number in the level div of the level that is being played or hovered over.
+    if (gameState === "inMenu") {
+        if (hoveringIconArrayNum + 1 < 13) {
+            document.getElementById("level").innerHTML = `Level: ${hoveringIconArrayNum + 1}`;
+        } else {
+            document.getElementById("level").innerHTML = `Level: END`;
+        };
+    } else {
+        document.getElementById("level").innerHTML = `Level: ${currentLevelNum}`;
+    };
 
     //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
     context.clearRect(0, 0, canvas.width, canvas.height);

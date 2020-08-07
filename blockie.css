@@ -173,7 +173,7 @@ body {
     font-size: x-large;
 }
 
-#currentPoints {
+#points {
     height: 50px;
     width: 256px;
     display: flex;
@@ -182,7 +182,7 @@ body {
     align-items: center;
 }
 
-#currentLevel {
+#level {
     height: 50px;
     width: 256px;
     display: flex;

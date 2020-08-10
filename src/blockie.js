@@ -94,7 +94,8 @@ let possiblePoints = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 1];
 
 //Holds a unique message that is displayed after completing each level.
 let levelMessages = [
-    ""
+    "Why are you here? <br>What's the point of the points? <br>Make of it what you want. <br>Answers will come.",
+    "afsjkbhb",
 ]
 
 //Classes
@@ -369,62 +370,38 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
+        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, fullScreen, threeFourths),
-            createPassivePoint(threeSixteenths - 8, sevenEigths - 8, 0, 10),
- 
-            loopFireBombs(oneHalf - 16, threeFourths, 32, oneFourth, 2.2, 1, 1),
- 
-            createActivePoint(sevenEigths - 8, sevenEigths - 8, 2)
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
         ]);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
  
-            loopFireBombs(threeFourths, 0, oneFourth, oneSixteenth, 0, 2, 0.2),
-            loopFireBombs(threeFourths, oneSixteenth, oneFourth, oneSixteenth, 0.2, 2, 0.2),
-            loopFireBombs(threeFourths, oneEigth, oneFourth, oneSixteenth, 0.4, 2, 0.2),
-            loopFireBombs(threeFourths, threeSixteenths, oneFourth, oneSixteenth, 0.6, 2, 0.2),
-            loopFireBombs(threeFourths, oneFourth, oneFourth, oneSixteenth, 0.8, 2, 0.2),
-            loopFireBombs(threeFourths, fiveSixteenths, oneFourth, oneSixteenth, 1, 2, 0.2),
-            loopFireBombs(threeFourths, threeEigths, oneFourth, oneSixteenth, 1.2, 2, 0.2),
-            loopFireBombs(threeFourths, sevenSixteenths, oneFourth, oneSixteenth, 1.4, 2, 0.2),
-            loopFireBombs(threeFourths, oneHalf, oneFourth, oneSixteenth, 1.6, 2, 0.2),
-            loopFireBombs(threeFourths, nineSixteenths, oneFourth, oneSixteenth, 1.8, 2, 0.2),
-            loopFireBombs(threeFourths, fiveEigths, oneFourth, oneSixteenth, 2, 2, 0.2),
-            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneSixteenth, 2.2, 2, 0.2),
-            loopFireBombs(threeFourths, threeFourths, oneFourth, oneSixteenth, 2.4, 2, 0.2),
-            loopFireBombs(threeFourths, thirteenSixteenths, oneFourth, oneSixteenth, 2.6, 2, 0.2),
-            loopFireBombs(threeFourths, sevenEigths, oneFourth, oneSixteenth, 2.8, 2, 0.2),
-            loopFireBombs(threeFourths, fifteenSixteenths, oneFourth, oneSixteenth, 3, 2, 0.2)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, threeEigths, fullScreen),
-            createWall(fiveEigths, 0, threeEigths, fullScreen),
-            createActivePoint(oneHalf - 8, threeSixteenths - 8, 0),
-            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 1, 5)
+            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
         ]);
  
         cancelAwaitChain = false;
  
         await Promise.all([
             createWall(0, 0, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, threeEigths),
             createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
-            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
-            createPassivePoint(oneSixteenth - 8, oneHalf - 8, 0, 12),
-            createPassivePoint(fifteenSixteenths - 8, oneHalf - 8, 0, 12),
-            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 0, 1, 2)
+            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
         ]);
  
         cancelAwaitChain = false;
@@ -452,8 +429,23 @@ async function levelTwo() {
 
         await Promise.all([
             createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
-
-            fireBomb(threeFourths, threeFourths, oneFourth, oneFourth, 1, 3)
+ 
+            loopFireBombs(threeFourths, 0, oneFourth, oneSixteenth, 0, 2, 0.2),
+            loopFireBombs(threeFourths, oneSixteenth, oneFourth, oneSixteenth, 0.2, 2, 0.2),
+            loopFireBombs(threeFourths, oneEigth, oneFourth, oneSixteenth, 0.4, 2, 0.2),
+            loopFireBombs(threeFourths, threeSixteenths, oneFourth, oneSixteenth, 0.6, 2, 0.2),
+            loopFireBombs(threeFourths, oneFourth, oneFourth, oneSixteenth, 0.8, 2, 0.2),
+            loopFireBombs(threeFourths, fiveSixteenths, oneFourth, oneSixteenth, 1, 2, 0.2),
+            loopFireBombs(threeFourths, threeEigths, oneFourth, oneSixteenth, 1.2, 2, 0.2),
+            loopFireBombs(threeFourths, sevenSixteenths, oneFourth, oneSixteenth, 1.4, 2, 0.2),
+            loopFireBombs(threeFourths, oneHalf, oneFourth, oneSixteenth, 1.6, 2, 0.2),
+            loopFireBombs(threeFourths, nineSixteenths, oneFourth, oneSixteenth, 1.8, 2, 0.2),
+            loopFireBombs(threeFourths, fiveEigths, oneFourth, oneSixteenth, 2, 2, 0.2),
+            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneSixteenth, 2.2, 2, 0.2),
+            loopFireBombs(threeFourths, threeFourths, oneFourth, oneSixteenth, 2.4, 2, 0.2),
+            loopFireBombs(threeFourths, thirteenSixteenths, oneFourth, oneSixteenth, 2.6, 2, 0.2),
+            loopFireBombs(threeFourths, sevenEigths, oneFourth, oneSixteenth, 2.8, 2, 0.2),
+            loopFireBombs(threeFourths, fifteenSixteenths, oneFourth, oneSixteenth, 3, 2, 0.2)
         ]);
 
         cancelAwaitChain = false;
@@ -724,9 +716,11 @@ async function endLevel() {
         window.requestAnimationFrame(animateFinishedLevelHat);
     });
 
-    await displayMessage("You haven't escaped yet.", "enterLevelMenu");
-
     currentLevelPoints = 0;
+
+    //Shows a unique message for each level after completing it and then transitions into the level menu after the level and PartyHat
+    //animation is completed.
+    await displayMessage(levelMessages[currentLevelNum - 1], "enterLevelMenu");
 };
 
 function callLevel(levelNum) {

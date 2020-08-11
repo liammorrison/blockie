@@ -94,9 +94,24 @@ let possiblePoints = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 1];
 
 //Holds a unique message that is displayed after completing each level.
 let levelMessages = [
-    "Why are you here? <br>What's the point of the points? <br>Make of it what you want. <br>Answers will come.",
-    "afsjkbhb",
-]
+    "The world will ask you who you are, and if you do not know, the world will tell you.",
+
+    "Are you not a problem?",
+
+    "Quite an experience to live in fear, isn't it? That's what it is to be a slave.",
+    "Hell is empty and the devils are here.",
+    "WE HAVE MET THE ENEMY AND HE IS US.",
+
+    "Salt is good; but if salt has lost its taste, how can its saltiness be restored? <br>It is fit neither for the soil nor for the manure pile; they throw it away.",
+    "If you do not change direction, you may end up where you are heading.",
+
+    "You're better off dead <br>when your mind's been set <br>from nine until five. <br>How could it be true? <br>Well, it's happening to you.",
+    "Not what we have, but what we enjoy, constitutes our abundance.",
+    "Do not store up for yourselves treasures on earth, where moths and vermin destroy, and where thieves break in and steal. <br>For where your treasure is, there your heart will be also.",
+
+    "Knowledge is having something to say. <br>Wisdom is knowing not to say it.",
+    "Do not work for the food that perishes, <br>but for the food that endures for eternal life."
+];
 
 //Classes
 

@@ -92,22 +92,22 @@ let earnedPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 //Holds the total number of points that spawn in each level.
 let possiblePoints = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 1];
 
-//Holds a unique message that is displayed after completing each level.
+//Holds a unique message that is displayed after completing each level (except the last level).
 let levelMessages = [
-    "The world will ask you who you are, and if you do not know, the world will tell you.",
+    "The world will ask you who you are, <br>and if you do not know, <br>the world will tell you.",
 
-    "Are you not a problem?",
+    "Are you a problem?",
 
-    "Quite an experience to live in fear, isn't it? That's what it is to be a slave.",
+    "Quite an experience to live in fear, <br>isn't it? <br>That's what it is to be a slave.",
     "Hell is empty and the devils are here.",
     "WE HAVE MET THE ENEMY AND HE IS US.",
 
-    "Salt is good; but if salt has lost its taste, how can its saltiness be restored? <br>It is fit neither for the soil nor for the manure pile; they throw it away.",
-    "If you do not change direction, you may end up where you are heading.",
+    "Salt is good; <br>but if salt has lost its taste, <br>how can its saltiness be restored? <br>It is fit neither for the soil nor for the manure pile; <br>they throw it away.",
+    "If you do not change direction, <br>you may end up where you are heading.",
 
-    "You're better off dead <br>when your mind's been set <br>from nine until five. <br>How could it be true? <br>Well, it's happening to you.",
-    "Not what we have, but what we enjoy, constitutes our abundance.",
-    "Do not store up for yourselves treasures on earth, where moths and vermin destroy, and where thieves break in and steal. <br>For where your treasure is, there your heart will be also.",
+    "You're better off dead <br>when your mind's been set <br>from nine until five. <br>How could it be true? <br>Well it's happening to you. <br>So take my advice.",
+    "Not what we have, <br>but what we enjoy, <br>constitutes our abundance.",
+    "Do not store up for yourselves treasures on earth, <br>where moths and vermin destroy, <br>and where thieves break in and steal. <br>For where your treasure is, <br>there your heart will be also.",
 
     "Knowledge is having something to say. <br>Wisdom is knowing not to say it.",
     "Do not work for the food that perishes, <br>but for the food that endures for eternal life."
@@ -674,14 +674,14 @@ async function stopLevel(reason) {
             }, 500);
         });
 
-        displayMessage("Determination is your only asset.", "restartLevel");
+        displayMessage("This was only a setback. <br>Progress, Blockie!", "restartLevel");
     } else if (reason === "restartLevelPressed") {
         resetBlockieState();
         callLevel(currentLevelNum);
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
     } else if (reason === "lostFocus") {
-        displayMessage("Escaping this tab will not save you!", "restartLevel");
+        displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other tabs/apps.", "restartLevel");
     } else if (reason === "countdownTimerEnded") {
         gameState = "playingCutscene";
 
@@ -733,8 +733,7 @@ async function endLevel() {
 
     currentLevelPoints = 0;
 
-    //Shows a unique message for each level after completing it and then transitions into the level menu after the level and PartyHat
-    //animation is completed.
+    //Shows a unique message for each level (except the final level) after completing it and then transitions into the level menu.
     await displayMessage(levelMessages[currentLevelNum - 1], "enterLevelMenu");
 };
 

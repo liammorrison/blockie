@@ -378,7 +378,7 @@ let threeFourths = 24 * 16;
 let thirteenSixteenths = 26 * 16;
 let sevenEigths = 28 * 16;
 let fifteenSixteenths = 30 * 16;
-let fullScreen = 32 * 16;
+let wholeScreen = 32 * 16;
 
 let blockieAdjustment = -blockie.width / 2
 
@@ -390,8 +390,8 @@ async function levelOne() {
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, fullScreen, threeEigths),
-            createWall(0, fiveEigths, fullScreen, threeEigths),
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, wholeScreen, threeEigths),
             createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
             createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
         ]);
@@ -399,7 +399,7 @@ async function levelOne() {
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, fullScreen, threeEigths),
+            createWall(0, 0, wholeScreen, threeEigths),
             createWall(0, fiveEigths, oneEigth, threeEigths),
             createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
             createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
@@ -414,7 +414,7 @@ async function levelOne() {
         await Promise.all([
             createWall(0, 0, threeEigths, threeEigths),
             createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createWall(fiveEigths, 0, threeEigths, wholeScreen),
             createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
             createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
         ]);
@@ -422,6 +422,7 @@ async function levelOne() {
         cancelAwaitChain = false;
  
         endLevel();
+
     } catch (error) {};
 };
 
@@ -432,7 +433,7 @@ async function levelTwo() {
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(0, 0, fullScreen, threeFourths),
+            createWall(0, 0, wholeScreen, threeFourths),
             createPassivePoint(threeSixteenths - 8, sevenEigths - 8, 0, 10),
 
             loopFireBombs(oneHalf - 16, threeFourths, 32, oneFourth, 2.2, 1, 1),
@@ -466,10 +467,10 @@ async function levelTwo() {
         cancelAwaitChain = false;
 
         await Promise.all([
-            createWall(0, 0, threeEigths, fullScreen),
-            createWall(fiveEigths, 0, threeEigths, fullScreen),
+            createWall(0, 0, threeEigths, wholeScreen),
+            createWall(fiveEigths, 0, threeEigths, wholeScreen),
             createActivePoint(oneHalf - 8, threeSixteenths - 8, 0),
-            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 1, 5)
+            fireMovingHorizontalLaser(wholeScreen - 32, 32, -1.5, 1, 5)
         ]);
 
         cancelAwaitChain = false;
@@ -498,12 +499,12 @@ async function levelThree() {
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, sevenSixteenths, fullScreen),
+            createWall(0, 0, sevenSixteenths, wholeScreen),
             createWall(sevenSixteenths, 0, oneEigth, sevenSixteenths),
             createWall(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth),
             createWall(sevenSixteenths, threeFourths, oneEigth, oneSixteenth),
             createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
-            createWall(nineSixteenths, 0, sevenSixteenths, fullScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
             createActivePoint(oneHalf - 8, oneHalf - 8, 0),
             createPassivePoint(oneHalf - 8, elevenSixteenths - 8, 0, 10)
         ]);
@@ -511,16 +512,16 @@ async function levelThree() {
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, fullScreen, oneSixteenth),
-            createWall(0, threeSixteenths, fullScreen, oneSixteenth),
-            createWall(0, threeEigths, fullScreen, oneSixteenth),
-            createWall(0, nineSixteenths, fullScreen, sevenSixteenths),
-            createWall(0, 0, oneSixteenth, fullScreen),
-            createWall(threeSixteenths, 0, oneSixteenth, fullScreen),
-            createWall(threeEigths, 0, oneSixteenth, fullScreen),
-            createWall(nineSixteenths, 0, oneSixteenth, fullScreen),
-            createWall(threeFourths, 0, oneSixteenth, fullScreen),
-            createWall(fifteenSixteenths, 0, oneSixteenth, fullScreen),
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, wholeScreen, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, sevenSixteenths),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
             createPassivePoint(oneEigth - 8, oneHalf - 8, 0, 16),
             createPassivePoint(sevenEigths - 8, oneHalf - 8, 0, 16),
             loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
@@ -537,10 +538,10 @@ async function levelThree() {
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, sevenSixteenths, fullScreen),
-            createWall(nineSixteenths, 0, sevenSixteenths, fullScreen),
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
             createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
-            fireMovingHorizontalLaser(fullScreen - 32, 32, -1.5, 0, 5)
+            fireMovingHorizontalLaser(wholeScreen - 32, 32, -1.5, 0, 5)
         ]);
  
         cancelAwaitChain = false;
@@ -634,30 +635,22 @@ function initializeLevel(blockieX, blockieY) {
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
 async function stopLevel(reason) {
-    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
-    for (let i = 0; i < currentTimeouts.length; i++) {
-        clearTimeout(currentTimeouts[i]);
-    };
+    stopCurrentTimingEvents();
 
-    currentTimeouts.splice(0);
-
-    //Stops all currently-running timeouts so that they stop hurting performance and don't execute after reseting.
-    for (let i = 0; i < currentIntervals.length; i++) {
-        clearInterval(currentIntervals[i]);
-    };
-
-    currentIntervals.splice(0);
-
+    //Rejects all instances (except for Blockie), which causes all instance and level async/await functions to stop.
     updateAllInstances();
     for (let i = 0; i < allInstances.length; i++) {
         rejectInstances(allInstances[i]);
     };
 
-    //Stops the countdown timer for levels 4 + 8 + 11.
+    //Stops the countdown timer for levels 4 + 8 + 12.
     destroyCountdownTimer();
 
     //Removes all points collected in the level.
     currentLevelPoints = 0;
+
+    //Resets all keys to avoid having button presses activate after the level has stopped.
+    keysDown.splice(0, keysDown.length);
 
     //Switches how the game resets based on how it triggered.
     if (reason === "died") {
@@ -676,7 +669,7 @@ async function stopLevel(reason) {
 
         displayMessage("This was only a setback. <br>Progress, Blockie!", "restartLevel");
     } else if (reason === "restartLevelPressed") {
-        resetBlockieState();
+        
         callLevel(currentLevelNum);
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
@@ -1000,6 +993,8 @@ function rejectInstances(objectArray) {
     };
 };
 
+//Timing Functions
+
 //Adds a currently-running timeout to an array so that it can be easily deactivated when the game restarts.
 function addCurrentTimeout(timeout) {
     currentTimeouts.push(timeout);
@@ -1021,6 +1016,23 @@ function removeCurrentInterval(interval) {
     clearInterval(interval);
     let currentIntervalIndex = currentIntervals.indexOf(interval);
     currentIntervals.splice(currentIntervalIndex, 1);
+};
+
+//Clears and destroys all current timing events.
+function stopCurrentTimingEvents() {
+    //Clears and deletes from currentIntervals all currently-running timeouts so that they don't execute.
+    for (let i = 0; i < currentTimeouts.length; i++) {
+        clearTimeout(currentTimeouts[i]);
+    };
+ 
+    currentTimeouts.splice(0);
+ 
+    //Clears and deletes from currentIntervals all currently-running intervals so that they don't execute anymore.
+    for (let i = 0; i < currentIntervals.length; i++) {
+        clearInterval(currentIntervals[i]);
+    };
+ 
+    currentIntervals.splice(0);
 };
 
 //Blockie Functions 
@@ -1914,16 +1926,16 @@ function drawMovingVerticalLasers() {
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Top warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.y + 16, 0);
+                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)), currentInstance.y + 16);
                 context.lineTo(currentInstance.x + currentInstance.width * Math.max(Math.sign(currentInstance.speed), 0), currentInstance.y + 24);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.y + 32, 0);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)), currentInstance.y + 32);
                 context.fill();
 
                 //Bottom warning triangle.
                 context.beginPath();
-                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.height - 16, 0);
+                context.moveTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)), currentInstance.height - 16);
                 context.lineTo(currentInstance.x + currentInstance.width * Math.max(Math.sign(currentInstance.speed), 0), currentInstance.height - 24);
-                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed))), currentInstance.height - 32, 0);
+                context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)), currentInstance.height - 32);
                 context.fill();
             } else if (currentInstance.state == "firing") {
                 context.fillStyle = "#FF51EF";
@@ -2469,33 +2481,24 @@ function gameLoop() {
                 let instanceIndex = movingPassivePoints.indexOf(collidingPoint);
                 movingPassivePoints.splice(instanceIndex, 1);
             } else if (collidingInstances[i].constructor.name === "ActivePoint" || collidingInstances[i].constructor.name === "MovingActivePoint") {
+                //Causes all async await functions to stop progressing once they reach another cancelAwaitChain breakpoint.
+                cancelAwaitChain = true;
+                
                 //Adds points to the current level's total.
                 currentLevelPoints++;
 
-                //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
-                for (let i = 0; i < currentTimeouts.length; i++) {
-                    clearTimeout(currentTimeouts[i]);
-                };
+                stopCurrentTimingEvents();
 
-                currentTimeouts.splice(0);
-
-                //Stops all currently-running timeouts so that they stop hurting performance and don't execute after resetting.
-                for (let i = 0; i < currentIntervals.length; i++) {
-                    clearInterval(currentIntervals[i]);
-                };
-
-                currentIntervals.splice(0);
-
-                resetBlockieState();
-
-                cancelAwaitChain = true;
-
+                //Resolves all instances (except for Blockie), which continues the level async/await function.
                 updateAllInstances();
                 for (let i = 0; i < allInstances.length; i++) {
                     resolveInstances(allInstances[i]);
                 };
 
-                //Allows for Blockie to touch activePoints if they are underneath collisions, since he won't die.
+                resetBlockieState();
+
+                //Allows for Blockie to touch activePoints if they are underneath collisions, since the loop stops checking for other
+                //collisions once Blockie has touched an active point.
                 break;
             } else {
                 stopLevel("died");

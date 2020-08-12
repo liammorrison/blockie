@@ -650,7 +650,7 @@ async function stopLevel(reason) {
     currentLevelPoints = 0;
 
     //Resets all keys to avoid having button presses activate after the level has stopped.
-    keysDown.splice(0, keysDown.length);
+    keysDown.splice(0);
 
     //Switches how the game resets based on how it triggered.
     if (reason === "died") {
@@ -1054,8 +1054,8 @@ function initializeDash() {
     //This is used in drawing the remaining seconds meter to show the player how much more recovery time that they need to wait.
     blockie.remainingDashSeconds = allowDashAgainSeconds;
     let remainingDashSecondsInterval = setInterval(() => {
-        blockie.remainingDashSeconds -= 0.004;
-    }, 1);
+        blockie.remainingDashSeconds -= 0.07;
+    }, 70);
     addCurrentInterval(remainingDashSecondsInterval);
 
     let resetAllowDashAgain = setTimeout(() => {
@@ -1234,8 +1234,8 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
         //This is used in drawing the remaining seconds meter to show the player how much longer the point will exist.
         instance.remainingFiringSeconds = firingSeconds;
         let remainingFiringSecondsInterval = setInterval(() => {
-            instance.remainingFiringSeconds -= 0.004;
-        }, 1);
+            instance.remainingFiringSeconds -= 0.15;
+        }, 150);
         addCurrentInterval(remainingFiringSecondsInterval);
 
         instance.timeout = setTimeout(() => {
@@ -1277,8 +1277,8 @@ async function fireMovingPassivePoint(x, y, xSpeed, ySpeed, waitingSeconds, firi
         //This is used in drawing the remaining seconds meter to show the player how much longer the point will exist.
         instance.remainingFiringSeconds = firingSeconds;
         let remainingFiringSecondsInterval = setInterval(() => {
-            instance.remainingFiringSeconds -= 0.004;
-        }, 1);
+            instance.remainingFiringSeconds -= 0.15;
+        }, 150);
         addCurrentInterval(remainingFiringSecondsInterval);
 
         instance.timeout = setTimeout(() => {
@@ -1772,7 +1772,7 @@ function animateBlockie() {
     //Draws the remaining seconds meter for when Blockie can dash again.
     if (!allowDashAgain && gameState === "playing") {
         context.fillStyle = "#378CFF";
-        context.fillRect(blockie.x, blockie.y - 8, blockie.width * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
+        context.fillRect(blockie.x + 4, blockie.y - 8, 24 * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
     };
 
     //Draws Blockie himself.

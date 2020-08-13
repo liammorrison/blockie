@@ -61,7 +61,7 @@ let keysHeld = [];
 
 //tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed (and that actually do something
 //in the game).
-let tapKeys = [16, 32, 37, 38, 39, 40, 80];
+let tapKeys = [16, 32, 37, 38, 39, 40, 79, 80];
 
 let waitingTimeouts = [];
 let passivePoints = [];
@@ -422,7 +422,6 @@ async function levelOne() {
         cancelAwaitChain = false;
  
         endLevel();
-
     } catch (error) {};
 };
 
@@ -724,10 +723,12 @@ async function endLevel() {
         window.requestAnimationFrame(animateFinishedLevelHat);
     });
 
-    currentLevelPoints = 0;
-
     //Shows a unique message for each level (except the final level) after completing it and then transitions into the level menu.
     await displayMessage(levelMessages[currentLevelNum - 1], "enterLevelMenu");
+
+    //currentLevelPoints is set to 0 because it is only a temporary holder of points for each run on a level. earnedPoints[] stores
+    //the currentLevelPoints permanently if it is a high score.
+    currentLevelPoints = 0;
 };
 
 function callLevel(levelNum) {
@@ -965,18 +966,26 @@ async function displayMessage(message, endAction) {
 
 //Level-Handling Helper Functions
 
-//Resolves all promises and removes all instances from their object arrays.
-function resolveInstances(objectArray) {
-    //The for loop's length is determined before it starts to avoid missing the first element.
-    let initialArrayLength = objectArray.length;
+//Resolves all instances' promises and timeouts and splices them from their instance array.
+function resolveAllInstances() {
+    //Updates the allInstances array to contain all different instance arrays.
+    updateAllInstances();
 
-    for (let i = initialArrayLength - 1; i >= 0; i--) {
-        //Rejects the instances' Promises and timeouts and destroys the instances.
-        let instance = objectArray[i];
-        instance.externalResolve();
-        clearTimeout(instance.timeout);
-        objectArray.splice(i, 1);
+    //Sorts through each instance array in allInstances. 
+    for (let i = 0; i < allInstances.length; i++) {
+        //The for loop's length is determined before it starts to avoid missing the first element.
+        let initialArrayLength = allInstances[i].length;
+        let instanceArray = allInstances[i];
+
+        //Resolves each instance's Promises and timeouts and removes the instance from their instance array.
+        for (let j = initialArrayLength - 1; j >= 0; j--) {
+            let instance = instanceArray[j];
+            instance.externalResolve();
+            clearTimeout(instance.timeout);
+            instanceArray.splice(j, 1);
+        };
     };
+
 };
 
 //Rejects all promises and removes all instances from their object arrays.
@@ -2489,11 +2498,7 @@ function gameLoop() {
 
                 stopCurrentTimingEvents();
 
-                //Resolves all instances (except for Blockie), which continues the level async/await function.
-                updateAllInstances();
-                for (let i = 0; i < allInstances.length; i++) {
-                    resolveInstances(allInstances[i]);
-                };
+                resolveAllInstances();
 
                 resetBlockieState();
 

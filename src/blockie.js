@@ -64,6 +64,7 @@ let keysHeld = [];
 let tapKeys = [16, 32, 37, 38, 39, 40, 79, 80];
 
 let waitingTimeouts = [];
+let endScreenTimeouts = [];
 let passivePoints = [];
 let movingPassivePoints = [];
 let activePoints = [];
@@ -81,8 +82,9 @@ let allInstances = [];
 let allInteractiveInstances = [];
 let allCollisionInstances = [];
 
-let currentTimeouts = [];
-let currentIntervals = [];
+//These hold all of the timing events that are not linked to specific instances so that they can be cleared and set manually.
+let uniqueTimeouts = [];
+let uniqueIntervals = [];
 
 let collidingInstances = [];
 
@@ -146,6 +148,16 @@ class Player {
 class WaitingTimeout {
     constructor() {
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
+        this.externalReject;
+        this.timeout;
+    };
+};
+
+class EndScreenTimeout {
+    constructor() {
+        //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     };
@@ -251,6 +263,7 @@ class MovingHorizontalLaser {
         this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     };
@@ -269,6 +282,7 @@ class MovingVerticalLaser {
         this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     };
@@ -286,6 +300,7 @@ class Bomb {
         this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     };
@@ -305,6 +320,7 @@ class MovingBomb {
         this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     };
@@ -322,6 +338,7 @@ class Wall {
         this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     }
@@ -341,6 +358,7 @@ class MovingWall {
         this.visible = true;
 
         //Allows for each instance to be "destroyed" from an outside source (through level resets, Blockie interaction, etc.).
+        this.externalResolve;
         this.externalReject;
         this.timeout;
     }
@@ -385,43 +403,25 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
  
-        cancelAwaitChain = false;
+        moveBlockie(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
  
         await Promise.all([
             createWall(0, 0, wholeScreen, threeEigths),
             createWall(0, fiveEigths, wholeScreen, threeEigths),
-            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
-            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
+            fireMovingActivePoint(thirteenSixteenths - 8, oneHalf - 8, 3, 0, 0),
+            fireMovingWall(wholeScreen, 0, wholeScreen, wholeScreen, -3, 0, 0.7, 2.5),
+
+            setEndScreenTimeout(4)
         ]);
  
         cancelAwaitChain = false;
- 
+
         await Promise.all([
-            createWall(0, 0, wholeScreen, threeEigths),
-            createWall(0, fiveEigths, oneEigth, threeEigths),
-            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
-            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
-            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
-            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
- 
-            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
+            createWall(0, 0, oneFourth, oneFourth),
         ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, threeEigths, threeEigths),
-            createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, wholeScreen),
-            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
-            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        endLevel();
+
     } catch (error) {};
 };
 
@@ -619,7 +619,18 @@ async function levelEnd() {
     try {
 
     } catch (error) {};
-}
+};
+
+//Ends the current screen (which is a sub-section of a level which is found within a Promise.all([]);) and continues to the next
+//part of the async/await level function.
+function endScreen() {
+    //Causes all async await functions to stop progressing once they reach another cancelAwaitChain breakpoint.
+    cancelAwaitChain = true;
+
+    resolveAllInstances();
+    stopUniqueTimingEvents();
+    resetBlockieState();
+};
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
@@ -634,13 +645,8 @@ function initializeLevel(blockieX, blockieY) {
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
 async function stopLevel(reason) {
-    stopCurrentTimingEvents();
-
-    //Rejects all instances (except for Blockie), which causes all instance and level async/await functions to stop.
-    updateAllInstances();
-    for (let i = 0; i < allInstances.length; i++) {
-        rejectInstances(allInstances[i]);
-    };
+    rejectAllInstances();
+    stopUniqueTimingEvents();
 
     //Stops the countdown timer for levels 4 + 8 + 12.
     destroyCountdownTimer();
@@ -985,7 +991,27 @@ function resolveAllInstances() {
             instanceArray.splice(j, 1);
         };
     };
+};
 
+//Rejects all instances' promises and timeouts and splices them from their instance array.
+function rejectAllInstances() {
+    //Updates the allInstances array to contain all different instance arrays.
+    updateAllInstances();
+
+    //Sorts through each instance array in allInstances. 
+    for (let i = 0; i < allInstances.length; i++) {
+        //The for loop's length is determined before it starts to avoid missing the first element.
+        let initialArrayLength = allInstances[i].length;
+        let instanceArray = allInstances[i];
+
+        //Rejects each instance's Promises and timeouts and removes the instance from their instance array.
+        for (let j = initialArrayLength - 1; j >= 0; j--) {
+            let instance = instanceArray[j];
+            instance.externalReject();
+            clearTimeout(instance.timeout);
+            instanceArray.splice(j, 1);
+        };
+    };
 };
 
 //Rejects all promises and removes all instances from their object arrays.
@@ -1004,44 +1030,44 @@ function rejectInstances(objectArray) {
 
 //Timing Functions
 
-//Adds a currently-running timeout to an array so that it can be easily deactivated when the game restarts.
-function addCurrentTimeout(timeout) {
-    currentTimeouts.push(timeout);
+//Adds a "unique" timeout to an array so that it can be easily deactivated (when the game stops).
+function addUniqueTimeout(timeout) {
+    uniqueTimeouts.push(timeout);
 };
 
-//Removes a timeout from the array of currently-running timeouts.
-function removeCurrentTimeout(timeout) {
-    let currentTimeoutIndex = currentTimeouts.indexOf(timeout);
-    currentTimeouts.splice(currentTimeoutIndex, 1);
+//Removes a timeout from the array of "unique" timeouts.
+function removeUniqueTimeout(timeout) {
+    let uniqueTimeoutIndex = uniqueTimeouts.indexOf(timeout);
+    uniqueTimeouts.splice(uniqueTimeoutIndex, 1);
 };
 
-//Adds a currently-running interval to an array so that it can be easily deactivated when the game restarts.
-function addCurrentInterval(interval) {
-    currentIntervals.push(interval);
+//Adds a "unique" interval to an array so that it can be easily deactivated (when the game stops).
+function addUniqueInterval(interval) {
+    uniqueIntervals.push(interval);
 };
 
-//Removes a interval from the array of currently-running intervals and clears it.
-function removeCurrentInterval(interval) {
+//Removes a interval from the array of "unique" intervals and clears it.
+function removeUniqueInterval(interval) {
     clearInterval(interval);
-    let currentIntervalIndex = currentIntervals.indexOf(interval);
-    currentIntervals.splice(currentIntervalIndex, 1);
+    let uniqueIntervalIndex = uniqueIntervals.indexOf(interval);
+    uniqueIntervals.splice(uniqueIntervalIndex, 1);
 };
 
 //Clears and destroys all current timing events.
-function stopCurrentTimingEvents() {
-    //Clears and deletes from currentIntervals all currently-running timeouts so that they don't execute.
-    for (let i = 0; i < currentTimeouts.length; i++) {
-        clearTimeout(currentTimeouts[i]);
+function stopUniqueTimingEvents() {
+    //Clears and deletes from uniqueIntervals all "unique" timeouts so that they don't execute.
+    for (let i = 0; i < uniqueTimeouts.length; i++) {
+        clearTimeout(uniqueTimeouts[i]);
     };
  
-    currentTimeouts.splice(0);
+    uniqueTimeouts.splice(0);
  
-    //Clears and deletes from currentIntervals all currently-running intervals so that they don't execute anymore.
-    for (let i = 0; i < currentIntervals.length; i++) {
-        clearInterval(currentIntervals[i]);
+    //Clears and deletes from uniqueIntervals all "unique" intervals so that they don't execute anymore.
+    for (let i = 0; i < uniqueIntervals.length; i++) {
+        clearInterval(uniqueIntervals[i]);
     };
  
-    currentIntervals.splice(0);
+    uniqueIntervals.splice(0);
 };
 
 //Blockie Functions 
@@ -1055,9 +1081,9 @@ function initializeDash() {
     let endDashRecovery = setTimeout(() => {
         recoveringFromDash = false;
         blockie.state = "playing";
-        removeCurrentTimeout(endDashRecovery);
+        removeUniqueTimeout(endDashRecovery);
     }, dashRecoverySeconds * 1000);
-    addCurrentTimeout(endDashRecovery);
+    addUniqueTimeout(endDashRecovery);
 
     //Sets an interval to the length of the dash recovery which counts down the semi-accurate remaining length of the timeout.
     //This is used in drawing the remaining seconds meter to show the player how much more recovery time that they need to wait.
@@ -1065,14 +1091,14 @@ function initializeDash() {
     let remainingDashSecondsInterval = setInterval(() => {
         blockie.remainingDashSeconds -= 0.07;
     }, 70);
-    addCurrentInterval(remainingDashSecondsInterval);
+    addUniqueInterval(remainingDashSecondsInterval);
 
     let resetAllowDashAgain = setTimeout(() => {
         allowDashAgain = true;
-        removeCurrentInterval(remainingDashSecondsInterval);
-        removeCurrentTimeout(resetAllowDashAgain);
+        removeUniqueInterval(remainingDashSecondsInterval);
+        removeUniqueTimeout(resetAllowDashAgain);
     }, allowDashAgainSeconds * 1000);
-    addCurrentTimeout(resetAllowDashAgain);
+    addUniqueTimeout(resetAllowDashAgain);
 };
 
 //Allows for dashing again.
@@ -1130,7 +1156,7 @@ function moveBlockieAwayFromMovingWalls() {
 
 //Creates a WaitingTimeout instance, and awaits for its resolution to then create the root collision instance. This is meant to allow
 //for instances to spawn at different times concurrently (using Promise.all) or spawn a bit after another's destruction.
-function setWaitingTimeout(waitingSeconds) {
+async function setWaitingTimeout(waitingSeconds) {
     //Creates an instance and sets all of its initial properties.
     let instance = new WaitingTimeout();
     waitingTimeouts.push(instance);
@@ -1215,6 +1241,24 @@ async function setWarningTimeouts(instanceAffecting) {
     });
 };
 
+//Creates a endScreenTimeout instance, and awaits for its resolution to then end the current screen and continue the level async/await
+//function.
+async function setEndScreenTimeout(seconds) {
+    //Creates an instance and sets all of its initial properties.
+    let instance = new EndScreenTimeout();
+    endScreenTimeouts.push(instance);
+
+    return new Promise((resolve, reject) => {
+        //Links the instance's deactivation functions to itself to allow outside callings.
+        instance.externalResolve = resolve;
+        instance.externalReject = reject;
+
+        instance.timeout = setTimeout(() => {
+            endScreen();
+        }, seconds * 1000);
+    });
+};
+
 //Creates an instance, adds it to an array for drawing and collisions, and controls all timing and variables.
 async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
     //Waits to create the instance to allow for pauses and staggered collision instances.
@@ -1245,10 +1289,10 @@ async function createPassivePoint(x, y, waitingSeconds, firingSeconds) {
         let remainingFiringSecondsInterval = setInterval(() => {
             instance.remainingFiringSeconds -= 0.15;
         }, 150);
-        addCurrentInterval(remainingFiringSecondsInterval);
+        addUniqueInterval(remainingFiringSecondsInterval);
 
         instance.timeout = setTimeout(() => {
-            removeCurrentInterval(remainingFiringSecondsInterval);
+            removeUniqueInterval(remainingFiringSecondsInterval);
 
             //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = passivePoints.indexOf(instance);
@@ -1288,10 +1332,10 @@ async function fireMovingPassivePoint(x, y, xSpeed, ySpeed, waitingSeconds, firi
         let remainingFiringSecondsInterval = setInterval(() => {
             instance.remainingFiringSeconds -= 0.15;
         }, 150);
-        addCurrentInterval(remainingFiringSecondsInterval);
+        addUniqueInterval(remainingFiringSecondsInterval);
 
         instance.timeout = setTimeout(() => {
-            removeCurrentInterval(remainingFiringSecondsInterval);
+            removeUniqueInterval(remainingFiringSecondsInterval);
 
             //Removes the instance from its object array (so it isn't drawn or colliding) and resolves it once it is "destroyed".
             let instanceIndex = movingPassivePoints.indexOf(instance);
@@ -1355,6 +1399,7 @@ async function fireMovingActivePoint(x, y, xSpeed, ySpeed, waitingSeconds) {
 
 //Continuously recreates the same instance until the activePoint is touched.
 async function loopFireMovingHorizontalLasers(y, height, speed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(initialWaitingSeconds);
 
     //Fires the first instance with 0 waiting seconds because the initialWaitingSeconds has already been waited for.
@@ -1404,6 +1449,7 @@ async function fireMovingHorizontalLaser(y, height, speed, waitingSeconds, firin
 
 //Continuously recreates the same instance until the activePoint is touched.
 async function loopFireMovingVerticalLasers(x, width, speed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(initialWaitingSeconds);
 
     //Fires the first instance with 0 waiting seconds because the initialWaitingSeconds has already been waited for.
@@ -1453,6 +1499,7 @@ async function fireMovingVerticalLaser(x, width, speed, waitingSeconds, firingSe
 
 //Continuously recreates the same instance until the activePoint is touched.
 async function loopFireBombs(x, y, width, height, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(initialWaitingSeconds);
 
     //Fires the first instance with 0 waiting seconds because the initialWaitingSeconds has already been waited for.
@@ -1502,6 +1549,7 @@ async function fireBomb(x, y, width, height, waitingSeconds, firingSeconds) {
 
 //Continuously recreates the same instance until the activePoint is touched.
 async function loopFireMovingBombs(x, y, width, height, xSpeed, ySpeed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(initialWaitingSeconds);
 
     //Fires the first instance with 0 waiting seconds because the initialWaitingSeconds has already been waited for.
@@ -1604,6 +1652,7 @@ async function createWall(x, y, width, height) {
 
 //Continuously recreates the same instance until the activePoint is touched.
 async function loopFireMovingWalls(x, y, width, height, xSpeed, ySpeed, initialWaitingSeconds, waitingSeconds, firingSeconds) {
+    //Waits to create the instance to allow for pauses and staggered collision instances.
     await setWaitingTimeout(initialWaitingSeconds);
 
     //Fires the first instance with 0 waiting seconds because the initialWaitingSeconds has already been waited for.
@@ -1683,6 +1732,7 @@ async function fireContinuallyMovingWall(x, y, width, height, xSpeed, ySpeed, in
 function updateAllInstances() {
     allInstances = [
         waitingTimeouts,
+        endScreenTimeouts,
         passivePoints,
         movingPassivePoints,
         activePoints,
@@ -1698,7 +1748,6 @@ function updateAllInstances() {
 
 function updateAllInteractiveInstances() {
     allInteractiveInstances = [
-        waitingTimeouts,
         passivePoints,
         movingPassivePoints,
         activePoints,
@@ -1798,15 +1847,15 @@ function animateBlockie() {
 
         let endAnimateBlockieDestructing = setTimeout(() => {
             clearInterval(animateBlockieDestructing);
-            removeCurrentTimeout(animateBlockieDestructing);
-            removeCurrentTimeout(endAnimateBlockieDestructing);
+            removeUniqueTimeout(animateBlockieDestructing);
+            removeUniqueTimeout(endAnimateBlockieDestructing);
         }, 1.5 * 1000);
-        addCurrentTimeout(endAnimateBlockieDestructing);
+        addUniqueTimeout(endAnimateBlockieDestructing);
 
         let animateBlockieDestructing = setInterval(() => {
             blockie.sx += blockie.width;
         }, 0.5 * 1000);
-        addCurrentTimeout(animateBlockieDestructing);
+        addUniqueTimeout(animateBlockieDestructing);
     };
 };
 
@@ -2490,17 +2539,10 @@ function gameLoop() {
                 let instanceIndex = movingPassivePoints.indexOf(collidingPoint);
                 movingPassivePoints.splice(instanceIndex, 1);
             } else if (collidingInstances[i].constructor.name === "ActivePoint" || collidingInstances[i].constructor.name === "MovingActivePoint") {
-                //Causes all async await functions to stop progressing once they reach another cancelAwaitChain breakpoint.
-                cancelAwaitChain = true;
-                
                 //Adds points to the current level's total.
                 currentLevelPoints++;
 
-                stopCurrentTimingEvents();
-
-                resolveAllInstances();
-
-                resetBlockieState();
+                endScreen();
 
                 //Allows for Blockie to touch activePoints if they are underneath collisions, since the loop stops checking for other
                 //collisions once Blockie has touched an active point.

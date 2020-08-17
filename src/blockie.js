@@ -404,24 +404,69 @@ let blockieAdjustment = -blockie.width / 2
 async function levelOne() {
     try {
         initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
- 
-        moveBlockie(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
- 
-        await Promise.all([
-            createWall(0, 0, wholeScreen, threeEigths),
-            createWall(0, fiveEigths, wholeScreen, threeEigths),
-            fireMovingActivePoint(thirteenSixteenths - 8, oneHalf - 8, 3, 0, 0),
-            fireMovingWall(wholeScreen, 0, wholeScreen, wholeScreen, -3, 0, 0.7, 2.5),
 
-            setEndScreenTimeout(4)
-        ]);
- 
         cancelAwaitChain = false;
 
+        moveBlockie(elevenSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+
         await Promise.all([
-            createWall(0, 0, oneFourth, oneFourth),
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(threeFourths, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(oneFourth, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(nineSixteenths, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(oneFourth, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(nineSixteenths, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0.4, 1.3),
+            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0.4, 1.3),
+            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 0.4, 1.3),
+            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0.4, 1.3),
+
+            fireBomb(sevenSixteenths, threeEigths, oneEigth, oneSixteenth, 3, 1.3),
+            fireBomb(sevenSixteenths, sevenSixteenths, threeSixteenths, oneEigth, 3, 1.3),
+            fireBomb(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth, 3, 1.3),
+            fireBomb(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 3, 1.3),
+
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, elevenSixteenths, 5.6, 1.3),
+            fireBomb(nineSixteenths, sevenSixteenths, threeSixteenths, oneEigth, 5.6, 1.3),
+
+            setEndScreenTimeout(7.9)
         ]);
 
+        cancelAwaitChain = false;
+
+        moveBlockie(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, oneHalf),
+            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
+            createWall(0, threeFourths, sevenSixteenths, oneEigth),
+            createWall(nineSixteenths, threeFourths, sevenSixteenths, oneEigth),
+
+            fireMovingWall(sevenSixteenths, threeFourths, oneEigth, oneEigth, 0, 0, 0, 7.75),
+            fireMovingWall(0, sevenEigths, wholeScreen, oneEigth, 0, 0, 0, 7.75),
+
+            fireMovingHorizontalLaser(sevenEigths, oneEigth, -1.4, 0, 3.35),
+            fireMovingVerticalLaser(0, oneEigth, 1.4, 0, 3.35),
+
+            fireMovingWall(0, -sevenEigths, wholeScreen, wholeScreen, 0, 1.4, 4.4, 3.35),
+            fireMovingWall(sevenEigths, 0, wholeScreen, wholeScreen, -1.4, 0, 4.4, 3.35),
+
+            fireMovingWall(0, -wholeScreen, wholeScreen, wholeScreen, 0, 1.5, 7.8, 4.98),
+            fireMovingWall(oneFourth, oneFourth, oneHalf, oneHalf, 0, 0, 12.78, 100),
+            fireMovingWall(sevenSixteenths, threeFourths, oneEigth, oneEigth, 0, 0, 12.78, 100),
+
+            fireMovingVerticalLaser(-16, 16, 2, 13, 10),
+            fireMovingVerticalLaser(-16, 16, 2, 14.5, 10),
+            fireMovingVerticalLaser(-16, 16, 2, 16, 10),
+
+            fireMovingWall(wholeScreen, sevenEigths, wholeScreen, oneEigth, -2, 0, 20.5, 3.9),
+
+            setEndScreenTimeout(24.4)
+        ]);
     } catch (error) {};
 };
 
@@ -2591,11 +2636,11 @@ function drawingLoop() {
         drawPassivePoints();
         drawMovingPassivePoints();
         drawActivePoints();
+        drawMovingHorizontalLasers();
+        drawMovingVerticalLasers();
         drawMovingActivePoints();
         drawWalls();
         drawMovingWalls();
-        drawMovingHorizontalLasers();
-        drawMovingVerticalLasers();
         drawBombs();
         drawMovingBombs();
     } else if (gameState === "finishingLevel") {

@@ -6,12 +6,13 @@ context.lineWidth = 4;
 
 //Variables
 
-let gameState = "playing";
-let currentLevelNum = 1;
+let currentLevelNum = parseInt(localStorage.getItem("currentLevelNum")) || 1;
 
 //Stores the number of levels that are unlocked (since the game is linear, each newly unlocked level is assumed to be 1 higher than 
 //the previous one).
-let numUnlockedLevels = 1;
+let numUnlockedLevels = parseInt(localStorage.getItem("numUnlockedLevels")) || 1;
+
+let gameState = "playing";
 
 let currentLevelPoints = 0;
 
@@ -88,8 +89,10 @@ let uniqueIntervals = [];
 
 let collidingInstances = [];
 
+console.log(localStorage.getItem("earnedPoints"));
+
 //Holds the highest number of points that were touched in a full run of each level.
-let earnedPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+let earnedPoints = localStorage.getItem("earnedPoints").split(",") || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 //Holds the total number of points that spawn in each level.
 let possiblePoints = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 1];
@@ -403,70 +406,43 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
-
+        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
         cancelAwaitChain = false;
-
-        moveBlockie(elevenSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
-
+ 
         await Promise.all([
-            createWall(0, 0, wholeScreen, oneFourth),
-            createWall(0, oneFourth, oneFourth, thirteenSixteenths),
-            createWall(threeFourths, oneFourth, oneFourth, thirteenSixteenths),
-            createWall(oneFourth, oneFourth, threeSixteenths, threeSixteenths),
-            createWall(nineSixteenths, oneFourth, threeSixteenths, threeSixteenths),
-            createWall(oneFourth, nineSixteenths, threeSixteenths, sevenSixteenths),
-            createWall(nineSixteenths, nineSixteenths, threeSixteenths, sevenSixteenths),
-            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
-
-            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0.4, 1.3),
-            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0.4, 1.3),
-            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 0.4, 1.3),
-            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0.4, 1.3),
-
-            fireBomb(sevenSixteenths, threeEigths, oneEigth, oneSixteenth, 3, 1.3),
-            fireBomb(sevenSixteenths, sevenSixteenths, threeSixteenths, oneEigth, 3, 1.3),
-            fireBomb(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth, 3, 1.3),
-            fireBomb(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 3, 1.3),
-
-            fireBomb(sevenSixteenths, oneFourth, oneEigth, elevenSixteenths, 5.6, 1.3),
-            fireBomb(nineSixteenths, sevenSixteenths, threeSixteenths, oneEigth, 5.6, 1.3),
-
-            setEndScreenTimeout(7.9)
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, wholeScreen, threeEigths),
+            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
         ]);
-
+ 
         cancelAwaitChain = false;
-
-        moveBlockie(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
-
+ 
         await Promise.all([
-            createWall(0, 0, wholeScreen, oneFourth),
-            createWall(0, oneFourth, oneFourth, oneHalf),
-            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
-            createWall(0, threeFourths, sevenSixteenths, oneEigth),
-            createWall(nineSixteenths, threeFourths, sevenSixteenths, oneEigth),
-
-            fireMovingWall(sevenSixteenths, threeFourths, oneEigth, oneEigth, 0, 0, 0, 7.75),
-            fireMovingWall(0, sevenEigths, wholeScreen, oneEigth, 0, 0, 0, 7.75),
-
-            fireMovingHorizontalLaser(sevenEigths, oneEigth, -1.4, 0, 3.35),
-            fireMovingVerticalLaser(0, oneEigth, 1.4, 0, 3.35),
-
-            fireMovingWall(0, -sevenEigths, wholeScreen, wholeScreen, 0, 1.4, 4.4, 3.35),
-            fireMovingWall(sevenEigths, 0, wholeScreen, wholeScreen, -1.4, 0, 4.4, 3.35),
-
-            fireMovingWall(0, -wholeScreen, wholeScreen, wholeScreen, 0, 1.5, 7.8, 4.98),
-            fireMovingWall(oneFourth, oneFourth, oneHalf, oneHalf, 0, 0, 12.78, 100),
-            fireMovingWall(sevenSixteenths, threeFourths, oneEigth, oneEigth, 0, 0, 12.78, 100),
-
-            fireMovingVerticalLaser(-16, 16, 2, 13, 10),
-            fireMovingVerticalLaser(-16, 16, 2, 14.5, 10),
-            fireMovingVerticalLaser(-16, 16, 2, 16, 10),
-
-            fireMovingWall(wholeScreen, sevenEigths, wholeScreen, oneEigth, -2, 0, 20.5, 3.9),
-
-            setEndScreenTimeout(24.4)
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+ 
+            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
         ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, wholeScreen),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
@@ -719,8 +695,7 @@ async function stopLevel(reason) {
 
         displayMessage("This was only a setback. <br>Progress, Blockie!", "restartLevel");
     } else if (reason === "restartLevelPressed") {
-        
-        callLevel(currentLevelNum);
+        callCurrentLevel();
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
     } else if (reason === "lostFocus") {
@@ -782,8 +757,8 @@ async function endLevel() {
     currentLevelPoints = 0;
 };
 
-function callLevel(levelNum) {
-    switch (levelNum) {
+function callCurrentLevel() {
+    switch (currentLevelNum) {
         case 1:
             levelOne();
             break;
@@ -876,7 +851,7 @@ function initializeLevelMenu() {
         clearInterval(checkFollowKeys);
 
         //Begins the level that the player clicked the corresponding icon for.
-        callLevel(currentLevelNum);
+        callCurrentLevel();
     };
 
     //Begins the level that is clicked on (even if followMouse is false).
@@ -994,7 +969,7 @@ async function displayMessage(message, endAction) {
                     case "restartLevel":
                         gameState = "playing";
                         resetBlockieState();
-                        callLevel(currentLevelNum);
+                        callCurrentLevel();
                         break;
                     case "enterLevelMenu":
                         initializeLevelMenu();
@@ -2661,9 +2636,17 @@ function checkPageFocus() {
     };
 };
 
+//Refresh Handling
+
+window.addEventListener("beforeunload", () => {
+    localStorage.setItem("currentLevelNum", currentLevelNum);
+    localStorage.setItem("numUnlockedLevels", numUnlockedLevels);
+    localStorage.setItem("earnedPoints", earnedPoints);
+});
+
 //Game Start
 
-levelOne();
+callCurrentLevel();
 
 initializeKeyInputs();
 window.requestAnimationFrame(gameLoop);

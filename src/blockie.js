@@ -1,34 +1,11 @@
 //Game Setup
 
+//Allows the canvas to be drawn on and interacted with.
 const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
+
+//Sets the line width for all internal drawing (like the warning flashes for bombs).
 context.lineWidth = 4;
-
-//Variables
-
-let currentLevelNum = parseInt(localStorage.getItem("currentLevelNum")) || 1;
-
-//Stores the number of levels that are unlocked (since the game is linear, each newly unlocked level is assumed to be 1 higher than 
-//the previous one).
-let numUnlockedLevels = parseInt(localStorage.getItem("numUnlockedLevels")) || 1;
-
-let gameState = "playing";
-
-let currentLevelPoints = 0;
-
-//Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
-//instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
-let cancelAwaitChain = false;
-
-let xInput = 0;
-let yInput = 0;
-let preventingMovement = false;
-let recoveringFromDash = false;
-let allowDashAgain = true;
-let dashDistance = 96;
-let dashRecoverySeconds = 0.3;
-let allowDashAgainSeconds = 0.9;
-let hoveringIconArrayNum = 0;
 
 //Sprite maps. 
 
@@ -47,22 +24,69 @@ spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
 let spCountdownDestructionScene = document.createElement("img");
 spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
 
-let gameScale = 1;
-
-let countdown = 0;
-
 //Sound Loading
 
-let stockSong = new Audio("../sounds/stock_song.mp3")
+let stockSong = new Audio("../sounds/stock_song.mp3");
+
+//Variables
+
+//Holds the level that Blockie is currently playing. Saved in localStorage.
+let currentLevelNum;
+
+//Stores the number of levels that are unlocked (since the game is linear, each newly unlocked level is 1 higher than the previous 
+//one). Saved in localStorage.
+let numUnlockedLevels;
+
+//gameState determines which parts of the game and drawing loops run.
+let gameState = "playing";
+
+//Used to stop async/await functions by preventing another await to run. Used when Blockie touches activePoints and the current
+//instances needs to stop running, yet everything cannot be rejected (because that would stop the level too).
+let cancelAwaitChain = false;
+
+//gameScale changes to fit the gameContainer along the most constrained axis.
+let gameScale = 1;
+
+//Globally declares the countdown used in createCountdownTimer() to allow it to always be reset when the level ends or completes.
+let countdown = 0;
+
+//Temporarily holds the points gathered during the currentLevel. They are transferred to earnedPoints to be made permanent once the
+//level is completed.
+let currentLevelPoints = 0;
+
+let xInput = 0;
+let yInput = 0;
+
+//Determines if Blockie can move based on collisions.
+let preventingMovement = false;
+
+let dashDistance = 96;
+let recoveringFromDash = false;
+let allowDashAgain = true;
+let dashRecoverySeconds = 0.3;
+let allowDashAgainSeconds = 0.9;
+
+//Holds the index of the levelMenuIcon that is currently being hovered over.
+let hoveringIconArrayNum = 0;
 
 //Arrays
 
-let keysDown = [];
-let keysHeld = [];
+//Holds the highest number of points that were touched in a full run of each level. Saved in localStorage.
+let earnedPoints;
 
 //tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed (and that actually do something
 //in the game).
 let tapKeys = [16, 32, 37, 38, 39, 40, 79, 80];
+
+//Holds all keys that are pressed. If the key is a tapKey, then it will only be in the keysDown array for one frame after being 
+//pressed.
+let keysDown = [];
+
+//Used to determine whether a tapKey was already pressed and prevents it from being placed inside the keysDown array again until that
+//key is released and pressed again.
+let keysHeld = [];
+
+//These arrays hold all instances of their class, so that it is easier to draw, activate, and deactivate each obstacle type.
 
 let waitingTimeouts = [];
 let endScreenTimeouts = [];
@@ -78,21 +102,18 @@ let walls = [];
 let movingWalls = [];
 let partyHats = [];
 
-//Used in for loops to apply a function to many objects.
+//Used in for loops to apply a function to many object types.
 let allInstances = [];
 let allInteractiveInstances = [];
 let allCollisionInstances = [];
 
-//These hold all of the timing events that are not linked to specific instances so that they can be cleared and set manually.
+//These hold all of the timing events that are not linked to specific instances so that they can be set and cleared manually.
 let uniqueTimeouts = [];
 let uniqueIntervals = [];
 
+//Holds all instances that Blockie is currently touching and moves him away from walls, then it collects points, and then it killls
+//Blockie if he's touching a harmful obstacle.
 let collidingInstances = [];
-
-console.log(localStorage.getItem("earnedPoints"));
-
-//Holds the highest number of points that were touched in a full run of each level.
-let earnedPoints = localStorage.getItem("earnedPoints").split(",") || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 //Holds the total number of points that spawn in each level.
 let possiblePoints = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6, 1];
@@ -801,8 +822,62 @@ function callCurrentLevel() {
     };
 };
 
+//Initializes all of the variables to either their saved values, which are stored in local storage, or their default values.
+function loadSavedData() {
+    currentLevelNum = parseInt(localStorage.getItem("currentLevelNum")) || 1;
+    numUnlockedLevels = parseInt(localStorage.getItem("numUnlockedLevels")) || 1;
+
+    //This array cannot be short-circuit evaluated becuse .split() doesn't work on null values.
+    if (localStorage.getItem("earnedPoints")) {
+        earnedPoints = localStorage.getItem("earnedPoints").split(",");
+    } else {
+        earnedPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    };
+};
+
+function initializeOpeningScreenMenu() {
+    gameState = "inOpeningMenu";
+
+    let newGameMenuIcon = document.getElementById("newGameMenuIcon");
+    newGameMenuIcon.style.visibility = "visible";
+
+    newGameMenuIcon.addEventListener("click", () => {
+        localStorage.clear();
+        exitMenu();
+    });
+
+    console.log(localStorage.getItem("currentLevelNum"));
+    console.log(localStorage.getItem("numUnlockedLevels"));
+    console.log(localStorage.getItem("earnedPoints"));
+
+    if (localStorage.getItem("currentLevelNum")) {
+        let continueGameMenuIcon = document.getElementById("continueGameMenuIcon");
+        continueGameMenuIcon.style.visibility = "visible";
+
+        continueGameMenuIcon.addEventListener("click", () => {
+            exitMenu();
+        });
+    };
+
+    function exitMenu() {
+        newGameMenuIcon.removeEventListener("click", () => {
+            localStorage.clear();
+            exitMenu();
+        });
+
+        continueGameMenuIcon.removeEventListener("click", () => {
+            exitMenu();
+        });
+
+        newGameMenuIcon.style.visibility = "hidden";
+        continueGameMenuIcon.style.visibility = "hidden";
+        loadSavedData();
+        callCurrentLevel();
+    };
+};
+
 function initializeLevelMenu() {
-    gameState = "inMenu"
+    gameState = "inLevelMenu";
 
     //Creates an array of all 13 menu Icon IDs.
     let levelMenuIconArray = document.querySelectorAll(".levelMenuIcon");
@@ -819,40 +894,6 @@ function initializeLevelMenu() {
     };
 
     //Clicking Handling
-
-    function beginSelectedLevel(iconNum) {
-        currentLevelNum = iconNum
-
-        //Makes all unlocked HTML menu elements invisible.
-        for (let i = 0; i < numUnlockedLevels; i++) {
-            levelMenuIconArray[i].style.visibility = "hidden";
-        };
-
-        //Removes all menu-specific eventListeners and timers.
-        
-        for (let i = 0; i < numUnlockedLevels; i++) {
-            levelMenuIconArray[i].removeEventListener("click", () => {
-                beginSelectedLevel(i + 1)
-            });
-        };
-
-        for (let i = 0; i < numUnlockedLevels; i++) {
-            levelMenuIconArray[i].removeEventListener("mouseover", () => {
-                if (followMouse) {
-                    revertLevelIcon(hoveringIconArrayNum);
-                    hoveringIconArrayNum = i;
-                    highlightLevelIcon(hoveringIconArrayNum);
-                };
-            });
-        };
-
-        document.removeEventListener("mousemove", checkFollowMouse);
-
-        clearInterval(checkFollowKeys);
-
-        //Begins the level that the player clicked the corresponding icon for.
-        callCurrentLevel();
-    };
 
     //Begins the level that is clicked on (even if followMouse is false).
     for (let i = 0; i < numUnlockedLevels; i++) {
@@ -913,6 +954,40 @@ function initializeLevelMenu() {
             beginSelectedLevel(hoveringIconArrayNum + 1);
         };
     }, 120);
+
+    function beginSelectedLevel(iconNum) {
+        currentLevelNum = iconNum
+
+        //Makes all unlocked HTML menu elements invisible.
+        for (let i = 0; i < numUnlockedLevels; i++) {
+            levelMenuIconArray[i].style.visibility = "hidden";
+        };
+
+        //Removes all menu-specific eventListeners and timers.
+        
+        for (let i = 0; i < numUnlockedLevels; i++) {
+            levelMenuIconArray[i].removeEventListener("click", () => {
+                beginSelectedLevel(i + 1)
+            });
+        };
+
+        for (let i = 0; i < numUnlockedLevels; i++) {
+            levelMenuIconArray[i].removeEventListener("mouseover", () => {
+                if (followMouse) {
+                    revertLevelIcon(hoveringIconArrayNum);
+                    hoveringIconArrayNum = i;
+                    highlightLevelIcon(hoveringIconArrayNum);
+                };
+            });
+        };
+
+        document.removeEventListener("mousemove", checkFollowMouse);
+
+        clearInterval(checkFollowKeys);
+
+        //Begins the level that the player clicked the corresponding icon for.
+        callCurrentLevel();
+    };
 
     //Stops following the mouse (allows for following keys) after half a second of not moving the mouse.
     function checkFollowMouse() {
@@ -2526,7 +2601,8 @@ function gameLoop() {
 
         //Is Blockie Being Crushed?
 
-        //Checks if Blockie is colliding after everything has moved, and if so, restarts the level.
+        //Checks if Blockie is colliding after everything has moved, and if so, restarts the level (because he's being crushed by 
+        //walls and/or the canvas's edge).
         checkTestCollisionsWithClasses(blockie.x, blockie.y, allCollisionInstances);
         if (preventingMovement) {
             stopLevel("died");
@@ -2568,6 +2644,7 @@ function gameLoop() {
                 //collisions once Blockie has touched an active point.
                 break;
             } else {
+                //Kills Blockie if he's touching a harmful obstacle (bombs and lasers).
                 stopLevel("died");
                 break;
             };
@@ -2582,14 +2659,18 @@ function gameLoop() {
 //restarting or changing levels.
 function drawingLoop() {
     //Updates the high score in the points div of the level that is being played or hovered over.
-    if (gameState === "inMenu") {
+    if (gameState === "playingCutscene" || gameState === "inOpeningMenu") {
+        document.getElementById("points").innerHTML = "";
+    } else if (gameState === "inLevelMenu") {
         document.getElementById("points").innerHTML = `Points: ${earnedPoints[hoveringIconArrayNum]}|${possiblePoints[hoveringIconArrayNum]}`;
     } else {
         document.getElementById("points").innerHTML = `Points: ${currentLevelPoints}|${possiblePoints[currentLevelNum - 1]}`;
     };
 
     //Updates the number in the level div of the level that is being played or hovered over.
-    if (gameState === "inMenu") {
+    if (gameState === "playingCutscene" || gameState === "inOpeningMenu") {
+        document.getElementById("level").innerHTML = "";
+    } else if (gameState === "inLevelMenu") {
         if (hoveringIconArrayNum + 1 < 13) {
             document.getElementById("level").innerHTML = `Level: ${hoveringIconArrayNum + 1}`;
         } else {
@@ -2602,7 +2683,7 @@ function drawingLoop() {
     //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState !== "displayingMessage" && gameState !== "playingCutscene" && gameState !== "inMenu") {
+    if (gameState !== "displayingMessage" && gameState !== "playingCutscene" && gameState !== "inOpeningMenu" && gameState !== "inLevelMenu") {
         animateBlockie();
         drawBlockie();
     };
@@ -2644,9 +2725,9 @@ window.addEventListener("beforeunload", () => {
     localStorage.setItem("earnedPoints", earnedPoints);
 });
 
-//Game Start
+//Start Game
 
-callCurrentLevel();
+initializeOpeningScreenMenu();
 
 initializeKeyInputs();
 window.requestAnimationFrame(gameLoop);

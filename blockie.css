@@ -67,7 +67,35 @@ body {
     margin-top: 6px;
 }
 
-.menuIcon {
+.openingScreenMenuIcon {
+    margin-left: 160px;
+    width: 192px;
+    height: 96px;
+    position: absolute;
+    font-size: x-large;
+    color: white;
+    outline: 5px solid white;
+    visibility: hidden;
+    z-index: 100;
+}
+
+#newGameMenuIcon {
+    margin-top: 152px;
+}
+
+#newGameMenuIconText {
+    padding-top: 28px;
+}
+
+#continueGameMenuIcon {
+    margin-top: 264px;
+}
+
+#continueGameMenuIconText {
+    padding-top: 12px;
+}
+
+.levelMenuIcon {
     width: 96px;
     height: 96px;
     position: absolute;
@@ -78,7 +106,7 @@ body {
     z-index: 100;
 }
 
-.menuIconText {
+.levelMenuIconText {
     margin-top: 20px;
 }
 

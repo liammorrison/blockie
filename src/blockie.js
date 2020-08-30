@@ -805,7 +805,7 @@ function initializeLevelMenu() {
     gameState = "inMenu"
 
     //Creates an array of all 13 menu Icon IDs.
-    let menuIconArray = document.querySelectorAll(".menuIcon");
+    let levelMenuIconArray = document.querySelectorAll(".levelMenuIcon");
 
     //If followMouse is true, then whatever icon that the mouse is over will be highlighted.
     let followMouse = false;
@@ -815,7 +815,7 @@ function initializeLevelMenu() {
 
     //Makes all unlocked HTML menu elements visible.
     for (let i = 0; i < numUnlockedLevels; i++) {
-        menuIconArray[i].style.visibility = "visible";
+        levelMenuIconArray[i].style.visibility = "visible";
     };
 
     //Clicking Handling
@@ -825,19 +825,19 @@ function initializeLevelMenu() {
 
         //Makes all unlocked HTML menu elements invisible.
         for (let i = 0; i < numUnlockedLevels; i++) {
-            menuIconArray[i].style.visibility = "hidden";
+            levelMenuIconArray[i].style.visibility = "hidden";
         };
 
         //Removes all menu-specific eventListeners and timers.
         
         for (let i = 0; i < numUnlockedLevels; i++) {
-            menuIconArray[i].removeEventListener("click", () => {
+            levelMenuIconArray[i].removeEventListener("click", () => {
                 beginSelectedLevel(i + 1)
             });
         };
 
         for (let i = 0; i < numUnlockedLevels; i++) {
-            menuIconArray[i].removeEventListener("mouseover", () => {
+            levelMenuIconArray[i].removeEventListener("mouseover", () => {
                 if (followMouse) {
                     revertLevelIcon(hoveringIconArrayNum);
                     hoveringIconArrayNum = i;
@@ -856,7 +856,7 @@ function initializeLevelMenu() {
 
     //Begins the level that is clicked on (even if followMouse is false).
     for (let i = 0; i < numUnlockedLevels; i++) {
-        menuIconArray[i].addEventListener("click", () => {
+        levelMenuIconArray[i].addEventListener("click", () => {
             beginSelectedLevel(i + 1)
         });
     };
@@ -864,15 +864,15 @@ function initializeLevelMenu() {
     //Hovering Handling
 
     function highlightLevelIcon(iconNum) {
-        menuIconArray[iconNum].style.outline = "5px solid #741EFF";
-        menuIconArray[iconNum].style.color = "#741EFF";
-        menuIconArray[iconNum].style.backgroundColor = "#FF51EF";
+        levelMenuIconArray[iconNum].style.outline = "5px solid #741EFF";
+        levelMenuIconArray[iconNum].style.color = "#741EFF";
+        levelMenuIconArray[iconNum].style.backgroundColor = "#FF51EF";
     };
 
     function revertLevelIcon(iconNum) {
-        menuIconArray[iconNum].style.outline = "5px solid white";
-        menuIconArray[iconNum].style.color = "white";
-        menuIconArray[iconNum].style.backgroundColor = "black";
+        levelMenuIconArray[iconNum].style.outline = "5px solid white";
+        levelMenuIconArray[iconNum].style.color = "white";
+        levelMenuIconArray[iconNum].style.backgroundColor = "black";
     };
 
     let checkFollowKeys = setInterval(() => {
@@ -928,7 +928,7 @@ function initializeLevelMenu() {
     //Listens for if the player hovers over any menu icons and highlights that element (if they aren't using the keys to navigate 
     //the menu).
     for (let i = 0; i < numUnlockedLevels; i++) {
-        menuIconArray[i].addEventListener("mouseover", () => {
+        levelMenuIconArray[i].addEventListener("mouseover", () => {
             if (followMouse) {
                 //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
                 revertLevelIcon(hoveringIconArrayNum);

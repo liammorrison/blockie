@@ -67,7 +67,10 @@ let dashRecoverySeconds = 0.3;
 let allowDashAgainSeconds = 0.9;
 
 //Holds the index of the levelMenuIcon that is currently being hovered over.
-let hoveringIconArrayNum = 0;
+let levelHoveringIconNum = 0;
+
+//Holds the index of the openingMenuIcon that is currently being hovered over.
+let openingHoveringIconNum = 0;
 
 //Arrays
 
@@ -717,10 +720,10 @@ async function stopLevel(reason) {
         displayMessage("This was only a setback. <br>Progress, Blockie!", "restartLevel");
     } else if (reason === "restartLevelPressed") {
         callCurrentLevel();
-    } else if (reason === "enterMenuPressed") {
-        initializeLevelMenu();
     } else if (reason === "lostFocus") {
         displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other tabs/apps.", "restartLevel");
+    } else if (reason === "enterMenuPressed") {
+        initializeLevelMenu();
     } else if (reason === "countdownTimerEnded") {
         gameState = "playingCutscene";
 
@@ -838,41 +841,146 @@ function loadSavedData() {
 function initializeOpeningScreenMenu() {
     gameState = "inOpeningMenu";
 
-    let newGameMenuIcon = document.getElementById("newGameMenuIcon");
-    newGameMenuIcon.style.visibility = "visible";
+    //Creates an array of all opening menu Icon IDs.
+    let openingMenuIconArray = [document.getElementById("newGameMenuIcon")];
 
-    newGameMenuIcon.addEventListener("click", () => {
-        localStorage.clear();
-        exitMenu();
-    });
+    //If followMouse is true, then whatever icon that the mouse is over will be highlighted.
+    let followMouse = false;
 
-    console.log(localStorage.getItem("currentLevelNum"));
-    console.log(localStorage.getItem("numUnlockedLevels"));
-    console.log(localStorage.getItem("earnedPoints"));
+    //This timer allows for keys to be used in menus after half a second of the mouse idling.
+    let stopFollowingMouse;
 
-    if (localStorage.getItem("currentLevelNum")) {
-        let continueGameMenuIcon = document.getElementById("continueGameMenuIcon");
-        continueGameMenuIcon.style.visibility = "visible";
+    //Continuing the game is only an option if save data exists (when the local storage variables are not set to "undefined").
+    if (localStorage.getItem("currentLevelNum") !== "undefined") {
+        openingMenuIconArray.push(document.getElementById("continueGameMenuIcon"))
 
-        continueGameMenuIcon.addEventListener("click", () => {
-            exitMenu();
+        //If there is a save file detected, Gontinue Game will be hovered over by default.
+        openingHoveringIconNum = 1;
+    };
+
+    //Makes all unlocked HTML menu elements visible.
+    for (let i = 0; i < openingMenuIconArray.length; i++) {
+        openingMenuIconArray[i].style.visibility = "visible";
+    };
+
+    //Clicking Handling
+ 
+    //Starts a new game or continues the old one when an icon is clicked (even if followMouse is false).
+    for (let i = 0; i < openingMenuIconArray.length; i++) {
+        openingMenuIconArray[i].addEventListener("click", () => {
+            exitOpeningMenu(openingMenuIconArray[i])
         });
     };
 
-    function exitMenu() {
-        newGameMenuIcon.removeEventListener("click", () => {
+    //Hovering Handling
+
+    function highlightLevelIcon(iconNum) {
+        openingMenuIconArray[iconNum].style.outline = "5px solid #741EFF";
+        openingMenuIconArray[iconNum].style.color = "#741EFF";
+        openingMenuIconArray[iconNum].style.backgroundColor = "#FF51EF";
+    };
+
+    function revertLevelIcon(iconNum) {
+        openingMenuIconArray[iconNum].style.outline = "5px solid white";
+        openingMenuIconArray[iconNum].style.color = "white";
+        openingMenuIconArray[iconNum].style.backgroundColor = "black";
+    };
+ 
+    //Stops following the mouse (allows for following keys) after half a second of not moving the mouse.
+    function checkFollowMouse() {
+        clearTimeout(stopFollowingMouse);
+        followMouse = true;
+        stopFollowingMouse = setTimeout(() => {
+            followMouse = false;
+        }, 500);
+    };
+
+    document.addEventListener("mousemove", checkFollowMouse);
+
+    //Listens for if the player hovers over any menu icons and highlights that element (if they aren't using the keys to navigate 
+    //the menu).
+    for (let i = 0; i < openingMenuIconArray.length; i++) {
+        openingMenuIconArray[i].addEventListener("mouseover", () => {
+            if (followMouse) {
+                //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
+                revertLevelIcon(openingHoveringIconNum);
+                openingHoveringIconNum = i;
+                highlightLevelIcon(openingHoveringIconNum);
+            };
+        });
+    };
+
+    let checkFollowKeys = setInterval(() => {
+        //Dehighlights the previous hovering icon (as it may change depending on key inputs during this function).
+        revertLevelIcon(openingHoveringIconNum);
+
+        //Moves the openingHoveringIconNum if any keys are pressed.
+
+        //Up
+        if (keysDown[87]) {
+            openingHoveringIconNum--;
+        };
+
+        //Down
+        if (keysDown[83]) {
+            openingHoveringIconNum++;
+        };
+
+        //Limits moving the cursor to only unlocked level icons.
+        openingHoveringIconNum = Math.min(openingHoveringIconNum, openingMenuIconArray.length - 1);
+        openingHoveringIconNum = Math.max(openingHoveringIconNum, 0);
+
+        //Highlights the new openingHoveringIconNum (which may be different than the previous hovering icon if a key was pressed).
+        highlightLevelIcon(openingHoveringIconNum);
+
+        //Begins the currently highlighted level (even if followMouse is still true).
+        if (keysDown[16] || keysDown[32]) {
+            exitOpeningMenu(openingMenuIconArray[openingHoveringIconNum]);
+        };
+    }, 120);
+
+    //Selection Handling
+ 
+    function exitOpeningMenu(selectedIcon) {
+        //Makes all unlocked HTML menu elements hidden.
+        for (let i = 0; i < openingMenuIconArray.length; i++) {
+            openingMenuIconArray[i].style.visibility = "hidden";
+        };
+
+        //Removes all menu-specific eventListeners and timers.
+
+        document.removeEventListener("mousemove", checkFollowMouse);
+
+        for (let i = 0; i < openingMenuIconArray.length; i++) {
+            openingMenuIconArray[i].removeEventListener("click", () => {
+                exitOpeningMenu(openingMenuIconArray[i])
+            });
+        };
+
+        for (let i = 0; i < openingMenuIconArray.length; i++) {
+            openingMenuIconArray[i].removeEventListener("mouseover", () => {
+                if (followMouse) {
+                    //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
+                    revertLevelIcon(openingHoveringIconNum);
+                    openingHoveringIconNum = i;
+                    highlightLevelIcon(openingHoveringIconNum);
+                };
+            });
+        };
+
+        clearInterval(checkFollowKeys);
+
+        //Changes how the game continues depending on the selectedIcon that was pressed.
+        if (selectedIcon.id === "newGameMenuIcon") {
+            //Deletes all save data, resets the variables, and begins the game.
             localStorage.clear();
-            exitMenu();
-        });
-
-        continueGameMenuIcon.removeEventListener("click", () => {
-            exitMenu();
-        });
-
-        newGameMenuIcon.style.visibility = "hidden";
-        continueGameMenuIcon.style.visibility = "hidden";
-        loadSavedData();
-        callCurrentLevel();
+            loadSavedData();
+            callCurrentLevel();
+        } else if (selectedIcon.id === "continueGameMenuIcon") {
+            //Loads all save data and enters the levelMenu.
+            loadSavedData();
+            initializeLevelMenu();
+        };
     };
 };
 
@@ -916,79 +1024,6 @@ function initializeLevelMenu() {
         levelMenuIconArray[iconNum].style.backgroundColor = "black";
     };
 
-    let checkFollowKeys = setInterval(() => {
-        //Dehighlights the previous hovering icon (as it may change depending on key inputs during this function).
-        revertLevelIcon(hoveringIconArrayNum);
-
-        //Moves the hoveringIconArrayNum if any keys are pressed.
-
-        //Left
-        if (keysDown[65]) {
-            hoveringIconArrayNum--;
-        };
-
-        //Right
-        if (keysDown[68]) {
-            hoveringIconArrayNum++;
-        };
-
-        //Up
-        if (keysDown[87]) {
-            hoveringIconArrayNum -= 4;
-        };
-
-        //Down
-        if (keysDown[83]) {
-            hoveringIconArrayNum += 4;
-        };
-
-        //Limits moving the cursor to only unlocked level icons.
-        hoveringIconArrayNum = Math.min(hoveringIconArrayNum, numUnlockedLevels - 1);
-        hoveringIconArrayNum = Math.max(hoveringIconArrayNum, 0);
-
-        //Highlights the new hoveringIconArrayNum (which may be different than the previous hovering icon if a key was pressed).
-        highlightLevelIcon(hoveringIconArrayNum);
-
-        //Begins the currently highlighted level (even if followMouse is still true).
-        if (keysDown[16] || keysDown[32]) {
-            beginSelectedLevel(hoveringIconArrayNum + 1);
-        };
-    }, 120);
-
-    function beginSelectedLevel(iconNum) {
-        currentLevelNum = iconNum
-
-        //Makes all unlocked HTML menu elements invisible.
-        for (let i = 0; i < numUnlockedLevels; i++) {
-            levelMenuIconArray[i].style.visibility = "hidden";
-        };
-
-        //Removes all menu-specific eventListeners and timers.
-        
-        for (let i = 0; i < numUnlockedLevels; i++) {
-            levelMenuIconArray[i].removeEventListener("click", () => {
-                beginSelectedLevel(i + 1)
-            });
-        };
-
-        for (let i = 0; i < numUnlockedLevels; i++) {
-            levelMenuIconArray[i].removeEventListener("mouseover", () => {
-                if (followMouse) {
-                    revertLevelIcon(hoveringIconArrayNum);
-                    hoveringIconArrayNum = i;
-                    highlightLevelIcon(hoveringIconArrayNum);
-                };
-            });
-        };
-
-        document.removeEventListener("mousemove", checkFollowMouse);
-
-        clearInterval(checkFollowKeys);
-
-        //Begins the level that the player clicked the corresponding icon for.
-        callCurrentLevel();
-    };
-
     //Stops following the mouse (allows for following keys) after half a second of not moving the mouse.
     function checkFollowMouse() {
         clearTimeout(stopFollowingMouse);
@@ -1006,11 +1041,86 @@ function initializeLevelMenu() {
         levelMenuIconArray[i].addEventListener("mouseover", () => {
             if (followMouse) {
                 //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
-                revertLevelIcon(hoveringIconArrayNum);
-                hoveringIconArrayNum = i;
-                highlightLevelIcon(hoveringIconArrayNum);
+                revertLevelIcon(levelHoveringIconNum);
+                levelHoveringIconNum = i;
+                highlightLevelIcon(levelHoveringIconNum);
             };
         });
+    };
+
+    let checkFollowKeys = setInterval(() => {
+        //Dehighlights the previous hovering icon (as it may change depending on key inputs during this function).
+        revertLevelIcon(levelHoveringIconNum);
+
+        //Moves the levelHoveringIconNum if any keys are pressed.
+
+        //Left
+        if (keysDown[65]) {
+            levelHoveringIconNum--;
+        };
+
+        //Right
+        if (keysDown[68]) {
+            levelHoveringIconNum++;
+        };
+
+        //Up
+        if (keysDown[87]) {
+            levelHoveringIconNum -= 4;
+        };
+
+        //Down
+        if (keysDown[83]) {
+            levelHoveringIconNum += 4;
+        };
+
+        //Limits moving the cursor to only unlocked level icons.
+        levelHoveringIconNum = Math.min(levelHoveringIconNum, numUnlockedLevels - 1);
+        levelHoveringIconNum = Math.max(levelHoveringIconNum, 0);
+
+        //Highlights the new levelHoveringIconNum (which may be different than the previous hovering icon if a key was pressed).
+        highlightLevelIcon(levelHoveringIconNum);
+
+        //Begins the currently highlighted level (even if followMouse is still true).
+        if (keysDown[16] || keysDown[32]) {
+            beginSelectedLevel(levelHoveringIconNum + 1);
+        };
+    }, 120);
+
+    //Selection Handling
+
+    function beginSelectedLevel(iconNum) {
+        currentLevelNum = iconNum
+
+        //Makes all unlocked HTML menu elements hidden.
+        for (let i = 0; i < numUnlockedLevels; i++) {
+            levelMenuIconArray[i].style.visibility = "hidden";
+        };
+
+        //Removes all menu-specific eventListeners and timers.
+        
+        document.removeEventListener("mousemove", checkFollowMouse);
+
+        for (let i = 0; i < numUnlockedLevels; i++) {
+            levelMenuIconArray[i].removeEventListener("click", () => {
+                beginSelectedLevel(i + 1)
+            });
+        };
+
+        for (let i = 0; i < numUnlockedLevels; i++) {
+            levelMenuIconArray[i].removeEventListener("mouseover", () => {
+                if (followMouse) {
+                    revertLevelIcon(levelHoveringIconNum);
+                    levelHoveringIconNum = i;
+                    highlightLevelIcon(levelHoveringIconNum);
+                };
+            });
+        };
+
+        clearInterval(checkFollowKeys);
+
+        //Begins the level that the player clicked the corresponding icon for.
+        callCurrentLevel();
     };
 };
 
@@ -1034,10 +1144,18 @@ async function displayMessage(message, endAction) {
     return await new Promise((resolve, reject) => {
         //Restarts the game once acceptable keys are pressed.
         function resumePlaying() {
+            //Shift and Space key handler.
             if (keysDown[16] || keysDown[32]) {
                 delete keysDown[16];
                 delete keysDown[32];
 
+                stopMessage();
+            } else {
+                //Continuously recalls the function until an acceptable key is pressed.
+                window.requestAnimationFrame(resumePlaying);
+            };
+
+            function stopMessage() {
                 document.getElementById("messageDisplayer").innerHTML = "";
 
                 switch (endAction) {
@@ -1055,9 +1173,6 @@ async function displayMessage(message, endAction) {
                 };
 
                 resolve("resolved");
-            } else {
-                //Continuously recalls the function until an acceptable key is pressed.
-                window.requestAnimationFrame(resumePlaying);
             };
         };
 
@@ -2662,7 +2777,7 @@ function drawingLoop() {
     if (gameState === "playingCutscene" || gameState === "inOpeningMenu") {
         document.getElementById("points").innerHTML = "";
     } else if (gameState === "inLevelMenu") {
-        document.getElementById("points").innerHTML = `Points: ${earnedPoints[hoveringIconArrayNum]}|${possiblePoints[hoveringIconArrayNum]}`;
+        document.getElementById("points").innerHTML = `Points: ${earnedPoints[levelHoveringIconNum]}|${possiblePoints[levelHoveringIconNum]}`;
     } else {
         document.getElementById("points").innerHTML = `Points: ${currentLevelPoints}|${possiblePoints[currentLevelNum - 1]}`;
     };
@@ -2671,8 +2786,8 @@ function drawingLoop() {
     if (gameState === "playingCutscene" || gameState === "inOpeningMenu") {
         document.getElementById("level").innerHTML = "";
     } else if (gameState === "inLevelMenu") {
-        if (hoveringIconArrayNum + 1 < 13) {
-            document.getElementById("level").innerHTML = `Level: ${hoveringIconArrayNum + 1}`;
+        if (levelHoveringIconNum + 1 < 13) {
+            document.getElementById("level").innerHTML = `Level: ${levelHoveringIconNum + 1}`;
         } else {
             document.getElementById("level").innerHTML = `Level: END`;
         };
@@ -2707,16 +2822,6 @@ function drawingLoop() {
     window.requestAnimationFrame(drawingLoop);
 };
 
-//Check Page Focus
-
-//Since this game uses async-await and timers regularly, having the browser focus on other tabs completely ruins the game's structure
-//(timing of instances, etc.); therefore, once the player refocusses on the tab, the level restarts.
-function checkPageFocus() {
-    if (!document.hasFocus() && gameState === "playing") {
-        stopLevel("lostFocus");
-    };
-};
-
 //Refresh Handling
 
 window.addEventListener("beforeunload", () => {
@@ -2725,13 +2830,24 @@ window.addEventListener("beforeunload", () => {
     localStorage.setItem("earnedPoints", earnedPoints);
 });
 
+//Check Page Focus
+ 
+//Since this game uses async-await and timers regularly, having the browser focus on other tabs completely ruins the game's structure
+//(timing of instances, etc.); therefore, once the player refocusses on the tab, the level restarts.
+function checkPageFocus() {
+    if (!document.hasFocus() && gameState === "playing") {
+        stopLevel("lostFocus");
+    };
+
+    window.requestAnimationFrame(checkPageFocus);
+};
+
 //Start Game
 
 initializeOpeningScreenMenu();
 
 initializeKeyInputs();
+window.requestAnimationFrame(checkPageFocus);
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
 window.requestAnimationFrame(scaleGame);
-
-setInterval(checkPageFocus, 100);

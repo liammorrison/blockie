@@ -72,6 +72,22 @@ let levelHoveringIconNum = 0;
 //Holds the index of the openingMenuIcon that is currently being hovered over.
 let openingHoveringIconNum = 0;
 
+let purple = "#A600FF";
+let orange = "#FF9D00";
+
+let blue = "#0050FC";
+let yellow = "#FFEE00";
+
+//Color of walls.
+let changingColorOne = purple;
+
+//Color of Bombs and lasers.
+let changingColorTwo = orange;
+
+let passivePointColor = "#878787";
+let activePointColor = "#BDBDBD";
+let blockieSurroundingColor = "#378CFF";
+
 //Arrays
 
 //Holds the highest number of points that were touched in a full run of each level. Saved in localStorage.
@@ -875,9 +891,9 @@ function initializeOpeningScreenMenu() {
     //Hovering Handling
 
     function highlightLevelIcon(iconNum) {
-        openingMenuIconArray[iconNum].style.outline = "5px solid #741EFF";
-        openingMenuIconArray[iconNum].style.color = "#741EFF";
-        openingMenuIconArray[iconNum].style.backgroundColor = "#FF51EF";
+        openingMenuIconArray[iconNum].style.outline = "5px solid " + changingColorTwo;
+        openingMenuIconArray[iconNum].style.color = changingColorTwo;
+        openingMenuIconArray[iconNum].style.backgroundColor = changingColorOne;
     };
 
     function revertLevelIcon(iconNum) {
@@ -1013,9 +1029,9 @@ function initializeLevelMenu() {
     //Hovering Handling
 
     function highlightLevelIcon(iconNum) {
-        levelMenuIconArray[iconNum].style.outline = "5px solid #741EFF";
-        levelMenuIconArray[iconNum].style.color = "#741EFF";
-        levelMenuIconArray[iconNum].style.backgroundColor = "#FF51EF";
+        levelMenuIconArray[iconNum].style.outline = "5px solid " + changingColorTwo;
+        levelMenuIconArray[iconNum].style.color = changingColorTwo;
+        levelMenuIconArray[iconNum].style.backgroundColor = changingColorOne;
     };
 
     function revertLevelIcon(iconNum) {
@@ -2039,7 +2055,7 @@ function moveMovingWalls() {
 function animateBlockie() {
     //Draws the remaining seconds meter for when Blockie can dash again.
     if (!allowDashAgain && gameState === "playing") {
-        context.fillStyle = "#378CFF";
+        context.fillStyle = blockieSurroundingColor;
         context.fillRect(blockie.x + 4, blockie.y - 8, 24 * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
     };
 
@@ -2078,17 +2094,17 @@ function drawPassivePoints() {
         let currentInstance = passivePoints[i];
 
         //Draws the remaining seconds meter for when the point will disappear.
-        context.fillStyle = "#E6FF16";
+        context.fillStyle = passivePointColor;
         context.fillRect(currentInstance.x, currentInstance.y - 8, currentInstance.width * (currentInstance.remainingFiringSeconds / currentInstance.totalFiringSeconds), 4);
 
         //Draws the point itself.
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#E6FF16";
+                context.strokeStyle = passivePointColor;
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#E6FF16";
+                context.fillStyle = passivePointColor;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2100,17 +2116,17 @@ function drawMovingPassivePoints() {
         let currentInstance = movingPassivePoints[i];
 
         //Draws the remaining seconds meter for when the point will disappear.
-        context.fillStyle = "#E6FF16";
+        context.fillStyle = passivePointColor;
         context.fillRect(currentInstance.x, currentInstance.y - 8, currentInstance.width * (currentInstance.remainingFiringSeconds / currentInstance.totalFiringSeconds), 4);
 
         //Draws the point itself.
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#E6FF16";
+                context.strokeStyle = passivePointColor;
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#E6FF16";
+                context.fillStyle = passivePointColor;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2125,10 +2141,10 @@ function drawActivePoints() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF9012";
+                context.strokeStyle = activePointColor;
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF9012";
+                context.fillStyle = activePointColor;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2143,10 +2159,10 @@ function drawMovingActivePoints() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF9012";
+                context.strokeStyle = activePointColor;
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF9012";
+                context.fillStyle = activePointColor;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2159,7 +2175,7 @@ function drawMovingHorizontalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "#FF51EF";
+                context.fillStyle = changingColorTwo;
 
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Left warning triangle.
@@ -2176,7 +2192,7 @@ function drawMovingHorizontalLasers() {
                 context.lineTo(currentInstance.width - 32, currentInstance.y + currentInstance.height * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)));
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF51EF";
+                context.fillStyle = changingColorTwo;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2189,7 +2205,7 @@ function drawMovingVerticalLasers() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.fillStyle = "#FF51EF";
+                context.fillStyle = changingColorTwo;
 
                 //Warning triangles are complex because they must face the direction of the laser's speed.
                 //Top warning triangle.
@@ -2206,7 +2222,7 @@ function drawMovingVerticalLasers() {
                 context.lineTo(currentInstance.x + currentInstance.width * Math.abs(Math.min(Math.sign(currentInstance.speed), 0)), currentInstance.height - 32);
                 context.fill();
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF51EF";
+                context.fillStyle = changingColorTwo;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2219,10 +2235,10 @@ function drawBombs() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF51EF";
+                context.strokeStyle = changingColorTwo;
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF51EF";
+                context.fillStyle = changingColorTwo;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2235,10 +2251,10 @@ function drawMovingBombs() {
         if (currentInstance.visible) {
             //Changes the sprite depending on the state of the instance.
             if (currentInstance.state == "warning") {
-                context.strokeStyle = "#FF51EF";
+                context.strokeStyle = changingColorTwo;
                 context.strokeRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             } else if (currentInstance.state == "firing") {
-                context.fillStyle = "#FF51EF";
+                context.fillStyle = changingColorTwo;
                 context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
             };
         };
@@ -2248,7 +2264,7 @@ function drawMovingBombs() {
 function drawWalls() {
     for (let i = 0; i < walls.length; i++) {
         let currentInstance = walls[i];
-        context.fillStyle = "#741EFF";
+        context.fillStyle = changingColorOne;
         context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
     };
 };
@@ -2256,7 +2272,7 @@ function drawWalls() {
 function drawMovingWalls() {
     for (let i = 0; i < movingWalls.length; i++) {
         let currentInstance = movingWalls[i];
-        context.fillStyle = "#741EFF";
+        context.fillStyle = changingColorOne;
         context.fillRect(currentInstance.x, currentInstance.y, currentInstance.width, currentInstance.height);
     };
 };
@@ -2265,7 +2281,7 @@ function drawPartyHats() {
     for (let i = 0; i < partyHats.length; i++) {
         let currentInstance = partyHats[i];
 
-        context.fillStyle = "#378CFF";
+        context.fillStyle = blockieSurroundingColor;
 
         context.beginPath();
         context.moveTo(currentInstance.x, currentInstance.y + currentInstance.height);

@@ -93,16 +93,13 @@ let blockieSurroundingColor = "#378CFF";
 //Holds the highest number of points that were touched in a full run of each level. Saved in localStorage.
 let earnedPoints;
 
-//tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed (and that actually do something
-//in the game).
-let tapKeys = [16, 32, 37, 38, 39, 40, 73, 79, 80];
-
-//Holds all keys that are pressed. If the key is a tapKey, then it will only be in the keysDown array for one frame after being 
-//pressed.
+//Holds all keys that are pressed.
 let keysDown = [];
 
-//Used to determine whether a tapKey was already pressed and prevents it from being placed inside the keysDown array again until that
-//key is released and pressed again.
+//Used to prevent keys that have already been pressed from being placed back into the keysDown array until that key has been released.
+//Most keys in most circumstances (dashing, menu selection, etc.) delete themselves from the keysDown array on the frame that they are
+//used, so this prevents the key from being used in any way until it is released. Some keys in some circumstances (like moving) 
+//require the key to remain in keysDown for all the frames that they are held, so those keys are not deleted until they are released.
 let keysHeld = [];
 
 //These arrays hold all instances of their class, so that it is easier to draw, activate, and deactivate each obstacle type.
@@ -934,11 +931,17 @@ function initializeOpeningScreenMenu() {
 
         //Up
         if (keysDown[87]) {
+            //Prevents the key from being counted as pressed down again (until the key is lifted again).
+            delete keysDown[87];
+
             openingHoveringIconNum--;
         };
 
         //Down
         if (keysDown[83]) {
+            //Prevents the key from being counted as pressed down again (until the key is lifted again).
+            delete keysDown[83];
+
             openingHoveringIconNum++;
         };
 
@@ -951,6 +954,10 @@ function initializeOpeningScreenMenu() {
 
         //Begins the currently highlighted level (even if followMouse is still true).
         if (keysDown[16] || keysDown[32]) {
+            //Prevents the keys from being counted as pressed down again (until the key is lifted again).
+            delete keysDown[16];
+            delete keysDown[32];
+
             exitOpeningMenu(openingMenuIconArray[openingHoveringIconNum]);
         };
     }, 120);
@@ -1099,6 +1106,10 @@ function initializeLevelMenu() {
 
         //Begins the currently highlighted level (even if followMouse is still true).
         if (keysDown[16] || keysDown[32]) {
+            //Prevents the keys from being counted as pressed down again (until the key is lifted again).
+            delete keysDown[16];
+            delete keysDown[32];
+
             beginSelectedLevel(levelHoveringIconNum + 1);
         };
     }, 120);
@@ -1162,6 +1173,7 @@ async function displayMessage(message, endAction) {
         function resumePlaying() {
             //Shift and Space key handler.
             if (keysDown[16] || keysDown[32]) {
+                //Prevents the key from being counted as pressed down again (until the key is lifted again).
                 delete keysDown[16];
                 delete keysDown[32];
 
@@ -1333,8 +1345,7 @@ function resetBlockieState() {
     recoveringFromDash = false;
     allowDashAgain = true;
 
-    //Prevents Blockie from dashing immedaitely after respawning/entering another screen due to the same button press that was meant 
-    //to only dash/end a message.
+    //Prevents the key from being counted as pressed down again (until the key is lifted again).
     delete keysDown[16];
     delete keysDown[32];
     delete keysDown[37];
@@ -2385,11 +2396,6 @@ function checkBlockieOutsideBorder(instanceOne, instanceOneX, instanceOneY) {
 
 function initializeKeyInputs() {
     document.addEventListener("keydown", e => {
-        //Prevents tapKeys from being set to true after 1 frame of being pressed.
-        for (let i = 0; i < tapKeys.length; i++) {
-            delete keysDown[tapKeys[i]];
-        };
-
         //Adds all pressed keys to an array for game loops to react to without having to create a unique eventListener for every 
         //possible input.
         if (!keysHeld[e.keyCode]) {
@@ -2488,6 +2494,7 @@ function destroyCountdownTimer() {
 //Allows for the color scheme of the game to be swapped by pressing "i";
 function changeColors() {
     if (keysDown[73]) {
+        //Prevents the key from being counted as pressed down again (until the key is lifted again).
         delete keysDown[73];
 
         if (changingColorOne === purple) {
@@ -2520,11 +2527,17 @@ function gameLoop() {
     if (gameState === "playing") {
         //Restarts the level if O is pressed.
         if (keysDown[79]) {
+            //Prevents the key from being counted as pressed down again (until the key is lifted again).
+            delete keysDown[79];
+
             stopLevel("restartLevelPressed");
         };
 
         //Enters the level menu if P is pressed.
         if (keysDown[80]) {
+            //Prevents the key from being counted as pressed down again (until the key is lifted again).
+            delete keysDown[80];
+
             stopLevel("enterMenuPressed");
         };
 
@@ -2571,9 +2584,9 @@ function gameLoop() {
             };
 
             if ((keysDown[16] || keysDown[32]) && allowDashAgain && (xInput !== 0 || yInput !== 0)) {
-                //Since the shift key is unique and only counts as "down" for 1 frame, it can't always be removed from the keysDown 
-                //array even while it's being held, so it must be removed manually after each time it's used.
+                //Prevents the keys from being counted as pressed down again (until the key is lifted again).
                 delete keysDown[16];
+                delete keysDown[32];
                 
                 //Pressing shift causes Blockie to "dash" by increasing his speed, creating a cooldown timeout, and playing a recovery 
                 //animation.

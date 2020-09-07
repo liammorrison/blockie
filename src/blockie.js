@@ -84,8 +84,8 @@ let changingColorOne = purple;
 //Color of Bombs and lasers.
 let changingColorTwo = orange;
 
-let passivePointColor = "#878787";
-let activePointColor = "#BDBDBD";
+let passivePointColor = "#91FF00";
+let activePointColor = "#00D900";
 let blockieSurroundingColor = "#378CFF";
 
 //Arrays
@@ -95,7 +95,7 @@ let earnedPoints;
 
 //tapKeys holds all of the keys that are only supposed to be active for one frame after being pressed (and that actually do something
 //in the game).
-let tapKeys = [16, 32, 37, 38, 39, 40, 79, 80];
+let tapKeys = [16, 32, 37, 38, 39, 40, 73, 79, 80];
 
 //Holds all keys that are pressed. If the key is a tapKey, then it will only be in the keysDown array for one frame after being 
 //pressed.
@@ -2420,10 +2420,6 @@ function scaleGame() {
     window.requestAnimationFrame(scaleGame);
 };
 
-//Point Functions
-
-
-
 //Cutscene Functions
 
 //Waits for a small cutscene to finish.
@@ -2487,7 +2483,28 @@ function destroyCountdownTimer() {
     let countdownTimerContainer = document.getElementById("countdownTimerContainer");
     countdownTimerContainer.style.visibility = "hidden";
     clearInterval(countdown);
-}
+};
+
+//Allows for the color scheme of the game to be swapped by pressing "i";
+function changeColors() {
+    if (keysDown[73]) {
+        delete keysDown[73];
+
+        if (changingColorOne === purple) {
+            changingColorOne = blue;
+        } else if (changingColorOne === blue) {
+            changingColorOne = purple;
+        };
+
+        if (changingColorTwo === orange) {
+            changingColorTwo = yellow;
+        } else if (changingColorTwo === yellow) {
+            changingColorTwo = orange;
+        };
+    };
+
+    window.requestAnimationFrame(changeColors);
+};
 
 function calculateAngleRadians(x, y) {
     return Math.atan2(y, x);
@@ -2866,4 +2883,5 @@ initializeKeyInputs();
 window.requestAnimationFrame(checkPageFocus);
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
+window.requestAnimationFrame(changeColors);
 window.requestAnimationFrame(scaleGame);

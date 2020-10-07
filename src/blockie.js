@@ -26,7 +26,8 @@ spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
 
 //Sound Loading
 
-let stockSong = new Audio("../sounds/stock_song.mp3");
+let runningOut = new Audio("../sounds/runningOut.mp3");
+runningOut.loop = true;
 
 //Variables
 
@@ -69,9 +70,6 @@ let allowDashAgainSeconds = 0.9;
 //Holds the index of the levelMenuIcon that is currently being hovered over.
 let levelHoveringIconNum = 0;
 
-//Holds the index of the openingMenuIcon that is currently being hovered over.
-let openingHoveringIconNum = 0;
-
 let purple = "#A600FF";
 let orange = "#FF9D00";
 
@@ -84,9 +82,12 @@ let changingColorOne = purple;
 //Color of Bombs and lasers.
 let changingColorTwo = orange;
 
-let passivePointColor = "#91FF00";
-let activePointColor = "#00D900";
+let passivePointColor = "#85BB65";
+let activePointColor = "#F02800";
 let blockieSurroundingColor = "#378CFF";
+
+//Holds the .mp3 file of the song that is currently playing so that songs can be universally manipulated.
+let currentSong;
 
 //Arrays
 
@@ -152,7 +153,9 @@ let levelMessages = [
     "Do not store up for yourselves treasures on earth, <br>where moths and vermin destroy, <br>and where thieves break in and steal. <br>For where your treasure is, <br>there your heart will be also.",
 
     "Knowledge is having something to say. <br>Wisdom is knowing not to say it.",
-    "Do not work for the food that perishes, <br>but for the food that endures for eternal life."
+    "Do not work for the food that perishes, <br>but for the food that endures for eternal life.",
+
+    "It's good that you escaped."
 ];
 
 //Classes
@@ -443,172 +446,104 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+        initializeLevel(oneHalf + blockieAdjustment, oneEigth + blockieAdjustment);
+ 
+        createCountdownTimer(35);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, wholeScreen, threeEigths),
-            createWall(0, fiveEigths, wholeScreen, threeEigths),
-            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
-            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, wholeScreen, threeEigths),
-            createWall(0, fiveEigths, oneEigth, threeEigths),
-            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
-            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
-            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
-            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
- 
-            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, threeEigths, threeEigths),
-            createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, wholeScreen),
-            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
-            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        endLevel();
-    } catch (error) {};
-};
-
-async function levelTwo() {
-    try {
-        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, wholeScreen, threeFourths),
-            createPassivePoint(threeSixteenths - 8, sevenEigths - 8, 0, 10),
-
-            loopFireBombs(oneHalf - 16, threeFourths, 32, oneFourth, 2.2, 1, 1),
-
-            createActivePoint(sevenEigths - 8, sevenEigths - 8, 2)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
- 
-            loopFireBombs(threeFourths, 0, oneFourth, oneSixteenth, 0, 2, 0.2),
-            loopFireBombs(threeFourths, oneSixteenth, oneFourth, oneSixteenth, 0.2, 2, 0.2),
-            loopFireBombs(threeFourths, oneEigth, oneFourth, oneSixteenth, 0.4, 2, 0.2),
-            loopFireBombs(threeFourths, threeSixteenths, oneFourth, oneSixteenth, 0.6, 2, 0.2),
-            loopFireBombs(threeFourths, oneFourth, oneFourth, oneSixteenth, 0.8, 2, 0.2),
-            loopFireBombs(threeFourths, fiveSixteenths, oneFourth, oneSixteenth, 1, 2, 0.2),
-            loopFireBombs(threeFourths, threeEigths, oneFourth, oneSixteenth, 1.2, 2, 0.2),
-            loopFireBombs(threeFourths, sevenSixteenths, oneFourth, oneSixteenth, 1.4, 2, 0.2),
-            loopFireBombs(threeFourths, oneHalf, oneFourth, oneSixteenth, 1.6, 2, 0.2),
-            loopFireBombs(threeFourths, nineSixteenths, oneFourth, oneSixteenth, 1.8, 2, 0.2),
-            loopFireBombs(threeFourths, fiveEigths, oneFourth, oneSixteenth, 2, 2, 0.2),
-            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneSixteenth, 2.2, 2, 0.2),
-            loopFireBombs(threeFourths, threeFourths, oneFourth, oneSixteenth, 2.4, 2, 0.2),
-            loopFireBombs(threeFourths, thirteenSixteenths, oneFourth, oneSixteenth, 2.6, 2, 0.2),
-            loopFireBombs(threeFourths, sevenEigths, oneFourth, oneSixteenth, 2.8, 2, 0.2),
-            loopFireBombs(threeFourths, fifteenSixteenths, oneFourth, oneSixteenth, 3, 2, 0.2)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, threeEigths, wholeScreen),
-            createWall(fiveEigths, 0, threeEigths, wholeScreen),
-            createActivePoint(oneHalf - 8, threeSixteenths - 8, 0),
-            fireMovingHorizontalLaser(wholeScreen - 32, 32, -1.5, 1, 5)
-        ]);
-
-        cancelAwaitChain = false;
-
-        await Promise.all([
-            createWall(0, 0, threeEigths, threeEigths),
-            createWall(fiveEigths, 0, threeEigths, threeEigths),
-            createWall(0, fiveEigths, threeEigths, threeEigths),
-            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
-            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
-            createPassivePoint(oneSixteenth - 8, oneHalf - 8, 0, 12),
-            createPassivePoint(fifteenSixteenths - 8, oneHalf - 8, 0, 12),
-            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 0, 1, 2)
-        ]);
-
-        cancelAwaitChain = false;
-
-        endLevel();
-    } catch (error) {};
-};
-
-async function levelThree() {
-    try {
-        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, sevenSixteenths, wholeScreen),
-            createWall(sevenSixteenths, 0, oneEigth, sevenSixteenths),
-            createWall(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth),
-            createWall(sevenSixteenths, threeFourths, oneEigth, oneSixteenth),
-            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+            createWall(threeEigths, 0, oneSixteenth, sevenEigths),
+            createWall(oneEigth, 0, oneFourth, sevenSixteenths),
+            createWall(oneEigth, nineSixteenths, oneFourth, fiveSixteenths),
             createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
-            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
-            createPassivePoint(oneHalf - 8, elevenSixteenths - 8, 0, 10)
+            createActivePoint(oneSixteenth - 8, oneSixteenth - 8, 0),
+            createPassivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0, 9),
+ 
+            fireMovingVerticalLaser(27 * 16, 16, -1, 2, 9),
+            fireMovingVerticalLaser(29 * 16, 16, -1, 2, 9),
+            fireMovingVerticalLaser(wholeScreen - 16, 16, -1, 2, 9)
         ]);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, wholeScreen, oneSixteenth),
-            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
-            createWall(0, threeEigths, wholeScreen, oneSixteenth),
-            createWall(0, nineSixteenths, wholeScreen, sevenSixteenths),
-            createWall(0, 0, oneSixteenth, wholeScreen),
-            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
-            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
-            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
-            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
-            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
-            createPassivePoint(oneEigth - 8, oneHalf - 8, 0, 16),
-            createPassivePoint(sevenEigths - 8, oneHalf - 8, 0, 16),
-            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
-            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
-            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 1, 1, 1),
-            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 1),
-            loopFireBombs(thirteenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 1),
-            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 1, 1, 1),
-            loopFireBombs(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 1, 1, 1),
- 
-            createActivePoint(oneHalf - 8, oneEigth - 8, 3)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, sevenSixteenths, wholeScreen),
-            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
-            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
-            fireMovingHorizontalLaser(wholeScreen - 32, 32, -1.5, 0, 5)
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
+            createWall(oneEigth, 0, fiveSixteenths, sevenEigths),
+            createWall(nineSixteenths, 0, oneHalf, wholeScreen),
             createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
-            loopFireMovingHorizontalLasers(0, 32, 2, 0, 1, 4),
-            loopFireMovingHorizontalLasers(0, 32, 2, 2, 1, 4),
-            loopFireMovingHorizontalLasers(0, 32, 2, 4, 1, 4),
-            loopFireMovingHorizontalLasers(0, 32, 2, 6, 1, 4)
+ 
+            loopFireBombs(0, 0, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(0, oneEigth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(0, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(0, threeEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(0, oneHalf, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(0, fiveEigths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(0, threeFourths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(0, sevenEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+ 
+            loopFireBombs(sevenSixteenths, 0, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneEigth, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, threeEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneHalf, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, threeFourths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, sevenEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, oneFourth),
+            createWall(nineSixteenths, oneFourth, oneSixteenth, threeEigths),
+            createWall(nineSixteenths, threeFourths, threeSixteenths, oneFourth),
+            createWall(threeFourths, oneFourth, oneFourth, threeFourths),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(elevenSixteenths - 8, fiveSixteenths - 8, 0, 5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(threeFourths, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(oneFourth, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(nineSixteenths, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(oneFourth, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(nineSixteenths, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+ 
+            fireBomb(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 0.7, 0.7),
+ 
+            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 1.4, 0.7),
+ 
+            fireBomb(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
+            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
+            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
+ 
+            fireMovingHorizontalLaser(0, 32, 2, 2.1, 10),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 3)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            fireBomb(16, 0, fifteenSixteenths, oneEigth, 0, 1),
+            fireBomb(16, threeEigths, fifteenSixteenths, oneFourth, 0.15, 1),
+            fireBomb(16, sevenEigths, fifteenSixteenths, oneEigth, 0.3, 1),
+ 
+            fireBomb(0, 16, oneEigth, fifteenSixteenths, 2.45, 1),
+            fireBomb(threeEigths, 16, oneFourth, fifteenSixteenths, 2.6, 1),
+            fireBomb(sevenEigths, 16, oneEigth, fifteenSixteenths, 2.75, 1),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 7),
+            fireBomb(oneEigth, 16, oneFourth, fifteenSixteenths, 4.75, 1),
+            fireBomb(fiveEigths, 16, oneFourth, fifteenSixteenths, 4.9, 1),
+            fireBomb(16, oneEigth, fifteenSixteenths, oneFourth, 5.05, 1),
+            fireBomb(16, fiveEigths, fifteenSixteenths, oneFourth, 5.2, 1)
         ]);
  
         cancelAwaitChain = false;
@@ -616,6 +551,18 @@ async function levelThree() {
         destroyCountdownTimer();
  
         endLevel();
+    } catch (error) {};
+};
+
+async function levelTwo() {
+    try {
+
+    } catch (error) {};
+};
+
+async function levelThree() {
+    try {
+        
     } catch (error) {};
 };
 
@@ -692,6 +639,8 @@ function endScreen() {
 
 //Resets the initial values for the beginning of every level.
 function initializeLevel(blockieX, blockieY) {
+    initializeLevelSong();
+
     gameState = "playing";
 
     blockie.x = blockieX;
@@ -703,6 +652,8 @@ function initializeLevel(blockieX, blockieY) {
 
 //Clears all arrays, clears the canvas, displays the game over screen, and waits to restart the current level.
 async function stopLevel(reason) {
+    stopAudioElement(currentSong);
+
     rejectAllInstances();
     stopUniqueTimingEvents();
 
@@ -753,6 +704,8 @@ async function stopLevel(reason) {
 };
 
 async function endLevel() {
+    stopAudioElement(currentSong);
+
     gameState = "finishingLevel";
 
     //Points are only made permanent once a level is completed and only the high score is recorded in earnedPoints.
@@ -786,7 +739,7 @@ async function endLevel() {
         window.requestAnimationFrame(animateFinishedLevelHat);
     });
 
-    //Shows a unique message for each level (except the final level) after completing it and then transitions into the level menu.
+    //Shows a unique message for each level after completing it and then transitions into the level menu.
     await displayMessage(levelMessages[currentLevelNum - 1], "enterLevelMenu");
 
     //currentLevelPoints is set to 0 because it is only a temporary holder of points for each run on a level. earnedPoints[] stores
@@ -851,24 +804,18 @@ function loadSavedData() {
     };
 };
 
+//Asks the player to start a new game or continue an old game (if save data exists). Unlike the levelMenu, the player must navigate
+//this menu with the mouse and click on an icon in order to progress the game so that the game's tab will be considered "active"
+//by the browser and be allowed to play audio.
 function initializeOpeningScreenMenu() {
     gameState = "inOpeningMenu";
 
     //Creates an array of all opening menu Icon IDs.
     let openingMenuIconArray = [document.getElementById("newGameMenuIcon")];
 
-    //If followMouse is true, then whatever icon that the mouse is over will be highlighted.
-    let followMouse = false;
-
-    //This timer allows for keys to be used in menus after half a second of the mouse idling.
-    let stopFollowingMouse;
-
     //Continuing the game is only an option if save data exists (when the local storage variables are not set to "undefined").
     if (localStorage.getItem("currentLevelNum") !== "undefined") {
-        openingMenuIconArray.push(document.getElementById("continueGameMenuIcon"))
-
-        //If there is a save file detected, Gontinue Game will be hovered over by default.
-        openingHoveringIconNum = 1;
+        openingMenuIconArray.push(document.getElementById("continueGameMenuIcon"));
     };
 
     //Makes all unlocked HTML menu elements visible.
@@ -878,7 +825,7 @@ function initializeOpeningScreenMenu() {
 
     //Clicking Handling
  
-    //Starts a new game or continues the old one when an icon is clicked (even if followMouse is false).
+    //Starts a new game or continues the old one when an icon is clicked.
     for (let i = 0; i < openingMenuIconArray.length; i++) {
         openingMenuIconArray[i].addEventListener("click", () => {
             exitOpeningMenu(openingMenuIconArray[i])
@@ -898,69 +845,22 @@ function initializeOpeningScreenMenu() {
         openingMenuIconArray[iconNum].style.color = "white";
         openingMenuIconArray[iconNum].style.backgroundColor = "black";
     };
- 
-    //Stops following the mouse (allows for following keys) after half a second of not moving the mouse.
-    function checkFollowMouse() {
-        clearTimeout(stopFollowingMouse);
-        followMouse = true;
-        stopFollowingMouse = setTimeout(() => {
-            followMouse = false;
-        }, 500);
-    };
 
-    document.addEventListener("mousemove", checkFollowMouse);
-
-    //Listens for if the player hovers over any menu icons and highlights that element (if they aren't using the keys to navigate 
-    //the menu).
+    //Listens for if the player hovers over any menu icons and highlights that element.
     for (let i = 0; i < openingMenuIconArray.length; i++) {
         openingMenuIconArray[i].addEventListener("mouseover", () => {
-            if (followMouse) {
-                //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
-                revertLevelIcon(openingHoveringIconNum);
-                openingHoveringIconNum = i;
-                highlightLevelIcon(openingHoveringIconNum);
-            };
+            //Highlights the menuIcon that currently has the mouse over it.
+            highlightLevelIcon(i);
         });
     };
 
-    let checkFollowKeys = setInterval(() => {
-        //Dehighlights the previous hovering icon (as it may change depending on key inputs during this function).
-        revertLevelIcon(openingHoveringIconNum);
-
-        //Moves the openingHoveringIconNum if any keys are pressed.
-
-        //Up
-        if (keysDown[87]) {
-            //Prevents the key from being counted as pressed down again (until the key is lifted again).
-            delete keysDown[87];
-
-            openingHoveringIconNum--;
-        };
-
-        //Down
-        if (keysDown[83]) {
-            //Prevents the key from being counted as pressed down again (until the key is lifted again).
-            delete keysDown[83];
-
-            openingHoveringIconNum++;
-        };
-
-        //Limits moving the cursor to only unlocked level icons.
-        openingHoveringIconNum = Math.min(openingHoveringIconNum, openingMenuIconArray.length - 1);
-        openingHoveringIconNum = Math.max(openingHoveringIconNum, 0);
-
-        //Highlights the new openingHoveringIconNum (which may be different than the previous hovering icon if a key was pressed).
-        highlightLevelIcon(openingHoveringIconNum);
-
-        //Begins the currently highlighted level (even if followMouse is still true).
-        if (keysDown[16] || keysDown[32]) {
-            //Prevents the keys from being counted as pressed down again (until the key is lifted again).
-            delete keysDown[16];
-            delete keysDown[32];
-
-            exitOpeningMenu(openingMenuIconArray[openingHoveringIconNum]);
-        };
-    }, 120);
+    //Listens for if the player stops hovering over any menu icons and dehighlights that element.
+    for (let i = 0; i < openingMenuIconArray.length; i++) {
+        openingMenuIconArray[i].addEventListener("mouseout", () => {
+            //Dehighlights the menuIcon that had the mouse move away from it.
+            revertLevelIcon(i);
+        });
+    };
 
     //Selection Handling
  
@@ -972,8 +872,6 @@ function initializeOpeningScreenMenu() {
 
         //Removes all menu-specific eventListeners and timers.
 
-        document.removeEventListener("mousemove", checkFollowMouse);
-
         for (let i = 0; i < openingMenuIconArray.length; i++) {
             openingMenuIconArray[i].removeEventListener("click", () => {
                 exitOpeningMenu(openingMenuIconArray[i])
@@ -982,16 +880,18 @@ function initializeOpeningScreenMenu() {
 
         for (let i = 0; i < openingMenuIconArray.length; i++) {
             openingMenuIconArray[i].removeEventListener("mouseover", () => {
-                if (followMouse) {
-                    //Dehighlights the previously highlighted icon as the mouse may be over a different icon, which is then highlighted.
-                    revertLevelIcon(openingHoveringIconNum);
-                    openingHoveringIconNum = i;
-                    highlightLevelIcon(openingHoveringIconNum);
-                };
+                //Highlights the menuIcon that currently has the mouse over it.
+                highlightLevelIcon(i);
             });
         };
 
-        clearInterval(checkFollowKeys);
+        //Listens for if the player stops hovering over any menu icons and dehighlights that element.
+        for (let i = 0; i < openingMenuIconArray.length; i++) {
+            openingMenuIconArray[i].removeEventListener("mouseout", () => {
+                //Dehighlights the menuIcon that had the mouse move away from it.
+                revertLevelIcon(i);
+            });
+        };
 
         //Changes how the game continues depending on the selectedIcon that was pressed.
         if (selectedIcon.id === "newGameMenuIcon") {
@@ -2454,7 +2354,26 @@ async function playCutscene(scene, secondsPerFrame) {
 
         window.requestAnimationFrame(drawCutscene);
     });
-}
+};
+
+//Audio Functions
+
+function stopAudioElement(audioElement) {
+    audioElement.currentTime = 0;
+    audioElement.pause();
+};
+
+function initializeLevelSong() {
+    if (currentLevelNum == 13) {
+        currentSong = runningOut;
+    } else if (currentLevelNum % 4 == 0) {
+        currentSong = runningOut;
+    } else {
+        currentSong = runningOut;
+    }
+
+    currentSong.play();
+};
 
 //Micellaneous Functions
 

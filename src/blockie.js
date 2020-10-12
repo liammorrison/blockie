@@ -26,8 +26,7 @@ spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
 
 //Sound Loading
 
-let runningOut = new Audio("../sounds/runningOut.mp3");
-runningOut.loop = true;
+let runningOut = new Audio("../sounds/runningOut.ogg");
 
 //Variables
 
@@ -446,109 +445,65 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
-        initializeLevel(oneHalf + blockieAdjustment, oneEigth + blockieAdjustment);
- 
-        createCountdownTimer(35);
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(threeEigths, 0, oneSixteenth, sevenEigths),
-            createWall(oneEigth, 0, oneFourth, sevenSixteenths),
-            createWall(oneEigth, nineSixteenths, oneFourth, fiveSixteenths),
-            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
-            createActivePoint(oneSixteenth - 8, oneSixteenth - 8, 0),
-            createPassivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0, 9),
+            createWall(0, 0, wholeScreen, threeFourths),
+            createPassivePoint(threeSixteenths - 8, sevenEigths - 8, 0, 10),
  
-            fireMovingVerticalLaser(27 * 16, 16, -1, 2, 9),
-            fireMovingVerticalLaser(29 * 16, 16, -1, 2, 9),
-            fireMovingVerticalLaser(wholeScreen - 16, 16, -1, 2, 9)
+            loopFireBombs(oneHalf - 16, threeFourths, 32, oneFourth, 2.2, 1, 1),
+ 
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 2)
         ]);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(oneEigth, 0, fiveSixteenths, sevenEigths),
-            createWall(nineSixteenths, 0, oneHalf, wholeScreen),
-            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
- 
-            loopFireBombs(0, 0, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(0, oneEigth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(0, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(0, threeEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-            loopFireBombs(0, oneHalf, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(0, fiveEigths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(0, threeFourths, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(0, sevenEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
- 
-            loopFireBombs(sevenSixteenths, 0, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, oneEigth, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, threeEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, oneHalf, oneEigth, oneEigth, 0.5, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, threeFourths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
-            loopFireBombs(sevenSixteenths, sevenEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
-        ]);
- 
-        cancelAwaitChain = false;
- 
-        await Promise.all([
-            createWall(0, 0, sevenSixteenths, wholeScreen),
-            createWall(nineSixteenths, 0, sevenSixteenths, oneFourth),
-            createWall(nineSixteenths, oneFourth, oneSixteenth, threeEigths),
-            createWall(nineSixteenths, threeFourths, threeSixteenths, oneFourth),
-            createWall(threeFourths, oneFourth, oneFourth, threeFourths),
             createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
-            createPassivePoint(elevenSixteenths - 8, fiveSixteenths - 8, 0, 5)
+ 
+            loopFireBombs(threeFourths, 0, oneFourth, oneSixteenth, 0, 2, 0.2),
+            loopFireBombs(threeFourths, oneSixteenth, oneFourth, oneSixteenth, 0.2, 2, 0.2),
+            loopFireBombs(threeFourths, oneEigth, oneFourth, oneSixteenth, 0.4, 2, 0.2),
+            loopFireBombs(threeFourths, threeSixteenths, oneFourth, oneSixteenth, 0.6, 2, 0.2),
+            loopFireBombs(threeFourths, oneFourth, oneFourth, oneSixteenth, 0.8, 2, 0.2),
+            loopFireBombs(threeFourths, fiveSixteenths, oneFourth, oneSixteenth, 1, 2, 0.2),
+            loopFireBombs(threeFourths, threeEigths, oneFourth, oneSixteenth, 1.2, 2, 0.2),
+            loopFireBombs(threeFourths, sevenSixteenths, oneFourth, oneSixteenth, 1.4, 2, 0.2),
+            loopFireBombs(threeFourths, oneHalf, oneFourth, oneSixteenth, 1.6, 2, 0.2),
+            loopFireBombs(threeFourths, nineSixteenths, oneFourth, oneSixteenth, 1.8, 2, 0.2),
+            loopFireBombs(threeFourths, fiveEigths, oneFourth, oneSixteenth, 2, 2, 0.2),
+            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneSixteenth, 2.2, 2, 0.2),
+            loopFireBombs(threeFourths, threeFourths, oneFourth, oneSixteenth, 2.4, 2, 0.2),
+            loopFireBombs(threeFourths, thirteenSixteenths, oneFourth, oneSixteenth, 2.6, 2, 0.2),
+            loopFireBombs(threeFourths, sevenEigths, oneFourth, oneSixteenth, 2.8, 2, 0.2),
+            loopFireBombs(threeFourths, fifteenSixteenths, oneFourth, oneSixteenth, 3, 2, 0.2)
         ]);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            createWall(0, 0, wholeScreen, oneFourth),
-            createWall(0, oneFourth, oneFourth, thirteenSixteenths),
-            createWall(threeFourths, oneFourth, oneFourth, thirteenSixteenths),
-            createWall(oneFourth, oneFourth, threeSixteenths, threeSixteenths),
-            createWall(nineSixteenths, oneFourth, threeSixteenths, threeSixteenths),
-            createWall(oneFourth, nineSixteenths, threeSixteenths, sevenSixteenths),
-            createWall(nineSixteenths, nineSixteenths, threeSixteenths, sevenSixteenths),
-            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
- 
-            fireBomb(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 0.7, 0.7),
- 
-            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 1.4, 0.7),
- 
-            fireBomb(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
-            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
-            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
- 
-            fireMovingHorizontalLaser(0, 32, 2, 2.1, 10),
- 
-            createActivePoint(oneHalf - 8, oneHalf - 8, 3)
+            createWall(0, 0, threeEigths, wholeScreen),
+            createWall(fiveEigths, 0, threeEigths, wholeScreen),
+            createActivePoint(oneHalf - 8, threeSixteenths - 8, 0),
+            fireMovingHorizontalLaser(wholeScreen - 32, 32, -1.5, 1, 5)
         ]);
  
         cancelAwaitChain = false;
  
         await Promise.all([
-            fireBomb(16, 0, fifteenSixteenths, oneEigth, 0, 1),
-            fireBomb(16, threeEigths, fifteenSixteenths, oneFourth, 0.15, 1),
-            fireBomb(16, sevenEigths, fifteenSixteenths, oneEigth, 0.3, 1),
- 
-            fireBomb(0, 16, oneEigth, fifteenSixteenths, 2.45, 1),
-            fireBomb(threeEigths, 16, oneFourth, fifteenSixteenths, 2.6, 1),
-            fireBomb(sevenEigths, 16, oneEigth, fifteenSixteenths, 2.75, 1),
- 
-            createActivePoint(oneHalf - 8, oneHalf - 8, 7),
-            fireBomb(oneEigth, 16, oneFourth, fifteenSixteenths, 4.75, 1),
-            fireBomb(fiveEigths, 16, oneFourth, fifteenSixteenths, 4.9, 1),
-            fireBomb(16, oneEigth, fifteenSixteenths, oneFourth, 5.05, 1),
-            fireBomb(16, fiveEigths, fifteenSixteenths, oneFourth, 5.2, 1)
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, fiveEigths, threeEigths, threeEigths),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+            createPassivePoint(oneSixteenth - 8, oneHalf - 8, 0, 12),
+            createPassivePoint(fifteenSixteenths - 8, oneHalf - 8, 0, 12),
+            loopFireBombs(threeEigths, fiveEigths, oneFourth, oneFourth, 0, 1, 2)
         ]);
  
         cancelAwaitChain = false;
- 
-        destroyCountdownTimer();
  
         endLevel();
     } catch (error) {};
@@ -685,7 +640,7 @@ async function stopLevel(reason) {
     } else if (reason === "restartLevelPressed") {
         callCurrentLevel();
     } else if (reason === "lostFocus") {
-        displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other tabs/apps.", "restartLevel");
+        displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other tabs or apps.", "restartLevel");
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
     } else if (reason === "countdownTimerEnded") {
@@ -2358,6 +2313,21 @@ async function playCutscene(scene, secondsPerFrame) {
 
 //Audio Functions
 
+//Loops the currentSong manually to remove the end buffer that audio.loop = true; adds.
+function loopSong() {
+    if (currentSong != undefined) {
+        let buffer = 0.07;
+
+        if (currentSong.currentTime > currentSong.duration - buffer) {
+            currentSong.currentTime = 0;
+            currentSong.play();
+        };
+    };
+
+    //Continuously recalls the function.
+    window.requestAnimationFrame(loopSong);
+};
+
 function stopAudioElement(audioElement) {
     audioElement.currentTime = 0;
     audioElement.pause();
@@ -2735,6 +2705,8 @@ function gameLoop() {
     window.requestAnimationFrame(gameLoop);
 };
 
+//Drawing Handling
+
 //Drawing is handled in a loop that is separate from the gameLoop because the game should still be drawn even while the game is 
 //restarting or changing levels.
 function drawingLoop() {
@@ -2815,5 +2787,6 @@ initializeKeyInputs();
 window.requestAnimationFrame(checkPageFocus);
 window.requestAnimationFrame(gameLoop);
 window.requestAnimationFrame(drawingLoop);
+window.requestAnimationFrame(loopSong);
 window.requestAnimationFrame(changeColors);
 window.requestAnimationFrame(scaleGame);

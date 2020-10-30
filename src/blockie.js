@@ -26,6 +26,8 @@ spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
 
 //Sound Loading
 
+let sngAnticipate = new Audio("../sounds/anticipate.ogg");
+let sngCelebrate = new Audio("../sounds/celebrate.ogg");
 let sngChill = new Audio("../sounds/chill.ogg");
 let sngHurry = new Audio("../sounds/hurry.ogg");
 let sngPersevere1 = new Audio("../sounds/persevere1.ogg");
@@ -2369,6 +2371,10 @@ async function endLevel() {
         let partyHatInstance = new PartyHat();
         partyHats.push(partyHatInstance);
 
+        //Plays sngAnticipate during the entire PartyHat animation.
+        currentSong = sngAnticipate;
+        currentSong.play();
+
         function animateFinishedLevelHat() {
             partyHatInstance.y += Math.min((blockie.y - partyHatInstance.y - partyHatInstance.height), 2);
 
@@ -2376,6 +2382,11 @@ async function endLevel() {
                 //Continuously recalls the function until the PartyHat reaches Blockie's head.
                 window.requestAnimationFrame(animateFinishedLevelHat);
             } else {
+                //When the PartyHat animation ends, sngAnticipate stops and sngCelebrate plays until the levelMenu is initialized.
+                stopAudioElement(currentSong);
+                currentSong = sngCelebrate;
+                currentSong.play();
+
                 resolve("resolved");
             };
         };
@@ -2705,6 +2716,9 @@ async function displayMessage(message, endAction) {
     //Forces the player to read the message for 1 second before they can continue the game.
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
+            //Stops playing sngCelebrate if the level just ended.
+            stopAudioElement(currentSong);
+
             //Placed here to draw Blockie with a PartyHat during endLevel().
             partyHats.splice(0);
 
@@ -2712,7 +2726,7 @@ async function displayMessage(message, endAction) {
             document.getElementById("messageDisplayer").innerHTML = message;
 
             resolve("resolved");
-        }, 1000);
+        }, 1800);
     });
 
     return await new Promise((resolve, reject) => {

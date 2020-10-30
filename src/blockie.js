@@ -26,7 +26,12 @@ spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
 
 //Sound Loading
 
-let runningOut = new Audio("../sounds/runningOut.ogg");
+let sngChill = new Audio("../sounds/chill.ogg");
+let sngHurry = new Audio("../sounds/hurry.ogg");
+let sngPersevere1 = new Audio("../sounds/persevere1.ogg");
+let sngPersevere2 = new Audio("../sounds/persevere2.ogg");
+let sngPersevere3 = new Audio("../sounds/persevere3.ogg");
+let sngPersevereZ = new Audio("../sounds/persevereZ.ogg");
 
 //Variables
 
@@ -85,8 +90,8 @@ let passivePointColor = "#85BB65";
 let activePointColor = "#F02800";
 let blockieSurroundingColor = "#378CFF";
 
-//Holds the .mp3 file of the song that is currently playing so that songs can be universally manipulated.
-let currentSong;
+//Holds the .ogg file of the song that is currently playing so that songs can be universally manipulated.
+let currentSong = sngChill;
 
 //Arrays
 
@@ -445,6 +450,48 @@ let blockieAdjustment = -blockie.width / 2
 //Levels are a series of obstacles and objectives that appear in specific orders and time periods using async/await.
 async function levelOne() {
     try {
+        initializeLevel(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, wholeScreen, threeEigths),
+            createActivePoint(thirteenSixteenths - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, oneEigth, threeEigths),
+            createWall(oneFourth, fiveEigths, oneHalf, oneFourth),
+            createWall(sevenEigths, fiveEigths, oneEigth, threeEigths),
+            createPassivePoint(threeSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+            createPassivePoint(thirteenSixteenths - 8, fifteenSixteenths - 8, 0, 15),
+ 
+            createActivePoint(threeSixteenths - 8, oneHalf - 8, 4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, threeEigths),
+            createWall(0, fiveEigths, threeEigths, threeEigths),
+            createWall(fiveEigths, 0, threeEigths, wholeScreen),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, oneEigth - 8, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
+    } catch (error) {};
+};
+
+async function levelTwo() {
+    try {
         initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
  
         cancelAwaitChain = false;
@@ -509,75 +556,1717 @@ async function levelOne() {
     } catch (error) {};
 };
 
-async function levelTwo() {
-    try {
-
-    } catch (error) {};
-};
-
 async function levelThree() {
     try {
-        
+        initializeLevel(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(sevenSixteenths, 0, oneEigth, sevenSixteenths),
+            createWall(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeFourths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, elevenSixteenths - 8, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, wholeScreen, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, sevenSixteenths),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            createPassivePoint(oneEigth - 8, oneHalf - 8, 0, 16),
+            createPassivePoint(sevenEigths - 8, oneHalf - 8, 0, 16),
+            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(thirteenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 1, 1, 1),
+            loopFireBombs(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 1, 1, 1),
+ 
+            createActivePoint(oneHalf - 8, oneEigth - 8, 3)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+            fireMovingHorizontalLaser(wholeScreen - 32, 32, -1.5, 0, 5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+            loopFireMovingHorizontalLasers(0, 32, 2, 0, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 2, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 4, 1, 4),
+            loopFireMovingHorizontalLasers(0, 32, 2, 6, 1, 4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        destroyCountdownTimer();
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelFour() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, oneEigth + blockieAdjustment);
+ 
+        createCountdownTimer(35);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(threeEigths, 0, oneSixteenth, sevenEigths),
+            createWall(oneEigth, 0, oneFourth, sevenSixteenths),
+            createWall(oneEigth, nineSixteenths, oneFourth, fiveSixteenths),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+            createActivePoint(oneSixteenth - 8, oneSixteenth - 8, 0),
+            createPassivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0, 9),
+ 
+            fireMovingVerticalLaser(27 * 16, 16, -1, 2, 9),
+            fireMovingVerticalLaser(29 * 16, 16, -1, 2, 9),
+            fireMovingVerticalLaser(wholeScreen - 16, 16, -1, 2, 9)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(oneEigth, 0, fiveSixteenths, sevenEigths),
+            createWall(nineSixteenths, 0, oneHalf, wholeScreen),
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            loopFireBombs(0, 0, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(0, oneEigth, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(0, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(0, threeEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(0, oneHalf, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(0, fiveEigths, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(0, threeFourths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(0, sevenEigths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+ 
+            loopFireBombs(sevenSixteenths, 0, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneEigth, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, threeEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneHalf, oneEigth, oneEigth, 0.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, threeFourths, oneEigth, oneEigth, 1.5, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, sevenEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, oneFourth),
+            createWall(nineSixteenths, oneFourth, oneSixteenth, threeEigths),
+            createWall(nineSixteenths, threeFourths, threeSixteenths, oneFourth),
+            createWall(threeFourths, oneFourth, oneFourth, threeFourths),
+            createActivePoint(oneHalf - 8, sevenEigths - 8, 0),
+            createPassivePoint(elevenSixteenths - 8, fiveSixteenths - 8, 0, 5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(threeFourths, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(oneFourth, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(nineSixteenths, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(oneFourth, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(nineSixteenths, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+ 
+            fireBomb(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 0.7, 0.7),
+ 
+            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 1.4, 0.7),
+ 
+            fireBomb(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
+            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
+            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 2.1, 0.7),
+ 
+            fireMovingHorizontalLaser(0, 32, 2, 2.1, 10),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 3)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            fireBomb(16, 0, fifteenSixteenths, oneEigth, 0, 1),
+            fireBomb(16, threeEigths, fifteenSixteenths, oneFourth, 0.15, 1),
+            fireBomb(16, sevenEigths, fifteenSixteenths, oneEigth, 0.3, 1),
+ 
+            fireBomb(0, 16, oneEigth, fifteenSixteenths, 2.45, 1),
+            fireBomb(threeEigths, 16, oneFourth, fifteenSixteenths, 2.6, 1),
+            fireBomb(sevenEigths, 16, oneEigth, fifteenSixteenths, 2.75, 1),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 7),
+            fireBomb(oneEigth, 16, oneFourth, fifteenSixteenths, 4.75, 1),
+            fireBomb(fiveEigths, 16, oneFourth, fifteenSixteenths, 4.9, 1),
+            fireBomb(16, oneEigth, fifteenSixteenths, oneFourth, 5.05, 1),
+            fireBomb(16, fiveEigths, fifteenSixteenths, oneFourth, 5.2, 1)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        destroyCountdownTimer();
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelFive() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, oneHalf),
+            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
+            createWall(0, threeFourths, sevenSixteenths, oneEigth),
+            createWall(nineSixteenths, threeFourths, sevenSixteenths, oneEigth),
+            createActivePoint(oneEigth - 8, fifteenSixteenths - 8, 0),
+ 
+            createPassivePoint(sevenEigths - 8, fifteenSixteenths - 8, 2, 7)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneEigth + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(oneFourth, oneFourth, threeSixteenths, threeFourths),
+            createWall(sevenSixteenths, threeEigths, oneEigth, fiveEigths),
+            createWall(nineSixteenths, oneFourth, threeSixteenths, threeFourths),
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 0),
+            createPassivePoint(oneHalf - 8, fiveSixteenths - 8, 5, 7),
+ 
+            loopFireBombs(0, oneFourth, oneFourth, oneSixteenth, 0.7, 0, 0.4),
+            loopFireBombs(0, oneHalf, oneFourth, oneSixteenth, 0, 0, 0.4),
+            loopFireBombs(0, threeFourths, oneFourth, oneSixteenth, 0.7, 0, 0.4),
+ 
+            fireMovingHorizontalLaser(0, 32, 1.4, 7, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(sevenEigths + blockieAdjustment, sevenEigths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, wholeScreen, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeFourths, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            createActivePoint(oneEigth - 8, oneEigth - 8, 0),
+            createPassivePoint(oneEigth - 8, sevenEigths - 8, 0, 17),
+ 
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 7, 7),
+ 
+            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 0, 2, 1),
+ 
+            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(oneFourth, oneFourth, oneEigth, oneEigth, 2, 2, 1),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(fiveEigths, oneFourth, oneEigth, oneEigth, 2, 2, 1),
+            loopFireBombs(thirteenSixteenths, oneFourth, oneEigth, oneEigth, 0, 2, 1),
+ 
+            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 2, 2, 1),
+            loopFireBombs(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 0, 2, 1),
+ 
+            loopFireBombs(oneSixteenth, fiveEigths, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(oneFourth, fiveEigths, oneEigth, oneEigth, 2, 2, 1),
+            loopFireBombs(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(fiveEigths, fiveEigths, oneEigth, oneEigth, 2, 2, 1),
+            loopFireBombs(thirteenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 2, 1),
+ 
+            loopFireBombs(oneFourth, thirteenSixteenths, oneEigth, oneEigth, 0, 2, 1),
+            loopFireBombs(fiveEigths, thirteenSixteenths, oneEigth, oneEigth, 0, 2, 1),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelSix() {
     try {
-
+        initializeLevel(oneEigth + blockieAdjustment, oneEigth + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, threeSixteenths, thirteenSixteenths, oneFourth),
+            createWall(0, sevenSixteenths, sevenSixteenths, oneEigth),
+            createWall(0, nineSixteenths, wholeScreen, sevenSixteenths),
+            createWall(0, 0, oneSixteenth, threeSixteenths),
+            createWall(oneSixteenth, 0, fifteenSixteenths, oneSixteenth),
+            createWall(fifteenSixteenths, oneSixteenth, oneSixteenth, oneHalf),
+            createWall(17 * 16, oneSixteenth, oneSixteenth, oneEigth),
+            createWall(thirteenSixteenths, threeEigths, oneEigth, oneSixteenth),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            loopFireBombs(9 * 16, oneSixteenth, oneFourth, oneEigth, 0.75, 0.5, 0.75),
+            loopFireBombs(thirteenSixteenths, oneSixteenth, oneEigth, fiveSixteenths, 0.75, 0.5, 0.75),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, oneHalf),
+            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
+            createWall(0, threeFourths, sevenSixteenths, oneEigth),
+            createWall(nineSixteenths, threeFourths, sevenSixteenths, oneEigth),
+            createActivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0),
+            loopFireBombs(oneEigth, sevenEigths, fiveSixteenths, oneEigth, 0, 0.5, 0.75),
+            loopFireBombs(nineSixteenths, sevenEigths, fiveSixteenths, oneEigth, 0, 0.5, 0.75),
+ 
+            createPassivePoint(fifteenSixteenths - 8, fifteenSixteenths - 8, 2.5, 7)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, sevenEigths),
+            createWall(sevenSixteenths, 0, oneEigth, sevenSixteenths),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            fireMovingHorizontalLaser(0, 16, 0.7, 0, 10),
+ 
+            fireMovingHorizontalLaser(31 * 16, 16, -1.6, 2, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createActivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0),
+            createPassivePoint(oneSixteenth - 8, oneHalf - 8, 0, 5),
+            fireBomb(15 * 16, 15 * 16, oneSixteenth, oneSixteenth, 0.15, 0.5),
+            fireBomb(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 0.3, 0.5),
+            fireBomb(13 * 16, 13 * 16, threeSixteenths, threeSixteenths, 0.45, 0.5),
+            fireBomb(threeEigths, threeEigths, oneFourth, oneFourth, 0.6, 0.5),
+            fireBomb(11 * 16, 11 * 16, fiveSixteenths, fiveSixteenths, 0.75, 0.5),
+            fireBomb(fiveSixteenths, fiveSixteenths, threeEigths, threeEigths, 0.9, 0.5),
+            fireBomb(9 * 16, 9 * 16, sevenSixteenths, sevenSixteenths, 1.05, 0.5),
+            fireBomb(oneFourth, oneFourth, oneHalf, oneHalf, 1.2, 0.5),
+            fireBomb(7 * 16, 7 * 16, nineSixteenths, nineSixteenths, 1.35, 0.5),
+            fireBomb(threeSixteenths, threeSixteenths, fiveEigths, fiveEigths, 1.5, 0.5),
+            fireBomb(5 * 16, 5 * 16, elevenSixteenths, elevenSixteenths, 1.65, 0.5),
+            fireBomb(oneEigth, oneEigth, threeFourths, threeFourths, 1.8, 0.5),
+            fireBomb(3 * 16, 3 * 16, thirteenSixteenths, thirteenSixteenths, 1.95, 0.5),
+            fireBomb(oneSixteenth, oneSixteenth, sevenEigths, sevenEigths, 2.1, 0.5),
+            fireBomb(1 * 16, 1 * 16, fifteenSixteenths, fifteenSixteenths, 2.25, 0.5),
+            fireBomb(0, 0, wholeScreen, wholeScreen, 2.4, 0.5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createActivePoint(oneHalf - 8, oneHalf - 8, 0),
+            fireMovingHorizontalLaser(0, oneEigth, 1.4, 0, 10),
+            fireMovingVerticalLaser(sevenEigths, oneEigth, -1.4, 0, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelSeven() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, sevenSixteenths),
+            createWall(0, sevenSixteenths, sevenSixteenths, oneEigth),
+            createWall(nineSixteenths, sevenSixteenths, sevenSixteenths, oneEigth),
+            createWall(0, nineSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, fiveEigths, oneFourth, oneEigth),
+            createWall(threeEigths, fiveEigths, fiveEigths, oneEigth),
+            createWall(0, threeFourths, wholeScreen, oneSixteenth),
+            createWall(0, thirteenSixteenths, oneSixteenth, oneEigth),
+            createWall(threeSixteenths, thirteenSixteenths, thirteenSixteenths, oneEigth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createActivePoint(oneEigth - 8, sevenEigths - 8, 0)
+        ]);
+ 
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeFourths, oneFourth),
+            createWall(0, oneFourth, oneHalf, oneFourth),
+            createWall(threeFourths, oneFourth, oneFourth, oneFourth),
+            createWall(0, oneHalf, oneFourth, oneFourth),
+            createWall(oneHalf, oneHalf, oneHalf, oneFourth),
+            createWall(oneFourth, threeFourths, threeFourths, oneFourth),
+            createActivePoint(sevenEigths - 8, oneEigth - 8, 0),
+            loopFireBombs(threeFourths, 0, oneFourth, oneFourth, 0, 0.5, 0.5),
+            loopFireBombs(oneHalf, oneFourth, oneFourth, oneFourth, 1, 0.5, 0.5),
+            loopFireBombs(oneFourth, oneHalf, oneFourth, oneFourth, 0, 0.5, 0.5),
+            loopFireBombs(0, threeFourths, oneFourth, oneFourth, 1, 0.5, 0.5),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeFourths, oneEigth),
+            createWall(0, oneEigth, fiveEigths, oneEigth),
+            createWall(0, oneFourth, oneHalf, oneEigth),
+            createWall(sevenEigths, oneFourth, oneEigth, oneEigth),
+            createWall(0, threeEigths, threeEigths, oneEigth),
+            createWall(threeFourths, threeEigths, oneFourth, oneEigth),
+            createWall(threeFourths, oneHalf, oneFourth, oneEigth),
+            createWall(0, oneHalf, threeEigths, oneEigth),
+            createWall(sevenEigths, fiveEigths, oneEigth, oneEigth),
+            createWall(0, fiveEigths, oneHalf, oneEigth),
+            createWall(0, threeFourths, fiveEigths, oneEigth),
+            createWall(0, sevenEigths, threeFourths, oneEigth),
+            createActivePoint(sevenEigths - 8, sevenEigths - 8, 0),
+            createPassivePoint(sevenSixteenths - 8, oneHalf - 8, 0, 20),
+            loopFireBombs(threeEigths, threeEigths, oneEigth, oneFourth, 2.8, 2.4, 0.7),
+            loopFireBombs(oneHalf, oneFourth, oneEigth, oneHalf, 2.8, 2.4, 0.7),
+            loopFireBombs(fiveEigths, oneEigth, oneEigth, threeFourths, 2.8, 2.4, 0.7)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(sevenEigths + blockieAdjustment, sevenEigths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, wholeScreen, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeFourths, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            createActivePoint(oneEigth - 8, oneEigth - 8),
+            createPassivePoint(oneEigth - 8, oneHalf - 8, 4.5, 7),
+ 
+            loopFireBombs(oneSixteenth, oneSixteenth, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(sevenSixteenths, oneSixteenth, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, oneSixteenth, oneEigth, oneEigth, 1, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(oneFourth, oneFourth, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(fiveEigths, oneFourth, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, oneFourth, oneEigth, oneEigth, 1, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, sevenSixteenths, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, sevenSixteenths, oneEigth, oneEigth, 1, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, fiveEigths, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(oneFourth, fiveEigths, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(fiveEigths, fiveEigths, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, fiveEigths, oneEigth, oneEigth, 1, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, thirteenSixteenths, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(oneFourth, thirteenSixteenths, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 1, 1, 0.5),
+            loopFireBombs(fiveEigths, thirteenSixteenths, oneEigth, oneEigth, 2.25, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 1, 1, 0.5),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, wholeScreen, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeFourths, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            createActivePoint(oneEigth - 8, sevenEigths - 8, 0),
+ 
+            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneSixteenth, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 0, 0.5, 0.5),
+ 
+            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(oneFourth, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(fiveEigths, oneFourth, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(thirteenSixteenths, oneFourth, oneEigth, oneEigth, 0, 0.5, 0.5),
+ 
+            loopFireBombs(oneSixteenth, sevenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(thirteenSixteenths, sevenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5),
+ 
+            loopFireBombs(oneSixteenth, fiveEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(oneFourth, fiveEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(fiveEigths, fiveEigths, oneEigth, oneEigth, 1, 0.5, 0.5),
+            loopFireBombs(thirteenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 0.5, 0.5),
+ 
+            loopFireBombs(oneFourth, thirteenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5),
+            loopFireBombs(fiveEigths, thirteenSixteenths, oneEigth, oneEigth, 0, 0.5, 0.5)
+        ]);
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelEight() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        createCountdownTimer(35);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, fiveSixteenths),
+            createWall(oneEigth, sevenSixteenths, oneEigth, oneEigth),
+            createWall(threeFourths, sevenSixteenths, oneEigth, oneEigth),
+            createWall(0, elevenSixteenths, wholeScreen, fiveSixteenths),
+            createActivePoint(oneSixteenth - 8, oneHalf - 8, 0),
+            createPassivePoint(fifteenSixteenths - 8, oneHalf - 8, 0, 3),
+ 
+            loopFireBombs(0, fiveSixteenths, oneFourth, oneEigth, 0, 0.7, 0.5),
+            loopFireBombs(0, sevenSixteenths, oneEigth, oneFourth, 0.55, 0.7, 0.5),
+            loopFireBombs(oneEigth, nineSixteenths, oneFourth, oneEigth, 1.1, 0.7, 0.5),
+            loopFireBombs(oneFourth, fiveSixteenths, oneEigth, oneFourth, 1.65, 0.7, 0.5),
+ 
+            loopFireBombs(threeFourths, fiveSixteenths, oneFourth, oneEigth, 0, 0.7, 0.5),
+            loopFireBombs(sevenEigths, sevenSixteenths, oneEigth, oneFourth, 0.55, 0.7, 0.5),
+            loopFireBombs(fiveEigths, nineSixteenths, oneFourth, oneEigth, 1.1, 0.7, 0.5),
+            loopFireBombs(fiveEigths, fiveSixteenths, oneEigth, oneFourth, 1.65, 0.7, 0.5),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneEigth),
+            createWall(0, oneFourth, wholeScreen, oneEigth),
+            createWall(0, fiveEigths, wholeScreen, oneEigth),
+            createWall(0, sevenEigths, wholeScreen, oneEigth),
+            createActivePoint(fifteenSixteenths - 8, oneHalf - 8, 2),
+ 
+            fireBomb(0, oneEigth, oneSixteenth, oneEigth, 0, 0.15),
+            fireBomb(oneSixteenth, oneEigth, oneSixteenth, oneEigth, 0.15, 0.15),
+            fireBomb(oneEigth, oneEigth, oneSixteenth, oneEigth, 0.3, 0.15),
+            fireBomb(threeSixteenths, oneEigth, oneSixteenth, oneEigth, 0.45, 0.15),
+            fireBomb(oneFourth, oneEigth, oneSixteenth, oneEigth, 0.6, 0.15),
+            fireBomb(fiveSixteenths, oneEigth, oneSixteenth, oneEigth, 0.75, 0.15),
+            fireBomb(threeEigths, oneEigth, oneSixteenth, oneEigth, 0.9, 0.15),
+            fireBomb(sevenSixteenths, oneEigth, oneSixteenth, oneEigth, 1.05, 0.15),
+            fireBomb(oneHalf, oneEigth, oneSixteenth, oneEigth, 1.2, 0.15),
+            fireBomb(nineSixteenths, oneEigth, oneSixteenth, oneEigth, 1.35, 0.15),
+            fireBomb(fiveEigths, oneEigth, oneSixteenth, oneEigth, 1.5, 0.15),
+            fireBomb(elevenSixteenths, oneEigth, oneSixteenth, oneEigth, 1.65, 0.15),
+            fireBomb(threeFourths, oneEigth, oneSixteenth, oneEigth, 1.8, 0.15),
+            fireBomb(thirteenSixteenths, oneEigth, oneSixteenth, oneEigth, 1.95, 0.15),
+            fireBomb(sevenEigths, oneEigth, oneSixteenth, oneEigth, 2.1, 0.15),
+            fireBomb(fifteenSixteenths, oneEigth, oneSixteenth, oneEigth, 2.25, 0.15),
+ 
+            fireBomb(0, threeEigths, oneSixteenth, oneFourth, 1, 0.15),
+            fireBomb(oneSixteenth, threeEigths, oneSixteenth, oneFourth, 1.15, 0.15),
+            fireBomb(oneEigth, threeEigths, oneSixteenth, oneFourth, 1.3, 0.15),
+            fireBomb(threeSixteenths, threeEigths, oneSixteenth, oneFourth, 1.45, 0.15),
+            fireBomb(oneFourth, threeEigths, oneSixteenth, oneFourth, 1.6, 0.15),
+            fireBomb(fiveSixteenths, threeEigths, oneSixteenth, oneFourth, 1.75, 0.15),
+            fireBomb(threeEigths, threeEigths, oneSixteenth, oneFourth, 1.9, 0.15),
+            fireBomb(sevenSixteenths, threeEigths, oneSixteenth, oneFourth, 2.05, 0.15),
+            fireBomb(oneHalf, threeEigths, oneSixteenth, oneFourth, 2.2, 0.15),
+            fireBomb(nineSixteenths, threeEigths, oneSixteenth, oneFourth, 2.35, 0.15),
+            fireBomb(fiveEigths, threeEigths, oneSixteenth, oneFourth, 2.5, 0.15),
+            fireBomb(elevenSixteenths, threeEigths, oneSixteenth, oneFourth, 2.65, 0.15),
+            fireBomb(threeFourths, threeEigths, oneSixteenth, oneFourth, 2.8, 0.15),
+            fireBomb(thirteenSixteenths, threeEigths, oneSixteenth, oneFourth, 2.95, 0.15),
+            fireBomb(sevenEigths, threeEigths, oneSixteenth, oneFourth, 3.1, 0.15),
+            fireBomb(fifteenSixteenths, threeEigths, oneSixteenth, oneFourth, 3.25, 0.15),
+ 
+            fireBomb(0, threeFourths, oneSixteenth, oneEigth, 0, 0.15),
+            fireBomb(oneSixteenth, threeFourths, oneSixteenth, oneEigth, 0.15, 0.15),
+            fireBomb(oneEigth, threeFourths, oneSixteenth, oneEigth, 0.3, 0.15),
+            fireBomb(threeSixteenths, threeFourths, oneSixteenth, oneEigth, 0.45, 0.15),
+            fireBomb(oneFourth, threeFourths, oneSixteenth, oneEigth, 0.6, 0.15),
+            fireBomb(fiveSixteenths, threeFourths, oneSixteenth, oneEigth, 0.75, 0.15),
+            fireBomb(threeEigths, threeFourths, oneSixteenth, oneEigth, 0.9, 0.15),
+            fireBomb(sevenSixteenths, threeFourths, oneSixteenth, oneEigth, 1.05, 0.15),
+            fireBomb(oneHalf, threeFourths, oneSixteenth, oneEigth, 1.2, 0.15),
+            fireBomb(nineSixteenths, threeFourths, oneSixteenth, oneEigth, 1.35, 0.15),
+            fireBomb(fiveEigths, threeFourths, oneSixteenth, oneEigth, 1.5, 0.15),
+            fireBomb(elevenSixteenths, threeFourths, oneSixteenth, oneEigth, 1.65, 0.15),
+            fireBomb(threeFourths, threeFourths, oneSixteenth, oneEigth, 1.8, 0.15),
+            fireBomb(thirteenSixteenths, threeFourths, oneSixteenth, oneEigth, 1.95, 0.15),
+            fireBomb(sevenEigths, threeFourths, oneSixteenth, oneEigth, 2.1, 0.15),
+            fireBomb(fifteenSixteenths, threeFourths, oneSixteenth, oneEigth, 2.25, 0.15),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(fifteenSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, oneEigth, oneEigth, sevenEigths),
+            createWall(9 * 16, 0, oneSixteenth, oneEigth),
+            createWall(oneFourth, oneEigth, oneEigth, threeFourths),
+            createWall(oneHalf, oneEigth, oneEigth, fiveSixteenths),
+            createWall(oneHalf, nineSixteenths, oneEigth, sevenSixteenths),
+            createWall(25 * 16, 0, oneSixteenth, oneEigth),
+            createWall(threeFourths, oneEigth, oneEigth, threeFourths),
+            createActivePoint(oneSixteenth - 8, oneSixteenth - 8, 0),
+            createPassivePoint(nineSixteenths - 8, oneHalf - 8, 3, 4),
+ 
+            loopFireBombs(11 * 16, 0, sevenSixteenths, oneSixteenth, 0, 1, 0.3),
+            loopFireBombs(11 * 16, oneSixteenth, sevenSixteenths, oneSixteenth, 0.3, 1, 0.3),
+            loopFireBombs(threeEigths, oneEigth, oneEigth, oneSixteenth, 0.6, 1, 0.3),
+            loopFireBombs(fiveEigths, oneEigth, oneEigth, oneSixteenth, 0.6, 1, 0.3),
+            loopFireBombs(threeEigths, threeSixteenths, oneEigth, oneSixteenth, 0.9, 1, 0.3),
+            loopFireBombs(fiveEigths, threeSixteenths, oneEigth, oneSixteenth, 0.9, 1, 0.3),
+            loopFireBombs(threeEigths, oneFourth, oneEigth, oneSixteenth, 1.2, 1, 0.3),
+            loopFireBombs(fiveEigths, oneFourth, oneEigth, oneSixteenth, 1.2, 1, 0.3),
+            loopFireBombs(threeEigths, fiveSixteenths, oneEigth, oneSixteenth, 1.5, 1, 0.3),
+            loopFireBombs(fiveEigths, fiveSixteenths, oneEigth, oneSixteenth, 1.5, 1, 0.3),
+            loopFireBombs(threeEigths, threeEigths, oneEigth, oneSixteenth, 1.8, 1, 0.3),
+            loopFireBombs(fiveEigths, threeEigths, oneEigth, oneSixteenth, 1.8, 1, 0.3),
+            loopFireBombs(threeEigths, sevenSixteenths, threeEigths, oneSixteenth, 2.1, 1, 0.3),
+            loopFireBombs(threeEigths, oneHalf, threeEigths, oneSixteenth, 2.4, 1, 0.3)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(oneEigth, 0, oneEigth, fiveSixteenths),
+            createWall(oneFourth, 0, threeFourths, oneSixteenth),
+            createWall(oneFourth, threeSixteenths, fiveEigths, oneEigth),
+            createWall(oneEigth, fiveSixteenths, oneEigth, oneEigth),
+            createWall(fiveEigths, fiveSixteenths, oneEigth, oneEigth),
+            createWall(threeEigths, oneHalf, oneEigth, oneEigth),
+            createWall(sevenEigths, oneHalf, oneEigth, oneEigth),
+            createWall(0, fiveEigths, wholeScreen, threeEigths),
+            createActivePoint(oneHalf - 8, oneEigth - 8, 0),
+ 
+            loopFireBombs(oneFourth, fiveSixteenths, threeEigths, oneEigth, 0.7, 1.1, 0.7),
+            loopFireBombs(threeFourths, fiveSixteenths, oneFourth, oneEigth, 2.1, 1.1, 0.7),
+            loopFireBombs(0, oneHalf, threeEigths, oneEigth, 2.8, 1.1, 0.7),
+            loopFireBombs(oneHalf, oneHalf, threeEigths, oneEigth, 1.4, 1.1, 0.7)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, oneSixteenth, oneSixteenth, oneHalf),
+            createWall(threeSixteenths, oneSixteenth, oneSixteenth, oneEigth),
+            createWall(threeFourths, oneSixteenth, oneSixteenth, oneEigth),
+            createWall(threeSixteenths, sevenSixteenths, oneSixteenth, oneEigth),
+            createWall(threeFourths, sevenSixteenths, oneSixteenth, oneEigth),
+            createWall(fifteenSixteenths, oneSixteenth, oneSixteenth, oneHalf),
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(oneSixteenth, threeSixteenths, sevenEigths, oneSixteenth),
+            createWall(oneSixteenth, threeEigths, sevenEigths, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, sevenSixteenths),
+ 
+            fireBomb(oneFourth, oneSixteenth, oneHalf, oneEigth, 0.25, 1),
+            fireBomb(oneFourth, sevenSixteenths, oneHalf, oneEigth, 0.25, 1),
+ 
+            fireBomb(oneFourth, oneSixteenth, oneHalf, oneEigth, 2.25, 1),
+            fireBomb(oneSixteenth, oneFourth, sevenEigths, oneEigth, 2.25, 1),
+            fireBomb(oneFourth, sevenSixteenths, oneHalf, oneEigth, 2.25, 1),
+ 
+            fireBomb(oneSixteenth, oneSixteenth, oneEigth, oneEigth, 4.5, 1),
+            fireBomb(oneFourth, oneSixteenth, oneHalf, oneEigth, 4.5, 1),
+            fireBomb(thirteenSixteenths, oneSixteenth, oneEigth, oneEigth, 4.5, 1),
+            fireBomb(oneFourth, sevenSixteenths, oneHalf, oneEigth, 4.5, 1),
+            fireBomb(thirteenSixteenths, sevenSixteenths, oneEigth, oneEigth, 4.5, 1),
+ 
+            createActivePoint(oneEigth - 8, oneHalf - 8, 5.5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        destroyCountdownTimer();
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelNine() {
     try {
-
+        initializeLevel(oneEigth + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, wholeScreen, threeEigths),
+            fireMovingActivePoint(threeFourths - 8, oneHalf - 8, 0.6, 0, 0)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(fifteenSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, sevenSixteenths),
+            createWall(oneEigth, nineSixteenths, sevenEigths, fiveSixteenths),
+            fireMovingActivePoint(fifteenSixteenths - 8, fifteenSixteenths - 8, -1.65, 0, 0),
+ 
+            loopFireBombs(9 * 16, sevenSixteenths, oneSixteenth, oneEigth, 2.4, 1, 0.2),
+            loopFireBombs(11 * 16, sevenSixteenths, oneSixteenth, oneEigth, 2.2, 1, 0.2),
+            loopFireBombs(13 * 16, sevenSixteenths, oneSixteenth, oneEigth, 2, 1, 0.2),
+            loopFireBombs(15 * 16, sevenSixteenths, oneSixteenth, oneEigth, 1.8, 1, 0.2),
+            loopFireBombs(17 * 16, sevenSixteenths, oneSixteenth, oneEigth, 1.6, 1, 0.2),
+            loopFireBombs(19 * 16, sevenSixteenths, oneSixteenth, oneEigth, 1.4, 1, 0.2),
+            loopFireBombs(21 * 16, sevenSixteenths, oneSixteenth, oneEigth, 1.2, 1, 0.2),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, sevenEigths, sevenSixteenths),
+            createWall(0, nineSixteenths, sevenEigths, fiveSixteenths),
+            fireMovingActivePoint(fifteenSixteenths - 8, oneHalf - 8, 0, -0.25, 0),
+            fireMovingPassivePoint(fifteenSixteenths - 8, oneHalf - 8, -0.8, 0, 0, 15),
+            loopFireBombs(oneEigth, sevenSixteenths, fiveSixteenths, oneEigth, 0, 0.5, 0.75),
+            loopFireBombs(nineSixteenths, sevenSixteenths, fiveSixteenths, oneEigth, 0, 0.5, 0.75),
+            loopFireBombs(11 * 16, sevenEigths, fiveSixteenths, oneEigth, 0, 0.5, 0.75)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(sevenEigths + blockieAdjustment, oneEigth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(threeSixteenths, oneSixteenth, fiveEigths, threeFourths),
+            createWall(oneSixteenth, thirteenSixteenths, oneEigth, oneEigth),
+            createWall(thirteenSixteenths, thirteenSixteenths, oneEigth, oneEigth),
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, fiveSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, oneHalf, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            fireMovingActivePoint(oneEigth - 8, threeFourths - 8, 0, -0.55, 0),
+            loopFireBombs(oneSixteenth, threeEigths, oneEigth, oneEigth, 2, 0.7, 0.75),
+            loopFireBombs(thirteenSixteenths, threeEigths, oneEigth, oneEigth, 2, 0.7, 0.75),
+            loopFireBombs(threeFourths, thirteenSixteenths, oneSixteenth, oneEigth, 0, 0.35, 0.15),
+            loopFireBombs(elevenSixteenths, thirteenSixteenths, oneSixteenth, oneEigth, 0.15, 0.35, 0.15),
+            loopFireBombs(fiveEigths, thirteenSixteenths, oneSixteenth, oneEigth, 0.3, 0.35, 0.15),
+            loopFireBombs(nineSixteenths, thirteenSixteenths, oneSixteenth, oneEigth, 0.45, 0.35, 0.15),
+            loopFireBombs(oneHalf, thirteenSixteenths, oneSixteenth, oneEigth, 0.6, 0.35, 0.15),
+            loopFireBombs(sevenSixteenths, thirteenSixteenths, oneSixteenth, oneEigth, 0.75, 0.35, 0.15),
+            loopFireBombs(threeEigths, thirteenSixteenths, oneSixteenth, oneEigth, 0.9, 0.35, 0.15),
+            loopFireBombs(fiveSixteenths, thirteenSixteenths, oneSixteenth, oneEigth, 1.05, 0.35, 0.15),
+            loopFireBombs(oneFourth, thirteenSixteenths, oneSixteenth, oneEigth, 1.2, 0.35, 0.15),
+            loopFireBombs(threeSixteenths, thirteenSixteenths, oneSixteenth, oneEigth, 1.35, 0.35, 0.15)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneEigth + blockieAdjustment, oneEigth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, thirteenSixteenths, oneSixteenth),
+            createWall(0, nineSixteenths, fiveEigths, oneSixteenth),
+            createWall(0, threeFourths, sevenSixteenths, oneSixteenth),
+            createWall(0, fifteenSixteenths, oneFourth, oneSixteenth),
+            createWall(threeFourths, threeFourths, oneFourth, oneSixteenth),
+            createWall(fiveEigths, fifteenSixteenths, threeEigths, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, thirteenSixteenths),
+            createWall(nineSixteenths, 0, oneSixteenth, fiveEigths),
+            createWall(threeFourths, 0, oneSixteenth, sevenSixteenths),
+            createWall(fifteenSixteenths, 0, oneSixteenth, oneFourth),
+            createWall(threeFourths, threeFourths, oneSixteenth, oneFourth),
+            createWall(fifteenSixteenths, fiveEigths, oneSixteenth, threeEigths),
+            fireMovingActivePoint(sevenEigths - 8, oneHalf - 8, -0.55, 0.55, 0),
+ 
+            loopFireBombs(oneSixteenth, oneSixteenth, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(oneFourth, oneSixteenth, oneEigth, oneEigth, 0, 1, 0.5),
+            loopFireBombs(sevenSixteenths, oneSixteenth, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(fiveEigths, oneSixteenth, oneEigth, oneEigth, 0, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, oneSixteenth, oneEigth, oneEigth, 1.25, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, oneFourth, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(oneFourth, oneFourth, oneEigth, oneEigth, 0, 1, 0.5),
+            loopFireBombs(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(fiveEigths, oneFourth, oneEigth, oneEigth, 0, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, sevenSixteenths, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0, 1, 0.5),
+            loopFireBombs(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 1.25, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, fiveEigths, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(oneFourth, fiveEigths, oneEigth, oneEigth, 0, 1, 0.5),
+ 
+            loopFireBombs(oneSixteenth, thirteenSixteenths, oneEigth, oneEigth, 1.25, 1, 0.5),
+            loopFireBombs(thirteenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 1.25, 1, 0.5),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(oneSixteenth, oneSixteenth, 13.5 * 16, nineSixteenths),
+            createWall(16.5 * 16, oneSixteenth, 13.5 * 16, nineSixteenths),
+            createWall(oneSixteenth, fiveEigths, oneEigth, fiveSixteenths),
+            createWall(thirteenSixteenths, fiveEigths, oneEigth, fiveSixteenths),
+            fireMovingActivePoint(oneHalf - 8, oneSixteenth, 0, 0.4, 0),
+ 
+            fireBomb(threeSixteenths, 25 * 16, fiveEigths, 5 * 16, 1, 0.5),
+            fireBomb(threeSixteenths, fiveEigths, fiveEigths, 5 * 16, 2.5, 0.5),
+ 
+            fireBomb(threeSixteenths, fiveEigths, 5 * 16, fiveSixteenths, 4.5, 0.5),
+            fireBomb(oneHalf, fiveEigths, 5 * 16, fiveSixteenths, 4.5, 0.5),
+            fireBomb(11 * 16, fiveEigths, 5 * 16, fiveSixteenths, 6, 0.5),
+            fireBomb(21 * 16, fiveEigths, 5 * 16, fiveSixteenths, 6, 0.5),
+ 
+            fireBomb(threeSixteenths, fiveEigths, 5 * 16, 5 * 16, 7.8, 0.4),
+            fireBomb(11 * 16, 25 * 16, 5 * 16, 5 * 16, 8, 0.4),
+            fireBomb(oneHalf, fiveEigths, 5 * 16, 5 * 16, 8.2, 0.4),
+            fireBomb(21 * 16, 25 * 16, 5 * 16, 5 * 16, 8.4, 0.4),
+ 
+            fireBomb(threeSixteenths, 25 * 16, 5 * 16, 5 * 16, 10, 0.4),
+            fireBomb(11 * 16, fiveEigths, 5 * 16, 5 * 16, 10.2, 0.4),
+            fireBomb(oneHalf, 25 * 16, 5 * 16, 5 * 16, 10.4, 0.4),
+            fireBomb(21 * 16, fiveEigths, 5 * 16, 5 * 16, 10.6, 0.4),
+ 
+            fireBomb(threeSixteenths, fiveEigths, fiveEigths, fiveSixteenths, 12.7, 10)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelTen() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, elevenSixteenths + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, wholeScreen),
+            createWall(fiveEigths, 0, threeEigths, wholeScreen),
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 0, 0, 12),
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 3, 0, 12),
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 6, 0, 12),
+            loopFireMovingWalls(threeEigths, -oneSixteenth, oneFourth, oneSixteenth, 0, 1.5, 9, 0, 12),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(oneSixteenth, 0, fiveSixteenths, threeSixteenths),
+            createWall(fiveEigths, 0, fiveSixteenths, threeSixteenths),
+            createWall(oneSixteenth, 13 * 16, fiveSixteenths, threeSixteenths),
+            createWall(fiveEigths, 13 * 16, fiveSixteenths, threeSixteenths),
+            createWall(oneSixteenth, thirteenSixteenths, fiveSixteenths, threeSixteenths),
+            createWall(fiveEigths, thirteenSixteenths, fiveSixteenths, threeSixteenths),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+ 
+            fireContinuallyMovingWall(oneSixteenth, threeSixteenths, 7 * 17, 7 * 16, 1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(23 * 16, threeSixteenths, 7 * 17, 7 * 16, -1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(oneSixteenth, 19 * 16, 7 * 16, 7 * 16, 1.5, 0, 0, 1.25),
+            fireContinuallyMovingWall(23 * 16, 19 * 16, 7 * 16, 7 * 16, -1.5, 0, 0, 1.25),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, oneEigth),
+            createWall(fiveEigths, 0, threeEigths, oneEigth),
+            createWall(0, sevenEigths, threeEigths, oneEigth),
+            createWall(fiveEigths, sevenEigths, threeEigths, oneEigth),
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            loopFireBombs(0, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
+            loopFireBombs(sevenEigths, oneEigth, oneEigth, threeFourths, 0, 0, 1000000),
+ 
+            fireContinuallyMovingWall(oneEigth, oneEigth, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
+            fireContinuallyMovingWall(fiveEigths, threeEigths, oneFourth, oneFourth, -1.5, 0, 0, 2.9),
+            fireContinuallyMovingWall(oneEigth, fiveEigths, oneFourth, oneFourth, 1.5, 0, 0, 2.9),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, oneEigth),
+            createWall(0, oneEigth, 25 * 16, 3 * 16),
+            createWall(0, 7 * 16, sevenEigths, 7 * 16),
+            createWall(oneEigth, sevenSixteenths, fiveSixteenths, oneEigth),
+            createWall(oneEigth, nineSixteenths, threeFourths, 7 * 16),
+            createWall(7 * 16, 25 * 16, nineSixteenths, 3 * 16),
+            createActivePoint(oneSixteenth - 8, oneHalf - 8, 0),
+            createPassivePoint(oneHalf - 8, oneHalf - 8, 0, 3.5),
+ 
+            loopFireMovingWalls(sevenEigths, -3 * 16, oneEigth, oneSixteenth, 0, 3, 1.3, 1.21, 1.33),
+            loopFireMovingWalls(sevenEigths, 33 * 16, oneEigth, oneSixteenth, 0, -3, 1.3, 1.21, 1.33),
+ 
+            loopFireMovingWalls(11 * 16, sevenSixteenths, oneSixteenth, oneEigth, 3, 0, 1.3, 0.85, 1.69),
+ 
+            loopFireMovingWalls(-3 * 16, sevenEigths, oneSixteenth, oneEigth, 3, 0, 0, 1, 1.54),
+            loopFireMovingWalls(33 * 16, sevenEigths, oneSixteenth, oneEigth, -3, 0, 0, 1, 1.54)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            fireMovingWall(-33 * 16, 0, wholeScreen, wholeScreen, 1.2, 0, 0.5, 15),
+ 
+            fireMovingWall(0, 0, oneSixteenth, threeEigths, 0, -0.2, 0, 10),
+            fireMovingWall(0, fiveEigths, oneSixteenth, wholeScreen, 0, -0.2, 0, 10),
+ 
+            fireMovingWall(oneSixteenth, 0, oneSixteenth, threeEigths, 0, -0.35, 0, 10),
+            fireMovingWall(oneSixteenth, fiveEigths, oneSixteenth, wholeScreen, 0, -0.35, 0, 10),
+ 
+            fireMovingWall(oneEigth, 0, oneSixteenth, threeEigths, 0, -0.45, 0, 10),
+            fireMovingWall(oneEigth, fiveEigths, oneSixteenth, wholeScreen, 0, -0.45, 0, 10),
+ 
+            fireMovingWall(threeSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
+            fireMovingWall(threeSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.5, 0, 10),
+ 
+            fireMovingWall(oneFourth, 0, oneSixteenth, threeEigths, 0, -0.55, 0, 10),
+            fireMovingWall(oneFourth, fiveEigths, oneSixteenth, wholeScreen, 0, -0.55, 0, 10),
+ 
+            fireMovingWall(fiveSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
+            fireMovingWall(fiveSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.5, 0, 10),
+ 
+            fireMovingWall(threeEigths, 0, oneSixteenth, threeEigths, 0, -0.45, 0, 10),
+            fireMovingWall(threeEigths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.45, 0, 10),
+ 
+            fireMovingWall(sevenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.35, 0, 10),
+            fireMovingWall(sevenSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.35, 0, 10),
+ 
+            fireMovingWall(oneHalf, 0, oneSixteenth, threeEigths, 0, -0.2, 0, 10),
+            fireMovingWall(oneHalf, fiveEigths, oneSixteenth, wholeScreen, 0, -0.2, 0, 10),
+ 
+            fireMovingWall(nineSixteenths, 0, oneSixteenth, threeEigths, 0, -0.1, 0, 10),
+            fireMovingWall(nineSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.1, 0, 10),
+ 
+            fireMovingWall(fiveEigths, 0, oneSixteenth, threeEigths, 0, -0.15, 0, 10),
+            fireMovingWall(fiveEigths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.15, 0, 10),
+ 
+            fireMovingWall(elevenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.27, 0, 10),
+            fireMovingWall(elevenSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.27, 0, 10),
+ 
+            fireMovingWall(threeFourths, 0, oneSixteenth, threeEigths, 0, -0.4, 0, 10),
+            fireMovingWall(threeFourths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.4, 0, 10),
+ 
+            fireMovingWall(thirteenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.5, 0, 10),
+            fireMovingWall(thirteenSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.5, 0, 10),
+ 
+            fireMovingWall(sevenEigths, 0, oneSixteenth, threeEigths, 0, -0.55, 0, 10),
+            fireMovingWall(sevenEigths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.55, 0, 10),
+ 
+            fireMovingWall(fifteenSixteenths, 0, oneSixteenth, threeEigths, 0, -0.6, 0, 10),
+            fireMovingWall(fifteenSixteenths, fiveEigths, oneSixteenth, wholeScreen, 0, -0.6, 0, 10),
+ 
+            createActivePoint(fifteenSixteenths - 8, oneSixteenth - 8, 5.1)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(fifteenSixteenths + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createActivePoint(oneSixteenth - 8, fifteenSixteenths - 8, 0),
+ 
+            createWall(0, 0, sevenEigths, oneEigth),
+ 
+            fireContinuallyMovingWall(-wholeScreen, oneEigth, wholeScreen, oneEigth, 1.5, 0, 0, 4.98),
+            fireContinuallyMovingWall(oneEigth, oneEigth, wholeScreen, oneEigth, 1.5, 0, 0, 4.98),
+ 
+            createWall(0, oneFourth, wholeScreen, oneSixteenth),
+ 
+            fireContinuallyMovingWall(-oneEigth, fiveSixteenths, wholeScreen, oneEigth, -1.5, 0, 0, 4.98),
+            fireContinuallyMovingWall(wholeScreen, fiveSixteenths, wholeScreen, oneEigth, -1.5, 0, 0, 4.98),
+ 
+            createWall(0, sevenSixteenths, wholeScreen, oneSixteenth),
+ 
+            createWall(0, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(oneSixteenth, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
+            createWall(threeSixteenths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(oneFourth, oneHalf, oneEigth, oneEigth, 2.85, 4, 0.7),
+            createWall(threeEigths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(sevenSixteenths, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
+            createWall(nineSixteenths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(fiveEigths, oneHalf, oneEigth, oneEigth, 2.85, 4, 0.7),
+            createWall(threeFourths, oneHalf, oneSixteenth, oneEigth),
+            loopFireBombs(thirteenSixteenths, oneHalf, oneEigth, oneEigth, 0, 4, 0.7),
+            createWall(fifteenSixteenths, oneHalf, oneSixteenth, oneEigth),
+ 
+            createWall(0, fiveEigths, wholeScreen, oneSixteenth),
+ 
+            loopFireBombs(0, elevenSixteenths, oneFourth, oneEigth, 0, 0, 1000000),
+            fireContinuallyMovingWall(oneFourth, elevenSixteenths, oneSixteenth, oneEigth, 2, 0, 0, 1.9),
+            loopFireBombs(threeFourths, elevenSixteenths, oneFourth, oneEigth, 0, 0, 1000000),
+ 
+            createWall(0, thirteenSixteenths, wholeScreen, oneSixteenth),
+ 
+            loopFireBombs(0, sevenEigths, wholeScreen, oneEigth, 0, 2, 1)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelEleven() {
     try {
-
+        initializeLevel(oneSixteenth + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, oneEigth, oneEigth, oneSixteenth),
+            createWall(oneEigth, 0, oneEigth, wholeScreen),
+            createWall(oneFourth, oneEigth, oneEigth, oneSixteenth),
+            createWall(threeEigths, 0, fiveEigths, wholeScreen),
+            createActivePoint(oneSixteenth - 8, oneSixteenth - 8, 0),
+            createPassivePoint(fiveSixteenths - 8, oneSixteenth - 8, 0, 8.5),
+ 
+            fireMovingBomb(oneFourth, wholeScreen, oneEigth, wholeScreen, 0, -2, 0, 3.45),
+            fireBomb(oneFourth, threeSixteenths, oneEigth, thirteenSixteenths, 3.45, 12),
+ 
+            fireMovingBomb(0, wholeScreen, oneEigth, wholeScreen, 0, -1.7, 4.5, 12),
+ 
+            fireBomb(0, 0, oneEigth, oneEigth, 1.3, 12)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth - 8, oneSixteenth - 8);
+ 
+        await Promise.all([
+            createWall(0, oneEigth, sevenSixteenths, sevenEigths),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+            createWall(sevenSixteenths, 25 * 16, oneEigth, oneSixteenth),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+ 
+            fireMovingBomb(sevenSixteenths, 33 * 16, oneEigth, 34 * 16, 0, -0.45, 0, 20.5),
+            fireBomb(sevenSixteenths, 0, oneEigth, wholeScreen, 20.5, 1000000)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, threeEigths, oneEigth),
+            createWall(fiveEigths, 0, threeEigths, oneEigth),
+            createWall(0, oneEigth, oneEigth, threeFourths),
+            createWall(oneFourth, oneFourth, oneEigth, oneHalf),
+            createWall(fiveEigths, oneFourth, oneEigth, oneHalf),
+            createWall(sevenEigths, oneEigth, oneEigth, threeFourths),
+            createWall(0, sevenEigths, threeEigths, oneEigth),
+            createWall(fiveEigths, sevenEigths, threeEigths, oneEigth),
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            loopFireMovingBombs(oneEigth, oneFourth, oneEigth, oneSixteenth, 0, 1.2, 0, 2, 4),
+ 
+            loopFireMovingBombs(threeEigths, oneFourth, oneFourth, oneSixteenth, 0, 1.86, 0, 1, 2),
+            loopFireMovingBombs(threeEigths, oneFourth, oneFourth, oneSixteenth, 0, 1.86, 2, 1, 2),
+ 
+            loopFireMovingBombs(threeFourths, oneEigth, oneEigth, oneSixteenth, 0, 2.35, 0, 0.1, 2.5),
+            loopFireMovingBombs(threeFourths, oneEigth, oneEigth, oneSixteenth, 0, 2.35, 1.2, 0.1, 2.5),
+            loopFireMovingBombs(threeFourths, oneEigth, oneEigth, oneSixteenth, 0, 2.35, 2.4, 0.1, 2.5)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+            createActivePoint(oneHalf - 8, fifteenSixteenths - 8, 0),
+ 
+            fireContinuallyMovingBomb(threeSixteenths, oneEigth, oneEigth, oneSixteenth, 1.79, 0, 0, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, threeSixteenths, oneEigth, oneSixteenth, 1.79, 0, 0.6, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, oneFourth, oneEigth, oneSixteenth, 1.79, 0, 1.2, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, fiveSixteenths, oneEigth, oneSixteenth, 1.79, 0, 1.8, 2.4),
+            fireContinuallyMovingBomb(elevenSixteenths, threeEigths, oneEigth, oneSixteenth, -1.79, 0, 0, 2.4),
+            fireContinuallyMovingBomb(elevenSixteenths, sevenSixteenths, oneEigth, oneSixteenth, -1.79, 0, 0.6, 2.4),
+            fireContinuallyMovingBomb(elevenSixteenths, oneHalf, oneEigth, oneSixteenth, -1.79, 0, 1.2, 2.4),
+            fireContinuallyMovingBomb(elevenSixteenths, nineSixteenths, oneEigth, oneSixteenth, -1.79, 0, 1.8, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, fiveEigths, oneEigth, oneSixteenth, 1.79, 0, 0, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, elevenSixteenths, oneEigth, oneSixteenth, 1.79, 0, 0.6, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, threeFourths, oneEigth, oneSixteenth, 1.79, 0, 1.2, 2.4),
+            fireContinuallyMovingBomb(threeSixteenths, thirteenSixteenths, oneEigth, oneSixteenth, 1.79, 0, 1.8, 2.4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(oneEigth, 0, fiveSixteenths, oneEigth),
+            createWall(nineSixteenths, 0, threeEigths, oneEigth),
+            createWall(oneEigth, sevenEigths, fiveSixteenths, oneEigth),
+            createWall(nineSixteenths, sevenEigths, threeEigths, oneEigth),
+            createWall(0, 0, oneEigth, wholeScreen),
+            createWall(sevenEigths, 0, oneEigth, wholeScreen),
+            createActivePoint(oneHalf - 8, oneSixteenth - 8, 0),
+ 
+            fireContinuallyMovingBomb(oneEigth, oneEigth, threeFourths, oneSixteenth, 0, 1.4, 0, 4.2),
+            fireContinuallyMovingBomb(oneEigth, thirteenSixteenths, threeFourths, oneSixteenth, 0, -1.4, 0, 4.2),
+ 
+            fireContinuallyMovingBomb(threeFourths, oneEigth, oneEigth, threeFourths, -1.28, 0, 0, 4.2)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneSixteenth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(oneEigth, oneEigth, threeFourths, oneEigth),
+ 
+            createWall(oneEigth, oneFourth, oneEigth, oneEigth),
+            createWall(threeEigths, oneFourth, oneFourth, oneEigth),
+            createWall(threeFourths, oneFourth, oneFourth, oneEigth),
+ 
+            createWall(oneEigth, oneHalf, fiveSixteenths, oneEigth),
+            createWall(nineSixteenths, oneHalf, fiveSixteenths, oneEigth),
+ 
+            createWall(0, fiveEigths, sevenEigths, oneFourth),
+            createWall(sevenEigths, thirteenSixteenths, oneEigth, oneSixteenth),
+            fireMovingActivePoint(fifteenSixteenths - 8, fifteenSixteenths - 8, -0.42, 0, 0),
+            createPassivePoint(fifteenSixteenths - 8, threeSixteenths - 8, 3, 7),
+ 
+            loopFireMovingBombs(wholeScreen, threeEigths, oneEigth, oneEigth, -9, 0, 0, 0, 1),
+ 
+            fireBomb(0, sevenEigths, oneEigth, oneEigth, 0, 19.3)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelTwelve() {
     try {
-
+        initializeLevel(oneSixteenth + blockieAdjustment, fifteenSixteenths + blockieAdjustment);
+ 
+        cancelAwaitChain = false;
+ 
+        createCountdownTimer(80);
+ 
+        await Promise.all([
+            createWall(oneEigth, oneHalf, sevenEigths, oneEigth),
+            createWall(0, threeFourths, sevenEigths, oneEigth),
+ 
+            fireBomb(0, oneHalf, oneEigth, oneEigth, 0, 4.5),
+ 
+            fireBomb(11 * 16, fiveEigths, fiveSixteenths, oneEigth, 0, 0.75),
+            fireBomb(11 * 16, fiveEigths, fiveSixteenths, oneEigth, 2.25, 0.75),
+            fireBomb(11 * 16, fiveEigths, fiveSixteenths, oneEigth, 4.5, 0.75),
+ 
+            fireBomb(11 * 16, sevenEigths, fiveSixteenths, oneEigth, 1.125, 0.75),
+            fireBomb(11 * 16, sevenEigths, fiveSixteenths, oneEigth, 3.375, 0.75),
+ 
+            fireBomb(0, oneHalf, oneEigth, oneEigth, 7, 1000000),
+            fireBomb(0, fiveEigths, wholeScreen, oneEigth, 7, 1000000),
+            fireBomb(sevenEigths, threeFourths, oneEigth, oneEigth, 7, 1000000),
+            fireBomb(0, sevenEigths, wholeScreen, oneEigth, 7, 1000000),
+ 
+            fireBomb(threeSixteenths, oneEigth, 3 * 16, 3 * 16, 7.5, 2),
+            fireBomb(oneSixteenth, oneFourth, 3 * 16, 3 * 16, 7.5, 2),
+            fireBomb(threeSixteenths, oneFourth, 3 * 16, 3 * 16, 7.5, 2),
+            fireBomb(fiveSixteenths, oneFourth, 3 * 16, 3 * 16, 7.5, 2),
+ 
+            fireBomb(elevenSixteenths, oneEigth, 3 * 16, 3 * 16, 7.5, 2),
+            fireBomb(nineSixteenths, oneFourth, 3 * 16, 3 * 16, 7.5, 2),
+            fireBomb(elevenSixteenths, oneFourth, 3 * 16, 3 * 16, 7.5, 2),
+            fireBomb(thirteenSixteenths, oneFourth, 3 * 16, 3 * 16, 7.5, 2),
+ 
+            fireMovingBomb(-threeFourths, 0, threeFourths, oneHalf, 0.34, 0, 9.5, 11.5),
+ 
+            createActivePoint(oneHalf - 8, fiveSixteenths - 8, 21),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 9.5, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 10.62, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 11.74, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 12.86, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 13.98, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 15.1, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 16.22, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 17.34, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 18.46, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 19.58, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 20.7, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 21.82, 7),
+            fireMovingBomb(wholeScreen, 0, oneSixteenth, oneHalf, -2, 0, 22.94, 7),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, fiveSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(sevenSixteenths, 0, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeEigths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeFourths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+ 
+            fireMovingHorizontalLaser(0, oneSixteenth, 1.2, 0, 3.98),
+            fireMovingHorizontalLaser(fifteenSixteenths, oneSixteenth, -0.4, 0, 3.98),
+ 
+            fireMovingHorizontalLaser(0, oneSixteenth, 1.2, 4, 7),
+            fireMovingHorizontalLaser(0, oneEigth, 1.2, 7, 4.85),
+            fireMovingHorizontalLaser(0, oneSixteenth, 3.2, 11, 3.5),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 16),
+            fireMovingBomb(thirteenSixteenths, oneSixteenth, oneEigth, oneEigth, -2, 0, 15, 1.6),
+            fireMovingBomb(oneSixteenth, oneFourth, oneEigth, oneEigth, 2, 0, 15, 1.6),
+            fireMovingBomb(thirteenSixteenths, fiveEigths, oneEigth, oneEigth, -2, 0, 15, 1.6),
+            fireMovingBomb(oneSixteenth, thirteenSixteenths, oneEigth, oneEigth, 2, 0, 15, 1.6)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(oneEigth, oneEigth, threeFourths, oneEigth),
+            createWall(oneFourth, threeEigths, oneHalf, oneSixteenth),
+            createWall(oneFourth, nineSixteenths, oneHalf, oneSixteenth),
+            createWall(oneEigth, threeFourths, threeFourths, oneEigth),
+            createWall(oneEigth, oneFourth, oneEigth, oneHalf),
+            createWall(threeEigths, oneFourth, oneSixteenth, oneHalf),
+            createWall(nineSixteenths, oneFourth, oneSixteenth, oneHalf),
+            createWall(threeFourths, oneFourth, oneEigth, oneHalf),
+ 
+            fireMovingWall(0, -oneEigth, 36 * 16, oneEigth, -1.8, 1.8, 0, 2.9),
+            fireMovingWall(wholeScreen, -oneEigth, oneEigth, 36 * 16, -1.8, 1.8, 0, 2.9),
+ 
+            fireMovingWall(-oneEigth, wholeScreen, 36 * 16, oneEigth, 1.8, -1.8, 3, 2.9),
+            fireMovingWall(-oneEigth, 0, oneEigth, 36 * 16, 1.8, -1.8, 3, 2.9),
+ 
+            fireMovingWall(0, -oneEigth, wholeScreen, oneEigth, 0, 2.3, 5.9, 2.28),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 10.4),
+            fireMovingWall(0, -wholeScreen, wholeScreen, wholeScreen, 0, 1.5, 9, 4),
+            fireMovingWall(-wholeScreen, 0, wholeScreen, wholeScreen, 1.5, 0, 9, 4),
+            fireMovingWall(0, wholeScreen, wholeScreen, wholeScreen, 0, -1.5, 9, 4),
+            fireMovingWall(wholeScreen, 0, wholeScreen, wholeScreen, -1.5, 0, 9, 4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, oneSixteenth, oneSixteenth, sevenEigths),
+            createWall(fifteenSixteenths, oneSixteenth, oneSixteenth, sevenEigths),
+ 
+            fireContinuallyMovingWall(oneSixteenth, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 0, 1.75),
+            fireContinuallyMovingWall(threeSixteenths, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 0.35, 1.75),
+            fireContinuallyMovingWall(fiveSixteenths, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 0.7, 1.75),
+            fireContinuallyMovingWall(sevenSixteenths, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 1.05, 1.75),
+            fireContinuallyMovingWall(nineSixteenths, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 1.4, 1.75),
+            fireContinuallyMovingWall(elevenSixteenths, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 1.75, 1.75),
+            fireContinuallyMovingWall(thirteenSixteenths, oneSixteenth, oneEigth, oneSixteenth, 0, 1.5, 2.1, 1.75),
+ 
+            fireContinuallyMovingWall(oneSixteenth, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 0, 1.75),
+            fireContinuallyMovingWall(threeSixteenths, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 0.35, 1.75),
+            fireContinuallyMovingWall(fiveSixteenths, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 0.7, 1.75),
+            fireContinuallyMovingWall(sevenSixteenths, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 1.05, 1.75),
+            fireContinuallyMovingWall(nineSixteenths, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 1.4, 1.75),
+            fireContinuallyMovingWall(elevenSixteenths, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 1.75, 1.75),
+            fireContinuallyMovingWall(thirteenSixteenths, sevenEigths, oneEigth, oneSixteenth, 0, -1.5, 2.1, 1.75),
+ 
+            fireMovingBomb(oneSixteenth, oneSixteenth, oneEigth, oneEigth, 2.8, 0, 0.73, 2.28),
+            fireMovingBomb(oneSixteenth, thirteenSixteenths, oneEigth, oneEigth, 2.8, 0, 0.73, 2.28),
+ 
+            fireMovingBomb(oneSixteenth, threeEigths, oneEigth, oneFourth, 2.8, 0, 2.48, 2.28),
+ 
+            fireMovingBomb(oneSixteenth, oneSixteenth, oneEigth, oneEigth, 2.8, 0, 4.23, 2.28),
+            fireMovingBomb(oneSixteenth, thirteenSixteenths, oneEigth, oneEigth, 2.8, 0, 4.23, 2.28),
+ 
+            fireMovingBomb(oneSixteenth, threeEigths, oneEigth, oneFourth, 2.8, 0, 5.98, 2.28),
+ 
+            createActivePoint(oneHalf - 8, oneHalf - 8, 8.8)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(0, threeSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeEigths, wholeScreen, oneSixteenth),
+            createWall(0, nineSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, threeFourths, wholeScreen, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, wholeScreen),
+            createWall(threeSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeEigths, 0, oneSixteenth, wholeScreen),
+            createWall(nineSixteenths, 0, oneSixteenth, wholeScreen),
+            createWall(threeFourths, 0, oneSixteenth, wholeScreen),
+            createWall(fifteenSixteenths, 0, oneSixteenth, wholeScreen),
+ 
+            fireMovingWall(-wholeScreen, 0, wholeScreen, wholeScreen, 0.75, 0, 0, 1000000),
+            fireMovingWall(0, wholeScreen, wholeScreen, wholeScreen, 0, -0.75, 0, 1000000),
+ 
+            fireBomb(oneFourth, oneFourth, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(fiveEigths, oneFourth, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(oneFourth, fiveEigths, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0, 1.8),
+            fireBomb(fiveEigths, fiveEigths, oneEigth, oneEigth, 0, 1.8),
+ 
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 1.8, 1.8),
+            fireBomb(fiveEigths, oneFourth, oneEigth, oneEigth, 1.8, 1.8),
+            fireBomb(thirteenSixteenths, sevenSixteenths, oneEigth, oneEigth, 1.8, 1.8),
+ 
+            fireBomb(fiveEigths, oneFourth, oneEigth, oneEigth, 3.6, 1.8),
+            fireBomb(thirteenSixteenths, oneSixteenth, oneEigth, oneEigth, 3.6, 1.8),
+ 
+            createActivePoint(sevenEigths - 8, oneEigth - 8, 7.2)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            loopFireBombs(0, oneFourth, oneEigth, oneSixteenth, 0, 0.3, 1),
+            loopFireBombs(oneEigth, oneEigth, oneFourth, sevenEigths, 0, 0.3, 1),
+            loopFireBombs(oneHalf, 0, oneFourth, sevenEigths, 0, 0.3, 1),
+            fireMovingActivePoint(oneSixteenth - 8, threeEigths - 8, 0, 0.4, 0),
+ 
+            fireContinuallyMovingWall(oneEigth, 0, oneSixteenth, oneEigth, 2.5, 0, 0, 0.65),
+            fireContinuallyMovingBomb(threeEigths, fifteenSixteenths, oneEigth, oneSixteenth, 0, -2.5, 0, 3.2),
+            fireContinuallyMovingBomb(threeFourths, oneFourth, oneFourth, oneSixteenth, 0, 2.5, 0, 1.9),
+            fireContinuallyMovingWall(elevenSixteenths, sevenEigths, oneSixteenth, oneEigth, -2.5, 0, 0, 0.65)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        destroyCountdownTimer();
+ 
+        endLevel();
     } catch (error) {};
 };
 
 async function levelEnd() {
     try {
-
+        initializeLevel(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await fireBomb(blockie.x - 8, blockie.y - 8, 48, 48, 0.7, 0.4),
+ 
+        cancelAwaitChain = false;
+ 
+        await fireBomb(blockie.x - oneSixteenth, blockie.y - oneSixteenth, threeSixteenths, threeSixteenths, 0, 0.4);
+ 
+        cancelAwaitChain = false;
+ 
+        await fireBomb(blockie.x - 40, blockie.y - 40, 112, 112, 0, 0.4);
+ 
+        cancelAwaitChain = false;
+ 
+        await fireBomb(blockie.x - 48, blockie.y - 48, oneFourth, oneFourth, 0, 0.4);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            fireMovingHorizontalLaser(blockie.y - oneFourth, oneSixteenth, 1, 0.2, 1.9),
+            fireMovingHorizontalLaser(blockie.y + blockie.height + threeSixteenths, oneSixteenth, -1, 0.2, 1.9),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            fireMovingVerticalLaser(blockie.x - oneFourth, oneSixteenth, 1, 0.2, 1.9),
+            fireMovingVerticalLaser(blockie.x + blockie.height + threeSixteenths, oneSixteenth, -1, 0.2, 1.9),
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(threeSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, threeEigths),
+            createWall(0, fiveEigths, wholeScreen, threeEigths),
+            fireMovingActivePoint(thirteenSixteenths - 8, oneHalf - 8, 3, 0, 0),
+            fireMovingWall(wholeScreen, 0, wholeScreen, wholeScreen, -3, 0, 0.7, 2.5),
+ 
+            setEndScreenTimeout(4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, threeSixteenths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, 92, threeEigths),
+            createWall(100, 0, 92, threeEigths),
+            createWall(fiveEigths, 0, 92, threeEigths),
+            createWall(fiveEigths + 100, 0, 92, threeEigths),
+            createWall(0, fiveEigths, 92, threeEigths),
+            createWall(100, fiveEigths, 92, threeEigths),
+            createWall(fiveEigths, fiveEigths, 92, threeEigths),
+            createWall(fiveEigths + 100, fiveEigths, 92, threeEigths),
+ 
+            fireMovingHorizontalLaser(-wholeScreen, wholeScreen, 2, 0, 2.65),
+ 
+            fireBomb(92, 0, 8, threeEigths, 2.65, 1.4),
+            fireBomb(fiveEigths + 92, 0, 8, threeEigths, 2.65, 1.4),
+            fireBomb(threeEigths, 0, oneFourth, threeEigths, 2.65, 1.4),
+            fireBomb(0, threeEigths, wholeScreen, oneFourth, 2.65, 1.4),
+ 
+            fireBomb(threeEigths, oneFourth, oneFourth, oneEigth, 4.05, 3),
+            fireBomb(oneFourth, threeEigths, oneHalf, oneFourth, 4.05, 3),
+            fireMovingPassivePoint(oneHalf - 8, threeSixteenths - 8, 0, -2, 4.05, 0.8),
+            fireMovingActivePoint(threeSixteenths - 8, oneHalf - 8, -2, 0, 4.05),
+            fireMovingPassivePoint(thirteenSixteenths - 8, oneHalf - 8, 2, 0, 4.05, 0.8),
+ 
+            setEndScreenTimeout(7.05)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(elevenSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(threeFourths, oneFourth, oneFourth, thirteenSixteenths),
+            createWall(oneFourth, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(nineSixteenths, oneFourth, threeSixteenths, threeSixteenths),
+            createWall(oneFourth, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(nineSixteenths, nineSixteenths, threeSixteenths, sevenSixteenths),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+ 
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0.4, 1.3),
+            fireBomb(oneFourth, sevenSixteenths, oneEigth, oneEigth, 0.4, 1.3),
+            fireBomb(fiveEigths, sevenSixteenths, oneEigth, oneEigth, 0.4, 1.3),
+            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 0.4, 1.3),
+ 
+            fireBomb(sevenSixteenths, threeEigths, oneEigth, oneSixteenth, 3, 1.3),
+            fireBomb(sevenSixteenths, sevenSixteenths, threeSixteenths, oneEigth, 3, 1.3),
+            fireBomb(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth, 3, 1.3),
+            fireBomb(sevenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 3, 1.3),
+ 
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, elevenSixteenths, 5.6, 1.3),
+            fireBomb(nineSixteenths, sevenSixteenths, threeSixteenths, oneEigth, 5.6, 1.3),
+ 
+            setEndScreenTimeout(7.9)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneFourth),
+            createWall(0, oneFourth, oneFourth, oneHalf),
+            createWall(threeFourths, oneFourth, oneFourth, oneHalf),
+            createWall(0, threeFourths, sevenSixteenths, oneEigth),
+            createWall(nineSixteenths, threeFourths, sevenSixteenths, oneEigth),
+ 
+            fireMovingWall(sevenSixteenths, threeFourths, oneEigth, oneEigth, 0, 0, 0, 7.75),
+            fireMovingWall(0, sevenEigths, wholeScreen, oneEigth, 0, 0, 0, 7.75),
+ 
+            fireMovingHorizontalLaser(sevenEigths, oneEigth, -1.4, 0, 3.35),
+            fireMovingVerticalLaser(0, oneEigth, 1.4, 0, 3.35),
+ 
+            fireMovingWall(0, -sevenEigths, wholeScreen, wholeScreen, 0, 1.4, 4.4, 3.35),
+            fireMovingWall(sevenEigths, 0, wholeScreen, wholeScreen, -1.4, 0, 4.4, 3.35),
+ 
+            fireMovingWall(0, -wholeScreen, wholeScreen, wholeScreen, 0, 1.5, 7.8, 4.98),
+            fireMovingWall(oneFourth, oneFourth, oneHalf, oneHalf, 0, 0, 12.78, 100),
+            fireMovingWall(sevenSixteenths, threeFourths, oneEigth, oneEigth, 0, 0, 12.78, 100),
+ 
+            fireMovingVerticalLaser(-16, 16, 2, 13, 10),
+            fireMovingVerticalLaser(-16, 16, 2, 14.5, 10),
+            fireMovingVerticalLaser(-16, 16, 2, 16, 10),
+ 
+            fireMovingWall(wholeScreen, sevenEigths, wholeScreen, oneEigth, -3, 0, 20.5, 2.4),
+ 
+            setEndScreenTimeout(23.9)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(sevenEigths + blockieAdjustment, oneEigth + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, oneSixteenth),
+            createWall(oneSixteenth, threeSixteenths, sevenEigths, oneFourth),
+            createWall(oneSixteenth, nineSixteenths, sevenEigths, oneFourth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, oneSixteenth, oneSixteenth, sevenEigths),
+            createWall(threeSixteenths, oneSixteenth, oneSixteenth, oneEigth),
+            createWall(threeFourths, oneSixteenth, oneSixteenth, oneEigth),
+            createWall(threeSixteenths, thirteenSixteenths, oneSixteenth, oneEigth),
+            createWall(threeFourths, thirteenSixteenths, oneSixteenth, oneEigth),
+            createWall(fifteenSixteenths, oneSixteenth, oneSixteenth, sevenEigths),
+ 
+            fireMovingActivePoint(oneHalf - 8, oneHalf - 8, -2, 0, 0.5),
+            fireMovingPassivePoint(oneHalf - 8, oneHalf - 8, 2, 0, 0.5, 1.8),
+ 
+            setEndScreenTimeout(3.8)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(sevenEigths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, wholeScreen, sevenSixteenths),
+            createWall(oneSixteenth, nineSixteenths, sevenEigths, oneSixteenth),
+            createWall(oneSixteenth, threeFourths, sevenEigths, oneSixteenth),
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, sevenSixteenths, oneSixteenth, oneHalf),
+            createWall(threeSixteenths, sevenSixteenths, oneSixteenth, oneEigth),
+            createWall(threeFourths, sevenSixteenths, oneSixteenth, oneEigth),
+            createWall(threeSixteenths, thirteenSixteenths, oneSixteenth, oneEigth),
+            createWall(threeFourths, thirteenSixteenths, oneSixteenth, oneEigth),
+            createWall(fifteenSixteenths, sevenSixteenths, oneSixteenth, oneHalf),
+ 
+            fireContinuallyMovingBomb(oneSixteenth, fiveEigths, threeSixteenths, oneEigth, 2.94, 0, 0.7, 2),
+ 
+            fireBomb(thirteenSixteenths, sevenSixteenths, oneEigth, oneEigth, 0.7, 6.7),
+ 
+            fireBomb(oneFourth, sevenSixteenths, oneHalf, oneEigth, 2.7, 4.7),
+            fireBomb(thirteenSixteenths, thirteenSixteenths, oneEigth, oneEigth, 2.7, 4.7),
+ 
+            fireBomb(oneSixteenth, sevenSixteenths, oneEigth, oneEigth, 4.7, 2.7),
+            fireBomb(oneSixteenth, fiveEigths, sevenEigths, oneEigth, 4.7, 2.7),
+            fireBomb(oneFourth, thirteenSixteenths, oneHalf, oneEigth, 4.7, 2.7),
+ 
+            setEndScreenTimeout(7.7)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneHalf + blockieAdjustment, 25 * 16 + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, fifteenSixteenths, wholeScreen, oneSixteenth),
+            createWall(0, 0, oneSixteenth, fifteenSixteenths),
+            createWall(fifteenSixteenths, 0, oneSixteenth, fifteenSixteenths),
+ 
+            fireMovingWall(oneSixteenth, 0, oneSixteenth, fiveEigths, 0, 0, 0, 12.4),
+            fireMovingWall(oneEigth, 0, oneSixteenth, fiveEigths, 0, 0, 0, 12),
+            fireMovingWall(threeSixteenths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 11.6),
+            fireMovingWall(oneFourth, 0, oneSixteenth, fiveEigths, 0, 0, 0, 11.2),
+            fireMovingWall(fiveSixteenths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 10.8),
+            fireMovingWall(threeEigths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 10.4),
+            fireMovingWall(sevenSixteenths, 0, 1.5 * 16, fiveEigths, 0, 0, 0, 10),
+            fireMovingWall(16.5 * 16, 0, 1.5 * 16, fiveEigths, 0, 0, 0, 10),
+            fireMovingWall(nineSixteenths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 10.4),
+            fireMovingWall(fiveEigths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 10.8),
+            fireMovingWall(elevenSixteenths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 11.2),
+            fireMovingWall(threeFourths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 11.6),
+            fireMovingWall(thirteenSixteenths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 12),
+            fireMovingWall(sevenEigths, 0, oneSixteenth, fiveEigths, 0, 0, 0, 12.4),
+ 
+            fireMovingBomb(oneSixteenth, fiveEigths, oneSixteenth, fiveSixteenths, 2.8, 0, 0, 1.74),
+            fireMovingBomb(sevenEigths, fiveEigths, oneSixteenth, fiveSixteenths, -1, 0, 0, 1.74),
+ 
+            fireMovingBomb(oneSixteenth, sevenEigths + 16, oneSixteenth, 16, 1.7, 0, 2.845, 4.07),
+            fireMovingBomb(oneSixteenth, sevenEigths, oneSixteenth, 16, 1.7, 0, 3, 4.07),
+            fireMovingBomb(oneSixteenth, thirteenSixteenths + 16, oneSixteenth, 16, 1.7, 0, 3.155, 4.07),
+            fireMovingBomb(oneSixteenth, thirteenSixteenths, oneSixteenth, 16, 1.7, 0, 3.31, 4.07),
+            fireMovingBomb(oneSixteenth, threeFourths + 16, oneSixteenth, 16, 1.7, 0, 3.465, 4.07),
+            fireMovingBomb(oneSixteenth, threeFourths, oneSixteenth, 16, 1.7, 0, 3.62, 4.07),
+            fireMovingBomb(oneSixteenth, elevenSixteenths + 16, oneSixteenth, 16, 1.7, 0, 3.775, 4.07),
+            fireMovingBomb(oneSixteenth, elevenSixteenths, oneSixteenth, 16, 1.7, 0, 3.93, 4.07),
+            fireMovingBomb(oneSixteenth, fiveEigths + 16, oneSixteenth, 16, 1.7, 0, 4.085, 4.07),
+            fireMovingBomb(oneSixteenth, fiveEigths, oneSixteenth, 16, 1.7, 0, 4.24, 4.07),
+ 
+            fireMovingWall(oneSixteenth, 0, oneSixteenth, fiveEigths, 0, -1, 12.4, 10),
+            fireMovingWall(oneEigth, 0, oneSixteenth, fiveEigths, 0, -1, 12, 10),
+            fireMovingWall(threeSixteenths, 0, oneSixteenth, fiveEigths, 0, -1, 11.6, 10),
+            fireMovingWall(oneFourth, 0, oneSixteenth, fiveEigths, 0, -1, 11.2, 10),
+            fireMovingWall(fiveSixteenths, 0, oneSixteenth, fiveEigths, 0, -1, 10.8, 10),
+            fireMovingWall(threeEigths, 0, oneSixteenth, fiveEigths, 0, -1, 10.4, 10),
+            fireMovingWall(sevenSixteenths, 0, 1.5 * 16, fiveEigths, 0, -1, 10, 10),
+            fireMovingPassivePoint(oneHalf - 8, nineSixteenths - 8, 0, -1, 9, 10),
+            fireMovingWall(16.5 * 16, 0, 1.5 * 16, fiveEigths, 0, -1, 10, 10),
+            fireMovingWall(nineSixteenths, 0, oneSixteenth, fiveEigths, 0, -1, 10.4, 10),
+            fireMovingWall(fiveEigths, 0, oneSixteenth, fiveEigths, 0, -1, 10.8, 10),
+            fireMovingWall(elevenSixteenths, 0, oneSixteenth, fiveEigths, 0, -1, 11.2, 10),
+            fireMovingWall(threeFourths, 0, oneSixteenth, fiveEigths, 0, -1, 11.6, 10),
+            fireMovingWall(thirteenSixteenths, 0, oneSixteenth, fiveEigths, 0, -1, 12, 10),
+            fireMovingWall(sevenEigths, 0, oneSixteenth, fiveEigths, 0, -1, 12.4, 10),
+ 
+            setEndScreenTimeout(23)
+        ]);
+ 
+        cancelAwaitChain = false;
+        
+        moveBlockie(oneHalf + blockieAdjustment, sevenEigths + blockieAdjustment);
+ 
+        await Promise.all([
+            createWall(0, 0, sevenSixteenths, wholeScreen),
+            createWall(sevenSixteenths, 0, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeEigths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, nineSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, threeFourths, oneEigth, oneSixteenth),
+            createWall(sevenSixteenths, fifteenSixteenths, oneEigth, oneSixteenth),
+            createWall(nineSixteenths, 0, sevenSixteenths, wholeScreen),
+ 
+            fireMovingPassivePoint(oneHalf - 8, oneEigth - 8, 0, 0.5, 0.5, 6.25),
+ 
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 0, 2),
+            fireBomb(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 2, 3.5),
+            fireBomb(sevenSixteenths, fiveEigths, oneEigth, oneEigth, 5.5, 4.25),
+ 
+            fireMovingPassivePoint(oneHalf - 8, oneHalf - 8, 0, -0.5, 7.75, 6.25),
+ 
+            fireBomb(sevenSixteenths, sevenSixteenths, oneEigth, oneEigth, 9.75, 3),
+            fireBomb(sevenSixteenths, oneFourth, oneEigth, oneEigth, 12.75, 1.25),
+ 
+            setEndScreenTimeout(17)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(fifteenSixteenths + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            fireMovingBomb(0, -wholeScreen, wholeScreen, wholeScreen, 0, 1.24, 1, 3),
+            fireMovingBomb(0, wholeScreen, wholeScreen, wholeScreen, 0, -1.24, 1, 3),
+            fireMovingBomb(-fifteenSixteenths, 0, fifteenSixteenths, wholeScreen, 2.49, 0, 1, 3),
+            fireBomb(0, 0, wholeScreen, sevenSixteenths, 4, 2),
+            fireBomb(0, nineSixteenths, wholeScreen, sevenSixteenths, 4, 2),
+            fireBomb(0, sevenSixteenths, sevenEigths, oneEigth, 4, 2)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        moveBlockie(oneSixteenth + blockieAdjustment, oneHalf + blockieAdjustment);
+ 
+        await Promise.all([
+            fireMovingWall(0, 0, wholeScreen, sevenSixteenths, 0, 0, 0, 2),
+            fireMovingWall(0, nineSixteenths, wholeScreen, sevenSixteenths, 0, 0, 0, 2),
+            fireMovingWall(oneEigth, sevenSixteenths, sevenEigths, oneEigth, 0, 0, 0, 2),
+            fireMovingWall(0, 0, wholeScreen, sevenSixteenths, 0, -1.24, 2, 3),
+            fireMovingWall(0, nineSixteenths, wholeScreen, sevenSixteenths, 0, 1.24, 2, 3),
+            fireMovingWall(oneEigth, 0, sevenEigths, wholeScreen, 2.49, 0, 2, 3),
+ 
+            fireMovingPassivePoint(threeSixteenths - 8, threeSixteenths - 8, 0.666, 0, 6, 8.7),
+            fireMovingActivePoint(fifteenSixteenths + 4, sevenEigths + 10, -0.777, 0, 4),
+ 
+            createWall(0, 0, threeFourths, oneEigth),
+            createWall(0, oneEigth, oneEigth, oneEigth),
+            createWall(oneFourth, oneEigth, oneHalf, oneSixteenth - 8),
+            createWall(oneFourth, threeSixteenths + 8, oneHalf, oneSixteenth - 8),
+            createWall(0, oneFourth, threeFourths, oneEigth),
+            createWall(0, fiveEigths, oneEigth, oneFourth + 2),
+            createWall(threeSixteenths + 2, fiveEigths, thirteenSixteenths - 2, oneSixteenth),
+            createWall(oneEigth, threeFourths + 2, thirteenSixteenths - 2, oneEigth),
+            createWall(0, fifteenSixteenths + 4, fifteenSixteenths - 2, oneSixteenth - 4)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        await Promise.all([
+            createWall(oneSixteenth, oneSixteenth, oneSixteenth, sevenSixteenths),
+            createWall(oneEigth, oneSixteenth, oneEigth, oneSixteenth),
+            createWall(oneEigth, oneFourth, oneEigth, oneSixteenth),
+            createWall(oneEigth, sevenSixteenths, oneEigth, oneSixteenth),
+ 
+            createWall(fiveSixteenths, oneSixteenth, oneSixteenth, sevenSixteenths),
+            createWall(threeEigths, threeSixteenths, oneSixteenth, oneSixteenth),
+            createWall(sevenSixteenths, oneFourth, oneSixteenth, oneSixteenth),
+            createWall(oneHalf, fiveSixteenths, oneSixteenth, oneSixteenth),
+            createWall(nineSixteenths, oneSixteenth, oneSixteenth, sevenSixteenths),
+ 
+            createWall(elevenSixteenths, oneSixteenth, oneSixteenth, sevenSixteenths),
+            createWall(threeFourths, oneSixteenth, oneEigth, oneSixteenth),
+            createWall(threeFourths, sevenSixteenths, oneEigth, oneSixteenth),
+            createWall(sevenEigths, oneEigth, oneSixteenth, fiveSixteenths),
+ 
+            fireMovingWall(oneSixteenth, nineSixteenths, oneSixteenth, oneSixteenth, 1.72, 0, 0, 4),
+ 
+            setEndScreenTimeout(9)
+        ]);
+ 
+        cancelAwaitChain = false;
+ 
+        endLevel();
     } catch (error) {};
 };
 
@@ -640,7 +2329,7 @@ async function stopLevel(reason) {
     } else if (reason === "restartLevelPressed") {
         callCurrentLevel();
     } else if (reason === "lostFocus") {
-        displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other tabs or apps.", "restartLevel");
+        displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other <br>tabs or apps.", "restartLevel");
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
     } else if (reason === "countdownTimerEnded") {
@@ -863,6 +2552,9 @@ function initializeOpeningScreenMenu() {
 };
 
 function initializeLevelMenu() {
+    currentSong = sngChill;
+    currentSong.play();
+
     gameState = "inLevelMenu";
 
     //Creates an array of all 13 menu Icon IDs.
@@ -884,7 +2576,7 @@ function initializeLevelMenu() {
     //Begins the level that is clicked on (even if followMouse is false).
     for (let i = 0; i < numUnlockedLevels; i++) {
         levelMenuIconArray[i].addEventListener("click", () => {
-            beginSelectedLevel(i + 1)
+            beginSelectedLevel(i + 1);
         });
     };
 
@@ -2334,13 +4026,22 @@ function stopAudioElement(audioElement) {
 };
 
 function initializeLevelSong() {
-    if (currentLevelNum == 13) {
-        currentSong = runningOut;
-    } else if (currentLevelNum % 4 == 0) {
-        currentSong = runningOut;
-    } else {
-        currentSong = runningOut;
-    }
+    //Stops the music from the levelMenu from playing once a level is starting.
+    stopAudioElement(currentSong);
+
+    //The game progresses the music to be more intense and complex every 4 levels, and each timed level has its own music.
+    //The final level has a spooky version of the main theme.
+    if (currentLevelNum >= 1 && currentLevelNum <= 3) {
+        currentSong = sngPersevere1;
+    } else if (currentLevelNum >= 5 && currentLevelNum <= 7) {
+        currentSong = sngPersevere2;
+    } else if (currentLevelNum >= 9 && currentLevelNum <= 11) {
+        currentSong = sngPersevere3;
+    } else if (currentLevelNum % 4 === 0) {
+        currentSong = sngHurry;
+    } else if (currentLevelNum === 13) {
+        currentSong = sngPersevereZ;
+    };
 
     currentSong.play();
 };

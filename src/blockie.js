@@ -30,6 +30,7 @@ let sngAnticipate = new Audio("../sounds/anticipate.ogg");
 let sngCelebrate = new Audio("../sounds/celebrate.ogg");
 let sngChill = new Audio("../sounds/chill.ogg");
 let sngHurry = new Audio("../sounds/hurry.ogg");
+let sngMourn = new Audio("../sounds/mourn.ogg");
 let sngPersevere1 = new Audio("../sounds/persevere1.ogg");
 let sngPersevere2 = new Audio("../sounds/persevere2.ogg");
 let sngPersevere3 = new Audio("../sounds/persevere3.ogg");
@@ -151,17 +152,17 @@ let levelMessages = [
     "Hell is empty and the devils are here.",
     "WE HAVE MET THE ENEMY AND HE IS US.",
 
-    "Salt is good; <br>but if salt has lost its taste, <br>how can its saltiness be restored? <br>It is fit neither for the soil nor for the manure pile; <br>they throw it away.",
+    "War. War never changes.",
     "If you do not change direction, <br>you may end up where you are heading.",
 
     "You're better off dead <br>when your mind's been set <br>from nine until five. <br>How could it be true? <br>Well it's happening to you. <br>So take my advice.",
-    "Not what we have, <br>but what we enjoy, <br>constitutes our abundance.",
-    "Do not store up for yourselves treasures on earth, <br>where moths and vermin destroy, <br>and where thieves break in and steal. <br>For where your treasure is, <br>there your heart will be also.",
+    "Ogres are like onions. They have layers.",
+    "You're like an ogre. Aren't you?",
 
     "Knowledge is having something to say. <br>Wisdom is knowing not to say it.",
     "Do not work for the food that perishes, <br>but for the food that endures for eternal life.",
 
-    "It's good that you escaped."
+    "It's good that you escaped. It's good that you lived."
 ];
 
 //Classes
@@ -2314,6 +2315,9 @@ async function stopLevel(reason) {
 
     //Switches how the game resets based on how it triggered.
     if (reason === "died") {
+        currentSong = sngMourn;
+        currentSong.play();
+
         gameState = "animatingBlockieDestruction";
 
         //Animates Blockie's destruction.
@@ -2331,6 +2335,9 @@ async function stopLevel(reason) {
     } else if (reason === "restartLevelPressed") {
         callCurrentLevel();
     } else if (reason === "lostFocus") {
+        currentSong = sngMourn;
+        currentSong.play();
+
         displayMessage("Do not be afraid. <br>Conquer fear. <br>Do not click on other <br>tabs or apps.", "restartLevel");
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
@@ -2550,10 +2557,10 @@ function initializeOpeningScreenMenu() {
 
         //Changes how the game continues depending on the selectedIcon that was pressed.
         if (selectedIcon.id === "newGameMenuIcon") {
-            //Deletes all save data, resets the variables, and begins the game.
+            //Deletes all save data, resets the variables, explains the controls, and enters the levelMenu.
             localStorage.clear();
             loadSavedData();
-            callCurrentLevel();
+            displayMessage("-Move with WASD.<br>-Dash with Shift, Space, and the Arrow Keys.<br>-Confirm or continue with Shift, Space, or the Mouse.<br>-Restart the level with O.<br>-Enter the level menu with P.<br>-Change color schemes with I.<br>-Have fun!", "enterLevelMenu");
         } else if (selectedIcon.id === "continueGameMenuIcon") {
             //Loads all save data and enters the levelMenu.
             loadSavedData();
@@ -2716,14 +2723,16 @@ async function displayMessage(message, endAction) {
     //Forces the player to read the message for 1 second before they can continue the game.
     await new Promise((resolve, reject) => {
         let drawGameOverScreen = setTimeout(() => {
-            //Stops playing sngCelebrate if the level just ended.
-            stopAudioElement(currentSong);
-
             //Placed here to draw Blockie with a PartyHat during endLevel().
             partyHats.splice(0);
 
             //Draws the game over screen.
             document.getElementById("messageDisplayer").innerHTML = message;
+        }, 1000);
+
+        //Waits to stop playing sngCelebrate or sngMourn before the message can be exited.
+        let stopAudio = setTimeout(()=> {
+            stopAudioElement(currentSong);
 
             resolve("resolved");
         }, 1800);
@@ -3625,12 +3634,6 @@ function moveMovingWalls() {
 //Drawing Functions
 
 function animateBlockie() {
-    //Draws the remaining seconds meter for when Blockie can dash again.
-    if (!allowDashAgain && gameState === "playing") {
-        context.fillStyle = blockieSurroundingColor;
-        context.fillRect(blockie.x + 4, blockie.y - 8, 24 * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
-    };
-
     //Draws Blockie himself.
     if (blockie.state === "playing") {
         blockie.sprite = spBlockiePlaying;
@@ -3652,8 +3655,16 @@ function animateBlockie() {
 
         let animateBlockieDestructing = setInterval(() => {
             blockie.sx += blockie.width;
-        }, 0.5 * 1000);
+        }, 0.4 * 1000);
         addUniqueTimeout(animateBlockieDestructing);
+    };
+};
+
+//Draws the remaining seconds meter for when Blockie can dash again.
+function drawBlockieDashMeter() {
+    if (!allowDashAgain) {
+        context.fillStyle = blockieSurroundingColor;
+        context.fillRect(blockie.x + 4, blockie.y - 8, 24 * (blockie.remainingDashSeconds / allowDashAgainSeconds), 4);
     };
 };
 
@@ -4466,6 +4477,8 @@ function drawingLoop() {
         drawMovingWalls();
         drawBombs();
         drawMovingBombs();
+
+        drawBlockieDashMeter();
     } else if (gameState === "finishingLevel") {
         drawPartyHats();
     };

@@ -1,3 +1,3 @@
 # blockie
 
-> An action-packed game made only with modern JavaScript.
+> An "action-packed" game made only with modern JavaScript.

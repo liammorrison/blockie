@@ -2342,17 +2342,10 @@ async function stopLevel(reason) {
     } else if (reason === "enterMenuPressed") {
         initializeLevelMenu();
     } else if (reason === "countdownTimerEnded") {
-        gameState = "playingCutscene";
-
-        //Waits half a second before displaying a message.
-        await new Promise((resolve, reject) => {
-            let continueDestruction = setTimeout(() => {
-                resolve("resolved");
-            }, 500);
-        });
-
-        await playCutscene(spCountdownDestructionScene, 0.17);
-        displayMessage("You've failed another world.", "restartLevel");
+        currentSong = sngMourn;
+        currentSong.play();
+        
+        displayMessage("As long as you are living, <br>you must fight.<br>Please win.", "restartLevel");
     };
 };
 
@@ -4437,7 +4430,7 @@ function gameLoop() {
 //restarting or changing levels.
 function drawingLoop() {
     //Updates the high score in the points div of the level that is being played or hovered over.
-    if (gameState === "playingCutscene" || gameState === "inOpeningMenu") {
+    if (gameState === "inOpeningMenu") {
         document.getElementById("points").innerHTML = "";
     } else if (gameState === "inLevelMenu") {
         document.getElementById("points").innerHTML = `Points: ${earnedPoints[levelHoveringIconNum]}|${possiblePoints[levelHoveringIconNum]}`;
@@ -4446,7 +4439,7 @@ function drawingLoop() {
     };
 
     //Updates the number in the level div of the level that is being played or hovered over.
-    if (gameState === "playingCutscene" || gameState === "inOpeningMenu") {
+    if (gameState === "inOpeningMenu") {
         document.getElementById("level").innerHTML = "";
     } else if (gameState === "inLevelMenu") {
         if (levelHoveringIconNum + 1 < 13) {
@@ -4461,7 +4454,7 @@ function drawingLoop() {
     //Clears the canvas so that it can be redrawn with updated locations, instances, and states.
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState !== "displayingMessage" && gameState !== "playingCutscene" && gameState !== "inOpeningMenu" && gameState !== "inLevelMenu") {
+    if (gameState !== "displayingMessage" && gameState !== "inOpeningMenu" && gameState !== "inLevelMenu") {
         animateBlockie();
         drawBlockie();
     };

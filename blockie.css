@@ -55,7 +55,7 @@ body {
 #countdownTimerSprite {
     width: 64px;
     height: 32px;
-    background: url("../images/spCountdownTimerBomb.png");
+    background: url("images/spCountdownTimerBomb.png");
     position: absolute;
 }
 

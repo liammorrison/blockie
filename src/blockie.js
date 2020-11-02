@@ -13,28 +13,28 @@ context.lineWidth = 4;
 //files (which would hurt performance).
 
 let spBlockiePlaying = document.createElement("img");
-spBlockiePlaying.src = "../images/spBlockiePlaying.png";
+spBlockiePlaying.src = "images/spBlockiePlaying.png";
 
 let spBlockieDestructing = document.createElement("img");
-spBlockieDestructing.src = "../images/spBlockieDestructing.png";
+spBlockieDestructing.src = "images/spBlockieDestructing.png";
 
 let spBlockieRecoveringFromDash = document.createElement("img");
-spBlockieRecoveringFromDash.src = "../images/spBlockieRecoveringFromDash.png";
+spBlockieRecoveringFromDash.src = "images/spBlockieRecoveringFromDash.png";
 
 let spCountdownDestructionScene = document.createElement("img");
-spCountdownDestructionScene.src = "../images/spCountdownDestructionScene.png";
+spCountdownDestructionScene.src = "images/spCountdownDestructionScene.png";
 
 //Sound Loading
 
-let sngAnticipate = new Audio("../sounds/anticipate.ogg");
-let sngCelebrate = new Audio("../sounds/celebrate.ogg");
-let sngChill = new Audio("../sounds/chill.ogg");
-let sngHurry = new Audio("../sounds/hurry.ogg");
-let sngMourn = new Audio("../sounds/mourn.ogg");
-let sngPersevere1 = new Audio("../sounds/persevere1.ogg");
-let sngPersevere2 = new Audio("../sounds/persevere2.ogg");
-let sngPersevere3 = new Audio("../sounds/persevere3.ogg");
-let sngPersevereZ = new Audio("../sounds/persevereZ.ogg");
+let sngAnticipate = new Audio("sounds/anticipate.ogg");
+let sngCelebrate = new Audio("sounds/celebrate.ogg");
+let sngChill = new Audio("sounds/chill.ogg");
+let sngHurry = new Audio("sounds/hurry.ogg");
+let sngMourn = new Audio("sounds/mourn.ogg");
+let sngPersevere1 = new Audio("sounds/persevere1.ogg");
+let sngPersevere2 = new Audio("sounds/persevere2.ogg");
+let sngPersevere3 = new Audio("sounds/persevere3.ogg");
+let sngPersevereZ = new Audio("sounds/persevereZ.ogg");
 
 //Variables
 
